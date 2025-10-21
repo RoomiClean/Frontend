@@ -1,3 +1,4 @@
+import Button from '../_components/atoms/Button';
 import {
   BodyDefault,
   BodyLarge,
@@ -50,6 +51,11 @@ export default function TypographyExamplePage() {
           <div className="w-16 h-16 bg-primary-500 rounded-lg" />
           <div className="w-16 h-16 bg-primary-700 rounded-lg" />
         </div>
+      </section>
+      {/* Section: Button */}
+      <section className="flex gap-4">
+        <Button active={true}>활성화된 버튼</Button>
+        <Button>비활성 버튼</Button>
       </section>
     </div>
   );
