@@ -1,4 +1,8 @@
+'use client';
+import { useState } from 'react';
+import { useForm, Controller } from 'react-hook-form';
 import Button from '../_components/atoms/Button';
+import { Input } from '../_components/atoms/Input';
 import {
   BodyDefault,
   BodyLarge,
@@ -10,7 +14,27 @@ import {
   TitleSmall,
 } from '../_components/atoms/Typography';
 
+interface FormValues {
+  id: string;
+}
+
 export default function TypographyExamplePage() {
+  const [isDisabled, setIsDisabled] = useState(false);
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormValues>({
+    defaultValues: {
+      id: '',
+    },
+  });
+
+  const onSubmit = (data: FormValues) => {
+    console.log('Form submitted:', data);
+  };
+
   return (
     <div className="p-8 space-y-12">
       {/* Section: Title */}
@@ -52,11 +76,45 @@ export default function TypographyExamplePage() {
           <div className="w-16 h-16 bg-primary-700 rounded-lg" />
         </div>
       </section>
+
       {/* Section: Button */}
-      <section className="flex gap-4">
+      <section className="flex gap-4 w-[350px]">
         <Button active={true}>활성화된 버튼</Button>
         <Button>비활성 버튼</Button>
       </section>
+
+      {/* Section: Input */}
+      <form className="flex flex-col gap-4 w-[400px]">
+        {/**
+         * 입력 폼 구현 안내
+         * - React Hook Form을 사용합니다.
+         * - useForm과 Controller를 통해 value, onChange, onBlur, 에러 상태를 관리해주세요.
+         */}
+        <div onClick={() => setIsDisabled(prev => !prev)}>
+          <Button active={isDisabled}>{isDisabled ? 'Enable Inputs' : 'Disable Inputs'}</Button>
+        </div>
+
+        <Controller
+          name="id"
+          control={control}
+          rules={{
+            required: '아이디를 입력해주세요.',
+            minLength: { value: 4, message: '아이디는 최소 4글자 이상입니다.' },
+          }}
+          render={({ field }) => (
+            <Input
+              {...field}
+              placeholder="아이디를 입력하세요."
+              disabled={isDisabled}
+              error={!!errors.id}
+            />
+          )}
+        />
+        {errors.id && <span className="text-red-100 text-sm">{errors.id.message}</span>}
+        <div onClick={() => onSubmit}>
+          <Button active={!isDisabled}>제출</Button>
+        </div>
+      </form>
     </div>
   );
 }
