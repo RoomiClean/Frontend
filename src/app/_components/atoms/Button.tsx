@@ -19,17 +19,15 @@ interface ButtonProps {
  * ```tsx
  * <Button>기본 버튼</Button>
  * <Button active>활성화된 버튼</Button>
- * <Button className="w-full">전체 너비 버튼</Button>
  * ```
  */
 export default function Button({ children, className = '', active }: ButtonProps) {
-  const baseStyles = `
-    px-6 py-2 rounded-lg font-medium transition-colors duration-200
-    bg-white text-primary-400 border border-primary-400
-    hover:bg-primary-400 hover:text-white
-  `;
+  const baseStyles =
+    'w-full py-2 rounded-lg font-medium transition-colors duration-200 border border-primary-400';
 
-  const activeStyles = active ? 'bg-primary-400 text-white' : '';
+  const variantStyles = active
+    ? 'bg-primary-400 text-white'
+    : 'bg-white text-primary-400 hover:bg-primary-400 hover:text-white';
 
-  return <button className={`${baseStyles} ${activeStyles} ${className}`}>{children}</button>;
+  return <button className={`${baseStyles} ${variantStyles} ${className}`}>{children}</button>;
 }
