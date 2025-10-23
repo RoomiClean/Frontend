@@ -17,10 +17,18 @@ export default function Header() {
     <div className="h-[68px] px-[36px] py-[12px] flex justify-between items-center border-b">
       <Image src={Logo} alt="Logo" />
       <div className="flex items-center gap-8">
-        <Link href="/service-structure">서비스 제공 범위 및 구조</Link>
-        <Link href="/how-to-use">서비스 이용 방법</Link>
-        <Link href="/login">로그인</Link>
-        <div className="cursor-pointer" onClick={handleMenuClick}>
+        {/* 태블릿 크기 이상에서만 링크 표시 */}
+        <Link href="/service-structure" className="hidden md:block">
+          서비스 제공 범위 및 구조
+        </Link>
+        <Link href="/how-to-use" className="hidden md:block">
+          서비스 이용 방법
+        </Link>
+        <Link href="/login" className="hidden md:block">
+          로그인
+        </Link>
+        {/* 모바일과 PC에서만 햄버거 메뉴 표시 */}
+        <div className="cursor-pointer lg:block md:hidden" onClick={handleMenuClick}>
           <Image src={Menu} alt="MenuIcon" />
         </div>
       </div>
