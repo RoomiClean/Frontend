@@ -4,8 +4,7 @@ import Image from 'next/image';
 import { LabeledInput } from '@/app/_components/molecules/LabeledInput';
 import Button from '@/app/_components/atoms/Button';
 import ColumnLogo from '@/assets/svg/ColumnLogo.svg';
-import { Label } from '../atoms/Label';
-import { DisplayDefault } from '../atoms/Typography';
+import { BodyDefault, DisplayDefault } from '../atoms/Typography';
 import Link from 'next/link';
 
 interface LoginFormProps {
@@ -43,12 +42,12 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
             <DisplayDefault>로그인</DisplayDefault>
           </Button>
         </div>
-        <div className="flex justify-between">
+        <div className="flex justify-between text-neutral-1000">
           <Link href="/find-info">
-            <Label>아이디/비밀번호 찾기</Label>
+            <BodyDefault>아이디/비밀번호 찾기</BodyDefault>
           </Link>
           <Link href="/signup">
-            <Label>회원가입</Label>
+            <BodyDefault>회원가입</BodyDefault>
           </Link>
         </div>
       </div>
