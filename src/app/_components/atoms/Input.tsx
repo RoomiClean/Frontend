@@ -34,7 +34,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const [showPassword, setShowPassword] = useState(false);
 
     const baseStyles =
-      'w-full px-4 py-3 rounded-lg transition-all duration-200 outline-none text-[14px] leading-[120%] placeholder:text-[14px] placeholder:leading-[120%]';
+      'w-full px-4 py-[14px] rounded-lg transition-all duration-200 outline-none text-[14px] leading-[120%] placeholder:text-[14px] placeholder:leading-[120%]';
 
     const hasValue = value && String(value).trim().length > 0;
 
