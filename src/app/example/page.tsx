@@ -18,12 +18,11 @@ interface FormValues {
   id: string;
 }
 
-export default function TypographyExamplePage() {
+export default function ExamplePage() {
   const [isDisabled, setIsDisabled] = useState(false);
 
   const {
     control,
-    handleSubmit,
     formState: { errors },
   } = useForm<FormValues>({
     defaultValues: {

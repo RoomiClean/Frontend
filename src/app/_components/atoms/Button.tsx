@@ -23,7 +23,7 @@ interface ButtonProps {
  */
 export default function Button({ children, className = '', active }: ButtonProps) {
   const baseStyles =
-    'w-full py-2 rounded-lg font-medium transition-colors duration-200 border border-primary-400';
+    'w-full py-[14px] rounded-[8px] font-medium transition-colors duration-200 border border-primary-400';
 
   const variantStyles = active
     ? 'bg-primary-400 text-white'
