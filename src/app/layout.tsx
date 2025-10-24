@@ -16,7 +16,7 @@ export default function RootLayout({
     <html lang="ko">
       <body>
         <Header />
-        {children}
+        <main className="h-[calc(100dvh-68px)]">{children}</main>
         <Footer />
       </body>
     </html>
