@@ -13,6 +13,7 @@ import {
   TitleLarge,
   TitleSmall,
 } from '../_components/atoms/Typography';
+import { Dropdown } from '../_components/atoms/DropDown';
 
 interface FormValues {
   id: string;
@@ -20,6 +21,7 @@ interface FormValues {
 
 export default function ExamplePage() {
   const [isDisabled, setIsDisabled] = useState(false);
+  const [selectedValue, setSelectedValue] = useState('');
 
   const {
     control,
@@ -34,6 +36,12 @@ export default function ExamplePage() {
     console.log('Form submitted:', data);
   };
 
+  const options = [
+    { value: 'woori', label: '우리은행' },
+    { value: 'kookmin', label: '국민은행' },
+    { value: 'nonghyeop', label: '농협은행' },
+    { value: 'shinhan', label: '신한은행' },
+  ];
   return (
     <div className="p-8 space-y-12">
       {/* Section: Title */}
@@ -83,37 +91,49 @@ export default function ExamplePage() {
       </section>
 
       {/* Section: Input */}
-      <form className="flex flex-col gap-4 w-[400px]">
-        {/**
-         * 입력 폼 구현 안내
-         * - React Hook Form을 사용합니다.
-         * - useForm과 Controller를 통해 value, onChange, onBlur, 에러 상태를 관리해주세요.
-         */}
-        <div onClick={() => setIsDisabled(prev => !prev)}>
-          <Button active={isDisabled}>{isDisabled ? 'Enable Inputs' : 'Disable Inputs'}</Button>
-        </div>
+      <section className="flex gap-4 w-[350px]">
+        <form className="flex flex-col gap-4 w-[400px]">
+          {/**
+           * 입력 폼 구현 안내
+           * - React Hook Form을 사용합니다.
+           * - useForm과 Controller를 통해 value, onChange, onBlur, 에러 상태를 관리해주세요.
+           */}
+          <div onClick={() => setIsDisabled(prev => !prev)}>
+            <Button active={isDisabled}>{isDisabled ? 'Enable Inputs' : 'Disable Inputs'}</Button>
+          </div>
 
-        <Controller
-          name="id"
-          control={control}
-          rules={{
-            required: '아이디를 입력해주세요.',
-            minLength: { value: 4, message: '아이디는 최소 4글자 이상입니다.' },
-          }}
-          render={({ field }) => (
-            <Input
-              {...field}
-              placeholder="아이디를 입력하세요."
-              disabled={isDisabled}
-              error={!!errors.id}
-            />
-          )}
+          <Controller
+            name="id"
+            control={control}
+            rules={{
+              required: '아이디를 입력해주세요.',
+              minLength: { value: 4, message: '아이디는 최소 4글자 이상입니다.' },
+            }}
+            render={({ field }) => (
+              <Input
+                {...field}
+                placeholder="아이디를 입력하세요."
+                disabled={isDisabled}
+                error={!!errors.id}
+              />
+            )}
+          />
+          {errors.id && <span className="text-red-100 text-sm">{errors.id.message}</span>}
+          <div onClick={() => onSubmit}>
+            <Button active={!isDisabled}>제출</Button>
+          </div>
+        </form>
+      </section>
+
+      {/* Section: Dropdown */}
+      <section className="w-[400px]">
+        <Dropdown
+          options={options}
+          value={selectedValue}
+          onChange={setSelectedValue}
+          placeholder="옵션을 선택해주세요"
         />
-        {errors.id && <span className="text-red-100 text-sm">{errors.id.message}</span>}
-        <div onClick={() => onSubmit}>
-          <Button active={!isDisabled}>제출</Button>
-        </div>
-      </form>
+      </section>
     </div>
   );
 }

@@ -16,7 +16,7 @@ export default function RootLayout({
     <html lang="ko" suppressHydrationWarning>
       <body>
         <Header />
-        <main className="h-[calc(100dvh-68px)]">{children}</main>
+        <main className="min-h-[calc(100dvh-68px)]">{children}</main>
         <Footer />
       </body>
     </html>
