@@ -11,6 +11,8 @@ interface ButtonProps {
   type?: 'button' | 'submit' | 'reset';
   /** 버튼 종류 */
   variant?: 'primary' | 'secondary';
+  /** 버튼 비활성화 여부 */
+  disabled?: boolean;
 }
 
 /**
@@ -22,6 +24,7 @@ interface ButtonProps {
  * @example
  * ```tsx
  * <Button variant="primary">아이디 중복확인</Button>
+ *  <Button variant="primary" disabled>아이디 중복확인</Button>
  * <Button variant="secondary" active>인증번호 받기</Button>
  * ```
  */
@@ -32,8 +35,10 @@ export default function Button({
   onClick,
   type = 'button',
   variant = 'primary',
+  disabled = false,
 }: ButtonProps) {
-  const baseStyles = 'w-full py-[14px] rounded-[8px] font-medium transition-all duration-200';
+  const baseStyles =
+    'w-full py-[14px] rounded-[8px] font-medium transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50';
 
   const variantStyles =
     variant === 'primary'
@@ -45,7 +50,12 @@ export default function Button({
         : 'bg-neutral-100 text-neutral-1000 border border-neutral-1000 hover:shadow-[0_6px_15px_rgba(0,0,0,0.2)]';
 
   return (
-    <button type={type} className={`${baseStyles} ${variantStyles} ${className}`} onClick={onClick}>
+    <button
+      type={type}
+      className={`${baseStyles} ${variantStyles} ${className}`}
+      onClick={onClick}
+      disabled={disabled}
+    >
       {children}
     </button>
   );
