@@ -104,7 +104,7 @@ export default function FindId({
 
               <Button
                 type="button"
-                className="w-[130px]"
+                className="w-[120px]"
                 active={!!watchedValues.name && !!watchedValues.phone && !isCodeSent}
                 disabled={!watchedValues.name || !watchedValues.phone}
                 onClick={isCodeSent ? onResendCode : onSendCode}
@@ -145,7 +145,7 @@ export default function FindId({
 
                 <Button
                   type="button"
-                  className="w-[130px]"
+                  className="w-[120px]"
                   active={!!watchedValues.verificationCode && !isVerified}
                   disabled={!watchedValues.verificationCode}
                   onClick={onVerifyCode}

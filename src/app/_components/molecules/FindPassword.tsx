@@ -102,7 +102,7 @@ export default function FindPassword({
 
             <Button
               type="button"
-              className="w-[130px]"
+              className="w-[120px]"
               active={!!watchedValues.id && !!watchedValues.phone && !isCodeSent}
               disabled={!watchedValues.id || !watchedValues.phone}
               onClick={isCodeSent ? onResendCode : onSendCode}
@@ -141,7 +141,7 @@ export default function FindPassword({
               {/* TODO: 인증 성공시 disabled 처리 필요*/}
               <Button
                 type="button"
-                className="w-[130px]"
+                className="w-[120px]"
                 active={!!watchedValues.verificationCode && !isVerified}
                 disabled={!watchedValues.verificationCode}
                 onClick={onVerifyCode}
