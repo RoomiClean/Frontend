@@ -13,10 +13,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko">
+    <html lang="ko" suppressHydrationWarning>
       <body>
         <Header />
-        {children}
+        <main className="h-[calc(100dvh-68px)]">{children}</main>
         <Footer />
       </body>
     </html>

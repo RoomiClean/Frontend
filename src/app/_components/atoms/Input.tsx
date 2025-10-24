@@ -3,6 +3,7 @@
 import { forwardRef, useState, InputHTMLAttributes } from 'react';
 import Image from 'next/image';
 import InvisibleIcon from '@/assets/svg/EyeInvisible.svg';
+import VisibleIcon from '@/assets/svg/EyeVisible.svg';
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   /** 에러 상태 여부 */
@@ -31,10 +32,10 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ className, value, placeholder, disabled, error, type = 'text', invisible, ...props }, ref) => {
     const [isFocused, setIsFocused] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
+    const [showPassword, setShowPassword] = useState(true);
 
     const baseStyles =
-      'w-full px-4 py-[14px] rounded-lg transition-all duration-200 outline-none text-[14px] leading-[120%] placeholder:text-[14px] placeholder:leading-[120%]';
+      'w-full px-4 py-[14px] rounded-lg transition-all duration-200 outline-none text-[14px] leading-[140%] placeholder:text-[14px] placeholder:leading-[140%]';
 
     const hasValue = value && String(value).trim().length > 0;
 
@@ -68,7 +69,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       props.onBlur?.(e);
     };
 
-    const inputType = invisible ? (!showPassword ? 'text' : 'password') : type;
+    const inputType = invisible ? (showPassword ? 'text' : 'password') : type;
 
     return (
       <div className={`relative w-full ${className}`}>
@@ -90,7 +91,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             onClick={() => setShowPassword(prev => !prev)}
             className="absolute top-1/2 right-4 -translate-y-1/2"
           >
-            <Image src={InvisibleIcon} alt="Toggle password visibility" />
+            {showPassword ? (
+              <Image src={VisibleIcon} alt="Toggle password visibility" />
+            ) : (
+              <Image src={InvisibleIcon} alt="Toggle password visibility" />
+            )}
           </button>
         )}
       </div>

@@ -18,8 +18,8 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
   const isLoginEnabled = id.trim() !== '' && password.trim() !== '';
 
   return (
-    <div className="flex flex-col items-center gap-16 w-[392px]">
-      <Image src={ColumnLogo} alt="Toggle password visibility" />
+    <div className="flex flex-col items-center gap-16 w-[392px] px-4">
+      <Image src={ColumnLogo} alt="ColumnLogo" />
 
       <div className="flex flex-col gap-4 w-full">
         <LabeledInput
