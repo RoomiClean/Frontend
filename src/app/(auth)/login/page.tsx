@@ -1,5 +1,5 @@
 'use client';
-import { AuthTemplate } from '@/app/_components/templates/LoginTemplate';
+import { AuthTemplate } from '@/app/_components/templates/AuthTemplate';
 import LoginForm from '@/app/_components/organisms/LoginForm';
 
 export default function LoginPage() {

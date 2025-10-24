@@ -5,29 +5,48 @@ interface ButtonProps {
   className?: string;
   /** true일 때 버튼이 hover 상태와 동일한 스타일로 표시됨 */
   active?: boolean;
+  /** 버튼 클릭 이벤트 핸들러 */
+  onClick?: () => void;
+  /** 버튼 타입 */
+  type?: 'button' | 'submit' | 'reset';
+  /** 버튼 종류 */
+  variant?: 'primary' | 'secondary';
 }
 
 /**
  * 기본 버튼 컴포넌트
  *
  * @description
- * - 기본적으로 흰색 배경에 파란색 테두리를 가진 버튼입니다.
- * - 마우스를 올리면 (hover) 배경색이 파란색으로 바뀌고 텍스트가 흰색으로 변경됩니다.
- * - `active` prop이 true일 경우, hover 상태와 동일한 스타일이 항상 적용됩니다.
+ * - variant(primary, secondary)에 따라 스타일이 달라집니다.
  *
  * @example
  * ```tsx
- * <Button>기본 버튼</Button>
- * <Button active>활성화된 버튼</Button>
+ * <Button variant="primary">아이디 중복확인</Button>
+ * <Button variant="secondary" active>인증번호 받기</Button>
  * ```
  */
-export default function Button({ children, className = '', active }: ButtonProps) {
-  const baseStyles =
-    'w-full py-[14px] rounded-[8px] font-medium transition-colors duration-200 border border-primary-400';
+export default function Button({
+  children,
+  className = '',
+  active,
+  onClick,
+  type = 'button',
+  variant = 'primary',
+}: ButtonProps) {
+  const baseStyles = 'w-full py-[14px] rounded-[8px] font-medium transition-all duration-200';
 
-  const variantStyles = active
-    ? 'bg-primary-400 text-white'
-    : 'bg-white text-primary-400 hover:bg-primary-400 hover:text-white';
+  const variantStyles =
+    variant === 'primary'
+      ? active
+        ? 'bg-primary-400 text-neutral-100 border border-primary-400'
+        : 'bg-neutral-100 text-primary-400 border border-primary-400 hover:shadow-[0_6px_15px_rgba(0,0,0,0.2)]'
+      : active
+        ? 'bg-neutral-100 text-primary-400 border border-primary-400'
+        : 'bg-neutral-100 text-neutral-1000 border border-neutral-1000 hover:shadow-[0_6px_15px_rgba(0,0,0,0.2)]';
 
-  return <button className={`${baseStyles} ${variantStyles} ${className}`}>{children}</button>;
+  return (
+    <button type={type} className={`${baseStyles} ${variantStyles} ${className}`} onClick={onClick}>
+      {children}
+    </button>
+  );
 }
