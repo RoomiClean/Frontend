@@ -74,7 +74,7 @@ export default function SignUpStep2Page() {
   const [isPhoneVerified, setIsPhoneVerified] = useState(false);
   const [isAccountVerified, setIsAccountVerified] = useState(false);
   const [verificationTimer, setVerificationTimer] = useState(0);
-  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [showPrivacyDetail, setShowPrivacyDetail] = useState(false);
   const [isCustomDomain, setIsCustomDomain] = useState(false);
   const [agreements, setAgreements] = useState({
     all: false,
@@ -383,23 +383,27 @@ export default function SignUpStep2Page() {
                   </div>
                   <span className="flex items-center text-neutral-600">@</span>
                   {isCustomDomain ? (
-                    <Input
-                      placeholder="직접 입력"
-                      value={formData.emailDomain}
-                      onChange={e => handleInputChange('emailDomain', e.target.value)}
-                      className="!w-auto"
-                    />
+                    <div className="flex-none [&>div]:!w-[140px]">
+                      <Input
+                        placeholder="직접 입력"
+                        value={formData.emailDomain}
+                        onChange={e => handleInputChange('emailDomain', e.target.value)}
+                      />
+                    </div>
                   ) : (
-                    <div className="flex-none w-auto">
+                    <div className="flex-none [&>div]:!w-[140px]">
                       <Dropdown
                         options={emailDomains}
                         value={formData.emailDomain}
                         onChange={handleDomainChange}
-                        className="!w-auto"
                       />
                     </div>
                   )}
-                  <Button variant="primary" onClick={validateEmail} className="w-[81px] py-3">
+                  <Button
+                    variant="secondary"
+                    onClick={validateEmail}
+                    className="!w-[81px] py-3 flex-shrink-0"
+                  >
                     중복확인
                   </Button>
                 </div>
@@ -472,14 +476,15 @@ export default function SignUpStep2Page() {
                   전화번호 <span className="text-red-500">*</span>
                 </TitleDefault>
                 <div className="flex gap-2">
-                  <Input
-                    placeholder="휴대폰 번호를 입력해주세요 (-제외)"
-                    value={formData.phone}
-                    onChange={e => handleInputChange('phone', e.target.value)}
-                    error={!!errors.phone}
-                    className="flex-1"
-                  />
-                  <Button variant="primary" onClick={sendVerificationCode} className="w-32">
+                  <div className="flex-1">
+                    <Input
+                      placeholder="휴대폰 번호를 입력해주세요 (-제외)"
+                      value={formData.phone}
+                      onChange={e => handleInputChange('phone', e.target.value)}
+                      error={!!errors.phone}
+                    />
+                  </div>
+                  <Button variant="secondary" onClick={sendVerificationCode} className="!w-32">
                     {verificationTimer > 0 ? '인증번호 재전송' : '인증번호 받기'}
                   </Button>
                 </div>
@@ -587,14 +592,15 @@ export default function SignUpStep2Page() {
               <div className="space-y-2">
                 <TitleDefault>계좌 번호</TitleDefault>
                 <div className="flex gap-2">
-                  <Input
-                    placeholder="계좌번호를 입력해주세요(-제외)"
-                    value={formData.accountNumber}
-                    onChange={e => handleInputChange('accountNumber', e.target.value)}
-                    error={!!errors.accountNumber}
-                    className="flex-1"
-                  />
-                  <Button variant="primary" onClick={verifyAccount} className="w-24">
+                  <div className="flex-1">
+                    <Input
+                      placeholder="계좌번호를 입력해주세요(-제외)"
+                      value={formData.accountNumber}
+                      onChange={e => handleInputChange('accountNumber', e.target.value)}
+                      error={!!errors.accountNumber}
+                    />
+                  </div>
+                  <Button variant="primary" onClick={verifyAccount} className="!w-24">
                     계좌 인증
                   </Button>
                 </div>
@@ -606,25 +612,47 @@ export default function SignUpStep2Page() {
                 )}
               </div>
 
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="privacy-consent"
-                  checked={agreements.privacy}
-                  onChange={e => handleAgreementChange('privacy', e.target.checked)}
-                  className="w-4 h-4"
-                />
-                <label htmlFor="privacy-consent" className="text-sm text-neutral-1000">
-                  개인정보 수집 및 이용 동의
-                </label>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="privacy-consent"
+                    checked={agreements.privacy}
+                    onChange={e => handleAgreementChange('privacy', e.target.checked)}
+                    className="w-4 h-4"
+                  />
+                  <label htmlFor="privacy-consent" className="text-sm text-neutral-1000">
+                    개인정보 수집 및 이용 동의
+                  </label>
+                </div>
                 <button
                   type="button"
-                  onClick={() => setShowPrivacyModal(true)}
+                  onClick={() => setShowPrivacyDetail(!showPrivacyDetail)}
                   className="text-sm text-primary-400 underline"
                 >
                   보기
                 </button>
               </div>
+              {showPrivacyDetail && (
+                <div className="border border-neutral-200 rounded-lg p-4 bg-neutral-50">
+                  <BodyDefault className="font-medium mb-3">개인정보 수집 및 이용 동의</BodyDefault>
+                  <div className="space-y-2 text-sm text-neutral-600">
+                    <p>아래와 같은 목적으로 개인정보를 수집 및 이용합니다.</p>
+                    <p>
+                      <strong>수집 항목:</strong> 은행명, 계좌번호
+                    </p>
+                    <p>
+                      <strong>수집 목적:</strong> 수익 정산
+                    </p>
+                    <p>
+                      <strong>보유 기간:</strong> 정보 삭제 요청 또는 회원 탈퇴 시 파기
+                    </p>
+                    <p className="text-red-500">
+                      동의를 거부할 수 있으나, 동의 거부 시 수익 정산 처리가 어렵습니다.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -646,65 +674,73 @@ export default function SignUpStep2Page() {
               </div>
 
               <div className="space-y-2 pl-6">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="service-agreement"
-                    checked={agreements.service}
-                    onChange={e => handleAgreementChange('service', e.target.checked)}
-                    className="w-4 h-4"
-                  />
-                  <label htmlFor="service-agreement" className="text-sm text-neutral-1000">
-                    서비스 이용 약관(필수)
-                  </label>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="service-agreement"
+                      checked={agreements.service}
+                      onChange={e => handleAgreementChange('service', e.target.checked)}
+                      className="w-4 h-4"
+                    />
+                    <label htmlFor="service-agreement" className="text-sm text-neutral-1000">
+                      서비스 이용 약관(필수)
+                    </label>
+                  </div>
                   <button type="button" className="text-sm text-primary-400 underline">
                     보기
                   </button>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="privacy-agreement"
-                    checked={agreements.privacy}
-                    onChange={e => handleAgreementChange('privacy', e.target.checked)}
-                    className="w-4 h-4"
-                  />
-                  <label htmlFor="privacy-agreement" className="text-sm text-neutral-1000">
-                    개인정보 처리방침(필수)
-                  </label>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="privacy-agreement"
+                      checked={agreements.privacy}
+                      onChange={e => handleAgreementChange('privacy', e.target.checked)}
+                      className="w-4 h-4"
+                    />
+                    <label htmlFor="privacy-agreement" className="text-sm text-neutral-1000">
+                      개인정보 처리방침(필수)
+                    </label>
+                  </div>
                   <button type="button" className="text-sm text-primary-400 underline">
                     보기
                   </button>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="location-agreement"
-                    checked={agreements.location}
-                    onChange={e => handleAgreementChange('location', e.target.checked)}
-                    className="w-4 h-4"
-                  />
-                  <label htmlFor="location-agreement" className="text-sm text-neutral-1000">
-                    위치정보 이용약관(필수)
-                  </label>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="location-agreement"
+                      checked={agreements.location}
+                      onChange={e => handleAgreementChange('location', e.target.checked)}
+                      className="w-4 h-4"
+                    />
+                    <label htmlFor="location-agreement" className="text-sm text-neutral-1000">
+                      위치정보 이용약관(필수)
+                    </label>
+                  </div>
                   <button type="button" className="text-sm text-primary-400 underline">
                     보기
                   </button>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="marketing-agreement"
-                    checked={agreements.marketing}
-                    onChange={e => handleAgreementChange('marketing', e.target.checked)}
-                    className="w-4 h-4"
-                  />
-                  <label htmlFor="marketing-agreement" className="text-sm text-neutral-1000">
-                    마케팅 정보 수신(선택)
-                  </label>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="marketing-agreement"
+                      checked={agreements.marketing}
+                      onChange={e => handleAgreementChange('marketing', e.target.checked)}
+                      className="w-4 h-4"
+                    />
+                    <label htmlFor="marketing-agreement" className="text-sm text-neutral-1000">
+                      마케팅 정보 수신(선택)
+                    </label>
+                  </div>
                   <button type="button" className="text-sm text-primary-400 underline">
                     보기
                   </button>
@@ -718,46 +754,6 @@ export default function SignUpStep2Page() {
         <Button variant="primary" onClick={handleSubmit} className="w-full max-w-[400px]">
           회원가입 완료
         </Button>
-
-        {/* 개인정보 수집 및 이용 동의 모달 */}
-        {showPrivacyModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-              <div className="flex justify-between items-center mb-4">
-                <BodyDefault className="font-medium">개인정보 수집 및 이용 동의</BodyDefault>
-                <button
-                  onClick={() => setShowPrivacyModal(false)}
-                  className="text-neutral-500 hover:text-neutral-700"
-                >
-                  ✕
-                </button>
-              </div>
-              <div className="space-y-3 text-sm text-neutral-600">
-                <p>
-                  <strong>수집목적:</strong> 수익 정산
-                </p>
-                <p>
-                  <strong>수집항목:</strong> 은행명, 계좌번호
-                </p>
-                <p>
-                  <strong>보유기간:</strong> 회원 탈퇴 시까지
-                </p>
-                <p className="text-red-500">
-                  ※ 동의를 거부할 수 있으나, 수익 정산이 어려울 수 있습니다.
-                </p>
-              </div>
-              <div className="flex justify-end mt-6">
-                <Button
-                  variant="primary"
-                  onClick={() => setShowPrivacyModal(false)}
-                  className="w-20"
-                >
-                  확인
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
