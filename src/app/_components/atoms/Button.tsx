@@ -38,7 +38,7 @@ export default function Button({
   disabled = false,
 }: ButtonProps) {
   const baseStyles =
-    'w-full py-[14px] rounded-[8px] font-medium transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50';
+    'w-full py-[11px] rounded-[8px] font-medium transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50';
 
   const variantStyles =
     variant === 'primary'
@@ -47,7 +47,7 @@ export default function Button({
         : 'bg-neutral-100 text-primary-400 border border-primary-400 hover:shadow-[0_6px_15px_rgba(0,0,0,0.2)]'
       : active
         ? 'bg-neutral-100 text-primary-400 border border-primary-400'
-        : 'bg-neutral-100 text-neutral-1000 border border-neutral-1000 hover:shadow-[0_6px_15px_rgba(0,0,0,0.2)]';
+        : 'bg-neutral-100 text-neutral-1000 border border-neutral-1000 hover:bg-primary-400 hover:text-neutral-100 hover:border-primary-400';
 
   return (
     <button
