@@ -10,6 +10,10 @@ import {
   BodyDefault,
   BodySmall,
   Caption,
+  TitleDefault,
+  TitleH4,
+  TitleSmall,
+  DisplayH1,
 } from '@/app/_components/atoms/Typography';
 
 interface FormData {
@@ -71,6 +75,7 @@ export default function SignUpStep2Page() {
   const [isAccountVerified, setIsAccountVerified] = useState(false);
   const [verificationTimer, setVerificationTimer] = useState(0);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [isCustomDomain, setIsCustomDomain] = useState(false);
   const [agreements, setAgreements] = useState({
     all: false,
     service: false,
@@ -83,7 +88,11 @@ export default function SignUpStep2Page() {
     { value: 'naver.com', label: 'naver.com' },
     { value: 'gmail.com', label: 'gmail.com' },
     { value: 'daum.net', label: 'daum.net' },
-    { value: 'kakao.com', label: 'kakao.com' },
+    { value: 'icloud.com', label: 'icloud.com' },
+    { value: 'hanmail.net', label: 'hanmail.net' },
+    { value: 'nate.com', label: 'nate.com' },
+    { value: 'yahoo.com', label: 'yahoo.com' },
+    { value: 'custom', label: '직접 입력' },
   ];
 
   const provinces = [
@@ -159,6 +168,16 @@ export default function SignUpStep2Page() {
     // Clear error when user starts typing
     if (errors[field as keyof ValidationErrors]) {
       setErrors(prev => ({ ...prev, [field as keyof ValidationErrors]: undefined }));
+    }
+  };
+
+  const handleDomainChange = (value: string) => {
+    if (value === 'custom') {
+      setIsCustomDomain(true);
+      setFormData(prev => ({ ...prev, emailDomain: '' }));
+    } else {
+      setIsCustomDomain(false);
+      setFormData(prev => ({ ...prev, emailDomain: value }));
     }
   };
 
@@ -324,48 +343,63 @@ export default function SignUpStep2Page() {
 
   return (
     <div className="min-h-[calc(100dvh-68px)] py-8">
-      <div className="flex flex-col items-center gap-8 w-full max-w-[800px] px-4 mx-auto">
-        <DisplayDefault>회원가입</DisplayDefault>
+      <div className="flex flex-col items-center gap-16 w-full max-w-[472px] px-4 mx-auto">
+        <DisplayH1>회원가입</DisplayH1>
 
-        {/* Step Indicator */}
-        <div className="flex items-center gap-4 text-neutral-600">
-          <span className="text-neutral-400">1. 회원 유형 선택</span>
-          <span className="text-neutral-400">&gt;</span>
-          <span className="text-primary-400 font-medium">2. 정보입력</span>
-          <span className="text-neutral-400">&gt;</span>
-          <span className="text-neutral-400">3. 가입완료</span>
+        {/* Step 표시 */}
+        <div className="flex items-center gap-8">
+          <TitleDefault className="text-neutral-500">1. 회원 유형 선택</TitleDefault>
+          <TitleDefault className="text-neutral-500">&gt;</TitleDefault>
+          <TitleDefault>2. 정보입력</TitleDefault>
+          <TitleDefault className="text-neutral-500">&gt;</TitleDefault>
+          <TitleDefault className="text-neutral-500">3. 가입완료</TitleDefault>
         </div>
 
         <div className="w-full space-y-8">
           {/* 기본정보 */}
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <BodyDefault className="font-medium">기본정보</BodyDefault>
-              <Caption className="text-neutral-500">필수입력사항</Caption>
+              <TitleH4>기본정보</TitleH4>
+              <div className="flex items-center gap-1">
+                <span className="text-red-500">*</span>
+                <TitleSmall>필수입력사항</TitleSmall>
+              </div>
             </div>
 
             <div className="space-y-4">
               {/* 아이디 */}
               <div className="space-y-2">
-                <BodySmall className="text-neutral-1000">
+                <TitleDefault>
                   아이디 <span className="text-red-500">*</span>
-                </BodySmall>
+                </TitleDefault>
                 <div className="flex gap-2">
-                  <Input
-                    placeholder="이메일 입력"
-                    value={formData.email}
-                    onChange={e => handleInputChange('email', e.target.value)}
-                    error={!!errors.email}
-                    className="flex-1"
-                  />
-                  <span className="flex items-center px-2 text-neutral-600">@</span>
-                  <Dropdown
-                    options={emailDomains}
-                    value={formData.emailDomain}
-                    onChange={value => handleInputChange('emailDomain', value)}
-                    className="w-32"
-                  />
-                  <Button variant="primary" onClick={validateEmail} className="w-24">
+                  <div className="flex-1">
+                    <Input
+                      placeholder="이메일 입력"
+                      value={formData.email}
+                      onChange={e => handleInputChange('email', e.target.value)}
+                      error={!!errors.email}
+                    />
+                  </div>
+                  <span className="flex items-center text-neutral-600">@</span>
+                  {isCustomDomain ? (
+                    <Input
+                      placeholder="직접 입력"
+                      value={formData.emailDomain}
+                      onChange={e => handleInputChange('emailDomain', e.target.value)}
+                      className="!w-auto"
+                    />
+                  ) : (
+                    <div className="flex-none w-auto">
+                      <Dropdown
+                        options={emailDomains}
+                        value={formData.emailDomain}
+                        onChange={handleDomainChange}
+                        className="!w-auto"
+                      />
+                    </div>
+                  )}
+                  <Button variant="primary" onClick={validateEmail} className="w-[81px] py-3">
                     중복확인
                   </Button>
                 </div>
@@ -377,9 +411,9 @@ export default function SignUpStep2Page() {
 
               {/* 비밀번호 */}
               <div className="space-y-2">
-                <BodySmall className="text-neutral-1000">
+                <TitleDefault>
                   비밀번호 <span className="text-red-500">*</span>
-                </BodySmall>
+                </TitleDefault>
                 <Input
                   placeholder="비밀번호를 입력해주세요"
                   type="password"
@@ -399,9 +433,9 @@ export default function SignUpStep2Page() {
 
               {/* 비밀번호 확인 */}
               <div className="space-y-2">
-                <BodySmall className="text-neutral-1000">
+                <TitleDefault>
                   비밀번호 확인 <span className="text-red-500">*</span>
-                </BodySmall>
+                </TitleDefault>
                 <Input
                   placeholder="비밀번호를 다시 입력해주세요"
                   type="password"
@@ -420,9 +454,9 @@ export default function SignUpStep2Page() {
 
               {/* 이름 */}
               <div className="space-y-2">
-                <BodySmall className="text-neutral-1000">
+                <TitleDefault>
                   이름 <span className="text-red-500">*</span>
-                </BodySmall>
+                </TitleDefault>
                 <Input
                   placeholder="이름을 입력해주세요"
                   value={formData.name}
@@ -434,9 +468,9 @@ export default function SignUpStep2Page() {
 
               {/* 전화번호 */}
               <div className="space-y-2">
-                <BodySmall className="text-neutral-1000">
+                <TitleDefault>
                   전화번호 <span className="text-red-500">*</span>
-                </BodySmall>
+                </TitleDefault>
                 <div className="flex gap-2">
                   <Input
                     placeholder="휴대폰 번호를 입력해주세요 (-제외)"
@@ -487,36 +521,32 @@ export default function SignUpStep2Page() {
 
           {/* 서비스 가능 지역 */}
           <div className="space-y-4">
-            <BodyDefault className="font-medium">서비스 가능 지역</BodyDefault>
-            <div className="flex gap-4">
-              <div className="flex-1 space-y-2">
-                <BodySmall className="text-neutral-1000">시/도</BodySmall>
-                <Dropdown
-                  options={provinces}
-                  value={formData.province}
-                  onChange={value => handleInputChange('province', value)}
-                  placeholder="시/도"
-                  error={!!errors.province}
-                />
-                {errors.province && <Caption className="text-red-500">{errors.province}</Caption>}
-              </div>
-              <div className="flex-1 space-y-2">
-                <BodySmall className="text-neutral-1000">시/구/군</BodySmall>
-                <Dropdown
-                  options={districts}
-                  value={formData.district}
-                  onChange={value => handleInputChange('district', value)}
-                  placeholder="시/구/군"
-                  error={!!errors.district}
-                />
-                {errors.district && <Caption className="text-red-500">{errors.district}</Caption>}
-              </div>
+            <TitleDefault>서비스 가능 지역</TitleDefault>
+            <div className="flex-1 space-y-2">
+              <Dropdown
+                options={provinces}
+                value={formData.province}
+                onChange={value => handleInputChange('province', value)}
+                placeholder="시/도"
+                error={!!errors.province}
+              />
+              {errors.province && <Caption className="text-red-500">{errors.province}</Caption>}
+            </div>
+            <div className="flex-1 space-y-2">
+              <Dropdown
+                options={districts}
+                value={formData.district}
+                onChange={value => handleInputChange('district', value)}
+                placeholder="시/구/군"
+                error={!!errors.district}
+              />
+              {errors.district && <Caption className="text-red-500">{errors.district}</Caption>}
             </div>
           </div>
 
           {/* 자기소개 */}
           <div className="space-y-4">
-            <BodyDefault className="font-medium">자기소개</BodyDefault>
+            <TitleDefault>자기소개</TitleDefault>
             <Textarea
               placeholder="본인의 자기소개를 입력해주세요"
               value={formData.introduction}
@@ -526,12 +556,11 @@ export default function SignUpStep2Page() {
             />
           </div>
 
-          {/* 정산 정보 */}
+          {/* 은행 정보 */}
           <div className="space-y-4">
-            <BodyDefault className="font-medium">정산 정보</BodyDefault>
+            <TitleDefault>은행 정보</TitleDefault>
             <div className="space-y-4">
               <div className="space-y-2">
-                <BodySmall className="text-neutral-1000">은행</BodySmall>
                 <Dropdown
                   options={banks}
                   value={formData.bank}
@@ -543,7 +572,7 @@ export default function SignUpStep2Page() {
               </div>
 
               <div className="space-y-2">
-                <BodySmall className="text-neutral-1000">예금주명</BodySmall>
+                <TitleDefault>예금주명</TitleDefault>
                 <Input
                   placeholder="예금주명을 입력해주세요"
                   value={formData.accountHolder}
@@ -556,7 +585,7 @@ export default function SignUpStep2Page() {
               </div>
 
               <div className="space-y-2">
-                <BodySmall className="text-neutral-1000">계좌 번호</BodySmall>
+                <TitleDefault>계좌 번호</TitleDefault>
                 <div className="flex gap-2">
                   <Input
                     placeholder="계좌번호를 입력해주세요(-제외)"

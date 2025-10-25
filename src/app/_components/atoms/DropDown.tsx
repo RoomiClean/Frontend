@@ -53,7 +53,7 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
       }
 
       if (hasValue && !isOpen) {
-        return 'bg-neutral-100 border border-neutral-1000 text-neutral-1000';
+        return 'bg-neutral-100 border border-neutral-300 text-neutral-1000';
       }
 
       if (isOpen) {
