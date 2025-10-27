@@ -253,7 +253,7 @@ export default function SignUpStep3Page() {
         <DisplayH1>회원가입</DisplayH1>
 
         {/* Step 표시 */}
-        <StepIndicator currentStep={3} />
+        <StepIndicator currentStep={2} />
 
         <div className="w-full space-y-8">
           {/* cleaner 타입일 때 은행 정보 */}
