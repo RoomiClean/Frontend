@@ -14,6 +14,7 @@ import {
   TitleSmall,
 } from '../_components/atoms/Typography';
 import { Dropdown } from '../_components/atoms/DropDown';
+import { Textarea } from '../_components/atoms/Textarea';
 
 interface FormValues {
   id: string;
@@ -22,6 +23,9 @@ interface FormValues {
 export default function ExamplePage() {
   const [isDisabled, setIsDisabled] = useState(false);
   const [selectedValue, setSelectedValue] = useState('');
+  const [textareaValue, setTextareaValue] = useState('');
+  const [textareaWithError, setTextareaWithError] = useState('');
+  const [textareaDisabled, setTextareaDisabled] = useState('');
 
   const {
     control,
@@ -133,6 +137,56 @@ export default function ExamplePage() {
           onChange={setSelectedValue}
           placeholder="옵션을 선택해주세요"
         />
+      </section>
+
+      {/* Section: Textarea */}
+      <section className="flex flex-col gap-6 w-[400px]">
+        <h2 className="font-semibold text-2xl mb-4">Textarea</h2>
+
+        {/* 기본 Textarea */}
+        <div className="space-y-2">
+          <h3 className="font-medium text-base">기본 Textarea</h3>
+          <Textarea
+            placeholder="내용을 입력해주세요"
+            value={textareaValue}
+            onChange={e => setTextareaValue(e.target.value)}
+            maxLength={500}
+          />
+        </div>
+
+        {/* 에러 상태 Textarea */}
+        <div className="space-y-2">
+          <h3 className="font-medium text-base">에러 상태 Textarea</h3>
+          <Textarea
+            placeholder="내용을 입력해주세요"
+            value={textareaWithError}
+            onChange={e => setTextareaWithError(e.target.value)}
+            error={true}
+            maxLength={100}
+          />
+        </div>
+
+        {/* 비활성화 상태 Textarea */}
+        <div className="space-y-2">
+          <h3 className="font-medium text-base">비활성화 상태 Textarea</h3>
+          <Textarea
+            placeholder="비활성화된 입력창입니다"
+            value={textareaDisabled}
+            onChange={e => setTextareaDisabled(e.target.value)}
+            disabled={true}
+          />
+        </div>
+
+        {/* 글자 수 제한 없는 Textarea */}
+        <div className="space-y-2">
+          <h3 className="font-medium text-base">글자 수 제한 없는 Textarea</h3>
+          <Textarea
+            placeholder="글자 수 제한이 없는 입력창입니다"
+            value={textareaValue}
+            onChange={e => setTextareaValue(e.target.value)}
+            showCharCount={true}
+          />
+        </div>
       </section>
     </div>
   );
