@@ -9,6 +9,7 @@ import {
   DisplayH3,
 } from '@/app/_components/atoms/Typography';
 import { AuthTemplate } from '@/app/_components/templates/AuthTemplate';
+import StepIndicator from '@/app/_components/molecules/StepIndicator';
 
 export default function SignUpStep1Page() {
   const router = useRouter();
@@ -23,13 +24,7 @@ export default function SignUpStep1Page() {
         <DisplayH1>회원가입</DisplayH1>
 
         {/* Step 표시 */}
-        <div className="flex items-center gap-8">
-          <TitleDefault>1. 회원 유형 선택</TitleDefault>
-          <TitleDefault className="text-neutral-500">&gt;</TitleDefault>
-          <TitleDefault className="text-neutral-500">2. 정보입력</TitleDefault>
-          <TitleDefault className="text-neutral-500">&gt;</TitleDefault>
-          <TitleDefault className="text-neutral-500">3. 가입완료</TitleDefault>
-        </div>
+        <StepIndicator currentStep={1} />
 
         {/* 회원 유형 선택 */}
         <div className="flex w-[688px] h-[386px] border py-8 border-neutral-200 rounded-lg overflow-hidden items-center justify-center">

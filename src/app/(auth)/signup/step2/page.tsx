@@ -15,6 +15,7 @@ import {
   TitleSmall,
   DisplayH1,
 } from '@/app/_components/atoms/Typography';
+import StepIndicator from '@/app/_components/molecules/StepIndicator';
 
 interface FormData {
   email: string;
@@ -27,9 +28,15 @@ interface FormData {
   province: string;
   district: string;
   introduction: string;
-  bank: string;
-  accountHolder: string;
-  accountNumber: string;
+  // 사업자 인증 필드 (host)
+  companyName: string;
+  businessType: string;
+  representativeName: string;
+  establishmentDate: string;
+  businessNumber1: string;
+  businessNumber2: string;
+  businessNumber3: string;
+  businessAgreement: boolean;
 }
 
 interface ValidationErrors {
@@ -42,9 +49,11 @@ interface ValidationErrors {
   province?: string;
   district?: string;
   introduction?: string;
-  bank?: string;
-  accountHolder?: string;
-  accountNumber?: string;
+  companyName?: string;
+  businessType?: string;
+  representativeName?: string;
+  establishmentDate?: string;
+  businessNumber?: string;
 }
 
 export default function SignUpStep2Page() {
@@ -63,26 +72,23 @@ export default function SignUpStep2Page() {
     province: '',
     district: '',
     introduction: '',
-    bank: '',
-    accountHolder: '',
-    accountNumber: '',
+    companyName: '',
+    businessType: '',
+    representativeName: '',
+    establishmentDate: '',
+    businessNumber1: '',
+    businessNumber2: '',
+    businessNumber3: '',
+    businessAgreement: false,
   });
 
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [success, setSuccess] = useState<Record<string, boolean>>({});
   const [isEmailChecked, setIsEmailChecked] = useState(false);
   const [isPhoneVerified, setIsPhoneVerified] = useState(false);
-  const [isAccountVerified, setIsAccountVerified] = useState(false);
   const [verificationTimer, setVerificationTimer] = useState(0);
-  const [showPrivacyDetail, setShowPrivacyDetail] = useState(false);
   const [isCustomDomain, setIsCustomDomain] = useState(false);
-  const [agreements, setAgreements] = useState({
-    all: false,
-    service: false,
-    privacy: false,
-    location: false,
-    marketing: false,
-  });
+  const [showBusinessDetail, setShowBusinessDetail] = useState(false);
 
   const emailDomains = [
     { value: 'naver.com', label: 'naver.com' },
@@ -133,17 +139,6 @@ export default function SignUpStep2Page() {
     { value: 'jongno', label: '종로구' },
     { value: 'jung', label: '중구' },
     { value: 'jungnang', label: '중랑구' },
-  ];
-
-  const banks = [
-    { value: 'kb', label: '국민은행' },
-    { value: 'shinhan', label: '신한은행' },
-    { value: 'woori', label: '우리은행' },
-    { value: 'hana', label: '하나은행' },
-    { value: 'nh', label: '농협은행' },
-    { value: 'ibk', label: '기업은행' },
-    { value: 'kdb', label: '산업은행' },
-    { value: 'keb', label: '외환은행' },
   ];
 
   useEffect(() => {
@@ -269,37 +264,6 @@ export default function SignUpStep2Page() {
     setIsPhoneVerified(true);
   };
 
-  const verifyAccount = () => {
-    if (!formData.accountNumber) {
-      setErrors(prev => ({ ...prev, accountNumber: '계좌번호를 입력해주세요' }));
-      return;
-    }
-
-    if (formData.accountNumber.length < 10) {
-      setErrors(prev => ({ ...prev, accountNumber: '올바른 계좌번호가 아닙니다' }));
-      return;
-    }
-
-    setSuccess(prev => ({ ...prev, accountNumber: true }));
-    setIsAccountVerified(true);
-  };
-
-  const handleAgreementChange = (type: keyof typeof agreements, checked: boolean) => {
-    if (type === 'all') {
-      setAgreements({
-        all: checked,
-        service: checked,
-        privacy: checked,
-        location: checked,
-        marketing: checked,
-      });
-    } else {
-      const newAgreements = { ...agreements, [type]: checked };
-      newAgreements.all = newAgreements.service && newAgreements.privacy && newAgreements.location;
-      setAgreements(newAgreements);
-    }
-  };
-
   const handleSubmit = () => {
     // Validate all required fields
     const isEmailValid = validateEmail();
@@ -310,28 +274,69 @@ export default function SignUpStep2Page() {
       setErrors(prev => ({ ...prev, name: '이름을 입력해주세요' }));
     }
 
-    if (!formData.province) {
-      setErrors(prev => ({ ...prev, province: '시/도를 선택해주세요' }));
-    }
+    if (memberType === 'cleaner') {
+      // cleaner 타입의 경우
+      if (!formData.province) {
+        setErrors(prev => ({ ...prev, province: '시/도를 선택해주세요' }));
+      }
 
-    if (!formData.district) {
-      setErrors(prev => ({ ...prev, district: '시/구/군을 선택해주세요' }));
-    }
+      if (!formData.district) {
+        setErrors(prev => ({ ...prev, district: '시/구/군을 선택해주세요' }));
+      }
 
-    if (!agreements.service || !agreements.privacy || !agreements.location) {
-      alert('필수 약관에 동의해주세요');
-      return;
-    }
+      if (
+        isEmailValid &&
+        isPasswordValid &&
+        isConfirmPasswordValid &&
+        formData.name &&
+        formData.province &&
+        formData.district
+      ) {
+        router.push('/signup/step3?type=' + memberType);
+      }
+    } else if (memberType === 'host') {
+      // host 타입의 경우
+      if (!formData.companyName) {
+        setErrors(prev => ({ ...prev, companyName: '상호명을 입력해주세요' }));
+      }
 
-    if (
-      isEmailValid &&
-      isPasswordValid &&
-      isConfirmPasswordValid &&
-      formData.name &&
-      formData.province &&
-      formData.district
-    ) {
-      router.push('/signup/step3');
+      if (!formData.businessType) {
+        setErrors(prev => ({ ...prev, businessType: '업종을 입력해주세요' }));
+      }
+
+      if (!formData.representativeName) {
+        setErrors(prev => ({ ...prev, representativeName: '대표자명을 입력해주세요' }));
+      }
+
+      if (!formData.establishmentDate) {
+        setErrors(prev => ({ ...prev, establishmentDate: '개업일자를 선택해주세요' }));
+      }
+
+      if (!formData.businessNumber1 || !formData.businessNumber2 || !formData.businessNumber3) {
+        setErrors(prev => ({ ...prev, businessNumber: '사업자 등록번호를 입력해주세요' }));
+      }
+
+      if (!formData.businessAgreement) {
+        alert('사업자 정보 제공 동의를 해주세요');
+        return;
+      }
+
+      if (
+        isEmailValid &&
+        isPasswordValid &&
+        isConfirmPasswordValid &&
+        formData.name &&
+        formData.companyName &&
+        formData.businessType &&
+        formData.representativeName &&
+        formData.establishmentDate &&
+        formData.businessNumber1 &&
+        formData.businessNumber2 &&
+        formData.businessNumber3 &&
+        formData.businessAgreement
+      ) {
+        router.push('/signup/step3?type=' + memberType);
+      }
     }
   };
 
@@ -347,13 +352,7 @@ export default function SignUpStep2Page() {
         <DisplayH1>회원가입</DisplayH1>
 
         {/* Step 표시 */}
-        <div className="flex items-center gap-8">
-          <TitleDefault className="text-neutral-500">1. 회원 유형 선택</TitleDefault>
-          <TitleDefault className="text-neutral-500">&gt;</TitleDefault>
-          <TitleDefault>2. 정보입력</TitleDefault>
-          <TitleDefault className="text-neutral-500">&gt;</TitleDefault>
-          <TitleDefault className="text-neutral-500">3. 가입완료</TitleDefault>
-        </div>
+        <StepIndicator currentStep={2} />
 
         <div className="w-full space-y-8">
           {/* 기본정보 */}
@@ -400,7 +399,7 @@ export default function SignUpStep2Page() {
                     </div>
                   )}
                   <Button
-                    variant="secondary"
+                    variant="tertiary"
                     onClick={validateEmail}
                     className="!w-[81px] py-3 flex-shrink-0"
                   >
@@ -427,7 +426,7 @@ export default function SignUpStep2Page() {
                   error={!!errors.password}
                 />
                 <Caption className="text-neutral-500">
-                  영문/대소문자/특수문자 중 3가지 이상 조합, 8~16자
+                  영문 대문자, 소문자, 숫자, 특수문자(@$!%*?&) 포함, 8~16자
                 </Caption>
                 {errors.password && <Caption className="text-red-500">{errors.password}</Caption>}
                 {success.password && (
@@ -484,7 +483,7 @@ export default function SignUpStep2Page() {
                       error={!!errors.phone}
                     />
                   </div>
-                  <Button variant="secondary" onClick={sendVerificationCode} className="!w-32">
+                  <Button variant="tertiary" onClick={sendVerificationCode} className="!w-32">
                     {verificationTimer > 0 ? '인증번호 재전송' : '인증번호 받기'}
                   </Button>
                 </div>
@@ -509,7 +508,7 @@ export default function SignUpStep2Page() {
                     <div className="flex items-center px-3 text-red-500 font-mono">
                       {formatTimer(verificationTimer)}
                     </div>
-                    <Button variant="primary" onClick={verifyCode} className="w-32">
+                    <Button variant="tertiary" onClick={verifyCode} className="w-32">
                       인증번호 확인
                     </Button>
                   </div>
@@ -524,235 +523,218 @@ export default function SignUpStep2Page() {
             </div>
           </div>
 
-          {/* 서비스 가능 지역 */}
-          <div className="space-y-4">
-            <TitleDefault>서비스 가능 지역</TitleDefault>
-            <div className="flex-1 space-y-2">
-              <Dropdown
-                options={provinces}
-                value={formData.province}
-                onChange={value => handleInputChange('province', value)}
-                placeholder="시/도"
-                error={!!errors.province}
-              />
-              {errors.province && <Caption className="text-red-500">{errors.province}</Caption>}
-            </div>
-            <div className="flex-1 space-y-2">
-              <Dropdown
-                options={districts}
-                value={formData.district}
-                onChange={value => handleInputChange('district', value)}
-                placeholder="시/구/군"
-                error={!!errors.district}
-              />
-              {errors.district && <Caption className="text-red-500">{errors.district}</Caption>}
-            </div>
-          </div>
-
-          {/* 자기소개 */}
-          <div className="space-y-4">
-            <TitleDefault>자기소개</TitleDefault>
-            <Textarea
-              placeholder="본인의 자기소개를 입력해주세요"
-              value={formData.introduction}
-              onChange={e => handleInputChange('introduction', e.target.value)}
-              maxLength={500}
-              showCharCount
-            />
-          </div>
-
-          {/* 은행 정보 */}
-          <div className="space-y-4">
-            <TitleDefault>은행 정보</TitleDefault>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Dropdown
-                  options={banks}
-                  value={formData.bank}
-                  onChange={value => handleInputChange('bank', value)}
-                  placeholder="옵션 선택"
-                  error={!!errors.bank}
-                />
-                {errors.bank && <Caption className="text-red-500">{errors.bank}</Caption>}
-              </div>
-
-              <div className="space-y-2">
-                <TitleDefault>예금주명</TitleDefault>
-                <Input
-                  placeholder="예금주명을 입력해주세요"
-                  value={formData.accountHolder}
-                  onChange={e => handleInputChange('accountHolder', e.target.value)}
-                  error={!!errors.accountHolder}
-                />
-                {errors.accountHolder && (
-                  <Caption className="text-red-500">{errors.accountHolder}</Caption>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <TitleDefault>계좌 번호</TitleDefault>
-                <div className="flex gap-2">
-                  <div className="flex-1">
-                    <Input
-                      placeholder="계좌번호를 입력해주세요(-제외)"
-                      value={formData.accountNumber}
-                      onChange={e => handleInputChange('accountNumber', e.target.value)}
-                      error={!!errors.accountNumber}
-                    />
-                  </div>
-                  <Button variant="primary" onClick={verifyAccount} className="!w-24">
-                    계좌 인증
-                  </Button>
-                </div>
-                {errors.accountNumber && (
-                  <Caption className="text-red-500">{errors.accountNumber}</Caption>
-                )}
-                {success.accountNumber && (
-                  <Caption className="text-green-500">계좌가 인증되었습니다</Caption>
-                )}
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="privacy-consent"
-                    checked={agreements.privacy}
-                    onChange={e => handleAgreementChange('privacy', e.target.checked)}
-                    className="w-4 h-4"
+          {/* cleaner 타입일 때만 서비스 가능 지역과 자기소개 표시 */}
+          {memberType === 'cleaner' && (
+            <>
+              {/* 서비스 가능 지역 */}
+              <div className="space-y-4">
+                <TitleDefault>서비스 가능 지역</TitleDefault>
+                <div className="flex-1 space-y-2">
+                  <Dropdown
+                    options={provinces}
+                    value={formData.province}
+                    onChange={value => handleInputChange('province', value)}
+                    placeholder="시/도"
+                    error={!!errors.province}
                   />
-                  <label htmlFor="privacy-consent" className="text-sm text-neutral-1000">
-                    개인정보 수집 및 이용 동의
-                  </label>
+                  {errors.province && <Caption className="text-red-500">{errors.province}</Caption>}
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowPrivacyDetail(!showPrivacyDetail)}
-                  className="text-sm text-primary-400 underline"
-                >
-                  보기
-                </button>
+                <div className="flex-1 space-y-2">
+                  <Dropdown
+                    options={districts}
+                    value={formData.district}
+                    onChange={value => handleInputChange('district', value)}
+                    placeholder="시/구/군"
+                    error={!!errors.district}
+                  />
+                  {errors.district && <Caption className="text-red-500">{errors.district}</Caption>}
+                </div>
               </div>
-              {showPrivacyDetail && (
-                <div className="border border-neutral-200 rounded-lg p-4 bg-neutral-50">
-                  <BodyDefault className="font-medium mb-3">개인정보 수집 및 이용 동의</BodyDefault>
-                  <div className="space-y-2 text-sm text-neutral-600">
-                    <p>아래와 같은 목적으로 개인정보를 수집 및 이용합니다.</p>
-                    <p>
-                      <strong>수집 항목:</strong> 은행명, 계좌번호
-                    </p>
-                    <p>
-                      <strong>수집 목적:</strong> 수익 정산
-                    </p>
-                    <p>
-                      <strong>보유 기간:</strong> 정보 삭제 요청 또는 회원 탈퇴 시 파기
-                    </p>
-                    <p className="text-red-500">
-                      동의를 거부할 수 있으나, 동의 거부 시 수익 정산 처리가 어렵습니다.
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
 
-          {/* 약관동의 */}
-          <div className="space-y-4">
-            <BodyDefault className="font-medium">약관동의</BodyDefault>
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="all-agreement"
-                  checked={agreements.all}
-                  onChange={e => handleAgreementChange('all', e.target.checked)}
-                  className="w-4 h-4"
+              {/* 자기소개 */}
+              <div className="space-y-4">
+                <TitleDefault>자기소개</TitleDefault>
+                <Textarea
+                  placeholder="본인의 자기소개를 입력해주세요"
+                  value={formData.introduction}
+                  onChange={e => handleInputChange('introduction', e.target.value)}
+                  maxLength={500}
+                  showCharCount
                 />
-                <label htmlFor="all-agreement" className="text-sm font-medium text-neutral-1000">
-                  아래 내용에 모두 동의합니다
-                </label>
+              </div>
+            </>
+          )}
+
+          {/* host 타입일 때 사업자 인증 섹션 표시 */}
+          {memberType === 'host' && (
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <TitleH4>사업자 인증</TitleH4>
+                <div className="flex items-center gap-1">
+                  <span className="text-red-500">*</span>
+                  <TitleSmall>필수입력사항</TitleSmall>
+                </div>
               </div>
 
-              <div className="space-y-2 pl-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="service-agreement"
-                      checked={agreements.service}
-                      onChange={e => handleAgreementChange('service', e.target.checked)}
-                      className="w-4 h-4"
-                    />
-                    <label htmlFor="service-agreement" className="text-sm text-neutral-1000">
-                      서비스 이용 약관(필수)
-                    </label>
-                  </div>
-                  <button type="button" className="text-sm text-primary-400 underline">
-                    보기
-                  </button>
+              <div className="space-y-4">
+                {/* 상호명 */}
+                <div className="space-y-2">
+                  <TitleDefault>
+                    상호명 <span className="text-red-500">*</span>
+                  </TitleDefault>
+                  <Input
+                    placeholder="상호명을 입력해주세요"
+                    value={formData.companyName}
+                    onChange={e => handleInputChange('companyName', e.target.value)}
+                    error={!!errors.companyName}
+                  />
+                  {errors.companyName && (
+                    <Caption className="text-red-500">{errors.companyName}</Caption>
+                  )}
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="privacy-agreement"
-                      checked={agreements.privacy}
-                      onChange={e => handleAgreementChange('privacy', e.target.checked)}
-                      className="w-4 h-4"
-                    />
-                    <label htmlFor="privacy-agreement" className="text-sm text-neutral-1000">
-                      개인정보 처리방침(필수)
-                    </label>
-                  </div>
-                  <button type="button" className="text-sm text-primary-400 underline">
-                    보기
-                  </button>
+                {/* 업종 */}
+                <div className="space-y-2">
+                  <TitleDefault>
+                    업종 <span className="text-red-500">*</span>
+                  </TitleDefault>
+                  <Input
+                    placeholder="사업자 등록증에 등록된 종목을 입력해주세요"
+                    value={formData.businessType}
+                    onChange={e => handleInputChange('businessType', e.target.value)}
+                    error={!!errors.businessType}
+                  />
+                  {errors.businessType && (
+                    <Caption className="text-red-500">{errors.businessType}</Caption>
+                  )}
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="location-agreement"
-                      checked={agreements.location}
-                      onChange={e => handleAgreementChange('location', e.target.checked)}
-                      className="w-4 h-4"
-                    />
-                    <label htmlFor="location-agreement" className="text-sm text-neutral-1000">
-                      위치정보 이용약관(필수)
-                    </label>
-                  </div>
-                  <button type="button" className="text-sm text-primary-400 underline">
-                    보기
-                  </button>
+                {/* 대표자명 */}
+                <div className="space-y-2">
+                  <TitleDefault>
+                    대표자명 <span className="text-red-500">*</span>
+                  </TitleDefault>
+                  <Input
+                    placeholder="대표자명을 입력해주세요"
+                    value={formData.representativeName}
+                    onChange={e => handleInputChange('representativeName', e.target.value)}
+                    error={!!errors.representativeName}
+                  />
+                  {errors.representativeName && (
+                    <Caption className="text-red-500">{errors.representativeName}</Caption>
+                  )}
                 </div>
 
+                {/* 개업일자 */}
+                <div className="space-y-2">
+                  <TitleDefault>
+                    개업일자 <span className="text-red-500">*</span>
+                  </TitleDefault>
+                  <Input
+                    type="date"
+                    placeholder="개업일자를 선택해주세요"
+                    value={formData.establishmentDate}
+                    onChange={e => handleInputChange('establishmentDate', e.target.value)}
+                    error={!!errors.establishmentDate}
+                  />
+                  {errors.establishmentDate && (
+                    <Caption className="text-red-500">{errors.establishmentDate}</Caption>
+                  )}
+                </div>
+
+                {/* 사업자 등록번호 */}
+                <div className="space-y-2">
+                  <TitleDefault>
+                    사업자 등록번호 <span className="text-red-500">*</span>
+                  </TitleDefault>
+                  <div className="flex gap-2 items-center">
+                    <Input
+                      placeholder="000"
+                      value={formData.businessNumber1}
+                      onChange={e => handleInputChange('businessNumber1', e.target.value)}
+                      maxLength={3}
+                      className="flex-1"
+                      error={!!errors.businessNumber}
+                    />
+                    <span className="text-neutral-600">-</span>
+                    <Input
+                      placeholder="00"
+                      value={formData.businessNumber2}
+                      onChange={e => handleInputChange('businessNumber2', e.target.value)}
+                      maxLength={2}
+                      className="flex-1"
+                      error={!!errors.businessNumber}
+                    />
+                    <span className="text-neutral-600">-</span>
+                    <Input
+                      placeholder="000000"
+                      value={formData.businessNumber3}
+                      onChange={e => handleInputChange('businessNumber3', e.target.value)}
+                      maxLength={6}
+                      className="flex-1"
+                      error={!!errors.businessNumber}
+                    />
+                  </div>
+                  {errors.businessNumber && (
+                    <Caption className="text-red-500">
+                      입력한 사업자 정보가 유효하지 않습니다
+                    </Caption>
+                  )}
+                </div>
+
+                {/* 동의 체크박스 */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <input
                       type="checkbox"
-                      id="marketing-agreement"
-                      checked={agreements.marketing}
-                      onChange={e => handleAgreementChange('marketing', e.target.checked)}
+                      id="business-consent"
+                      checked={formData.businessAgreement}
+                      onChange={e =>
+                        setFormData(prev => ({ ...prev, businessAgreement: e.target.checked }))
+                      }
                       className="w-4 h-4"
                     />
-                    <label htmlFor="marketing-agreement" className="text-sm text-neutral-1000">
-                      마케팅 정보 수신(선택)
+                    <label htmlFor="business-consent" className="text-sm text-neutral-1000">
+                      상호명, 사업자명, 사업자 등록번호 정보 제공 동의
                     </label>
                   </div>
-                  <button type="button" className="text-sm text-primary-400 underline">
+                  <button
+                    type="button"
+                    onClick={() => setShowBusinessDetail(!showBusinessDetail)}
+                    className="text-sm text-primary-400 underline"
+                  >
                     보기
                   </button>
                 </div>
+                {showBusinessDetail && (
+                  <div className="border border-neutral-200 rounded-lg p-4 bg-neutral-50">
+                    <BodyDefault className="font-medium mb-3">사업자 정보 제공 동의</BodyDefault>
+                    <div className="space-y-2 text-sm text-neutral-600">
+                      <p>아래와 같은 목적으로 사업자 정보를 수집 및 이용합니다.</p>
+                      <p>
+                        <strong>수집 항목:</strong> 상호명, 업종, 대표자명, 개업일자, 사업자
+                        등록번호
+                      </p>
+                      <p>
+                        <strong>수집 목적:</strong> 사업자 인증 및 서비스 이용
+                      </p>
+                      <p>
+                        <strong>보유 기간:</strong> 정보 삭제 요청 또는 회원 탈퇴 시 파기
+                      </p>
+                      <p className="text-red-500">
+                        동의를 거부할 수 있으나, 동의 거부 시 사업자 인증 처리가 어렵습니다.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
+          )}
         </div>
 
-        {/* 회원가입 완료 버튼 */}
-        <Button variant="primary" onClick={handleSubmit} className="w-full max-w-[400px]">
-          회원가입 완료
+        {/* 다음 단계 버튼 */}
+        <Button variant="secondary" onClick={handleSubmit} className="w-full max-w-[400px]">
+          다음 단계
         </Button>
       </div>
     </div>
