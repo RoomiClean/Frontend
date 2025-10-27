@@ -3,7 +3,7 @@ import './globals.css';
 import Header from './_components/atoms/Header';
 import Footer from './_components/atoms/Footer';
 
-export const metadata: Metadata = {
+const metadata: Metadata = {
   title: 'RumiClean',
 };
 
