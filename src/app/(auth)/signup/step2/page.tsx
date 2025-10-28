@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useForm } from 'react-hook-form';
 import { Input } from '@/app/_components/atoms/Input';
 import { Textarea } from '@/app/_components/atoms/Textarea';
 import { Dropdown } from '@/app/_components/atoms/DropDown';
@@ -40,50 +41,47 @@ interface FormData {
   businessAgreement: boolean;
 }
 
-interface ValidationErrors {
-  email?: string;
-  password?: string;
-  confirmPassword?: string;
-  name?: string;
-  phone?: string;
-  verificationCode?: string;
-  province?: string;
-  district?: string;
-  introduction?: string;
-  companyName?: string;
-  businessType?: string;
-  representativeName?: string;
-  establishmentDate?: string;
-  businessNumber?: string;
-}
-
 export default function SignUpStep2Page() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const memberType = searchParams.get('type');
 
-  const [formData, setFormData] = useState<FormData>({
-    email: '',
-    emailDomain: 'naver.com',
-    password: '',
-    confirmPassword: '',
-    name: '',
-    phone: '',
-    verificationCode: '',
-    province: '',
-    district: '',
-    introduction: '',
-    companyName: '',
-    businessType: '',
-    representativeName: '',
-    establishmentDate: '',
-    businessNumber1: '',
-    businessNumber2: '',
-    businessNumber3: '',
-    businessAgreement: false,
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    setError,
+    clearErrors,
+    formState: { errors },
+    trigger,
+  } = useForm<FormData>({
+    defaultValues: {
+      email: '',
+      emailDomain: 'naver.com',
+      password: '',
+      confirmPassword: '',
+      name: '',
+      phone: '',
+      verificationCode: '',
+      province: '',
+      district: '',
+      introduction: '',
+      companyName: '',
+      businessType: '',
+      representativeName: '',
+      establishmentDate: '',
+      businessNumber1: '',
+      businessNumber2: '',
+      businessNumber3: '',
+      businessAgreement: false,
+    },
+    mode: 'onChange',
   });
 
-  const [errors, setErrors] = useState<ValidationErrors>({});
+  const password = watch('password');
+  const confirmPassword = watch('confirmPassword');
+
   const [success, setSuccess] = useState<Record<string, boolean>>({});
   const [isEmailChecked, setIsEmailChecked] = useState(false);
   const [isPhoneVerified, setIsPhoneVerified] = useState(false);
@@ -107,42 +105,54 @@ export default function SignUpStep2Page() {
     return () => clearInterval(interval);
   }, [verificationTimer]);
 
-  const handleInputChange = (field: keyof FormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-
-    // Clear error when user starts typing
-    if (errors[field as keyof ValidationErrors]) {
-      setErrors(prev => ({ ...prev, [field as keyof ValidationErrors]: undefined }));
+  useEffect(() => {
+    if (confirmPassword && password) {
+      if (password !== confirmPassword) {
+        setError('confirmPassword', {
+          type: 'manual',
+          message: '비밀번호가 일치하지 않습니다',
+        });
+      } else {
+        clearErrors('confirmPassword');
+        setSuccess(prev => ({ ...prev, confirmPassword: true }));
+      }
     }
+  }, [password, confirmPassword, setError, clearErrors]);
+
+  const handleInputChange = (field: keyof FormData, value: string) => {
+    setValue(field as any, value);
+    clearErrors(field as any);
   };
 
   const handleDomainChange = (value: string) => {
     if (value === 'custom') {
       setIsCustomDomain(true);
-      setFormData(prev => ({ ...prev, emailDomain: '' }));
+      setValue('emailDomain', '');
     } else {
       setIsCustomDomain(false);
-      setFormData(prev => ({ ...prev, emailDomain: value }));
+      setValue('emailDomain', value);
     }
   };
 
-  const validateEmail = () => {
+  const validateEmail = async () => {
+    const email = watch('email');
+    const emailDomain = watch('emailDomain');
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const fullEmail = `${formData.email}@${formData.emailDomain}`;
+    const fullEmail = `${email}@${emailDomain}`;
 
-    if (!formData.email) {
-      setErrors(prev => ({ ...prev, email: '이메일을 입력해주세요' }));
+    if (!email) {
+      setError('email', { type: 'manual', message: '이메일을 입력해주세요' });
       return false;
     }
 
     if (!emailRegex.test(fullEmail)) {
-      setErrors(prev => ({ ...prev, email: '올바른 이메일 형식이 아닙니다' }));
+      setError('email', { type: 'manual', message: '올바른 이메일 형식이 아닙니다' });
       return false;
     }
 
     // Simulate duplicate check
-    if (formData.email === 'test') {
-      setErrors(prev => ({ ...prev, email: '중복된 아이디입니다' }));
+    if (email === 'test') {
+      setError('email', { type: 'manual', message: '중복된 아이디입니다' });
       return false;
     }
 
@@ -151,47 +161,16 @@ export default function SignUpStep2Page() {
     return true;
   };
 
-  const validatePassword = () => {
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}$/;
-
-    if (!formData.password) {
-      setErrors(prev => ({ ...prev, password: '비밀번호를 입력해주세요' }));
-      return false;
-    }
-
-    if (!passwordRegex.test(formData.password)) {
-      setErrors(prev => ({ ...prev, password: '비밀번호 조합이 일치하지 않습니다' }));
-      return false;
-    }
-
-    setSuccess(prev => ({ ...prev, password: true }));
-    return true;
-  };
-
-  const validateConfirmPassword = () => {
-    if (!formData.confirmPassword) {
-      setErrors(prev => ({ ...prev, confirmPassword: '비밀번호 확인을 입력해주세요' }));
-      return false;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      setErrors(prev => ({ ...prev, confirmPassword: '비밀번호가 일치하지 않습니다' }));
-      return false;
-    }
-
-    setSuccess(prev => ({ ...prev, confirmPassword: true }));
-    return true;
-  };
-
-  const sendVerificationCode = () => {
-    if (!formData.phone) {
-      setErrors(prev => ({ ...prev, phone: '전화번호를 입력해주세요' }));
+  const sendVerificationCode = async () => {
+    const phone = watch('phone');
+    if (!phone) {
+      setError('phone', { type: 'manual', message: '전화번호를 입력해주세요' });
       return;
     }
 
     const phoneRegex = /^010\d{8}$/;
-    if (!phoneRegex.test(formData.phone)) {
-      setErrors(prev => ({ ...prev, phone: '올바른 전화번호 형식이 아닙니다' }));
+    if (!phoneRegex.test(phone)) {
+      setError('phone', { type: 'manual', message: '올바른 전화번호 형식이 아닙니다' });
       return;
     }
 
@@ -199,14 +178,18 @@ export default function SignUpStep2Page() {
     setSuccess(prev => ({ ...prev, phone: true }));
   };
 
-  const verifyCode = () => {
-    if (!formData.verificationCode) {
-      setErrors(prev => ({ ...prev, verificationCode: '인증번호를 입력해주세요' }));
+  const verifyCode = async () => {
+    const verificationCode = watch('verificationCode');
+    if (!verificationCode) {
+      setError('verificationCode', { type: 'manual', message: '인증번호를 입력해주세요' });
       return;
     }
 
-    if (formData.verificationCode !== '1234') {
-      setErrors(prev => ({ ...prev, verificationCode: '인증번호가 일치하지 않습니다' }));
+    if (verificationCode !== '1234') {
+      setError('verificationCode', {
+        type: 'manual',
+        message: '인증번호가 일치하지 않습니다',
+      });
       return;
     }
 
@@ -214,80 +197,58 @@ export default function SignUpStep2Page() {
     setIsPhoneVerified(true);
   };
 
-  const handleSubmit = () => {
-    // Validate all required fields
-    const isEmailValid = validateEmail();
-    const isPasswordValid = validatePassword();
-    const isConfirmPasswordValid = validateConfirmPassword();
+  const onSubmit = async (data: FormData) => {
+    const isEmailValid = await validateEmail();
+    if (!isEmailValid) return;
 
-    if (!formData.name) {
-      setErrors(prev => ({ ...prev, name: '이름을 입력해주세요' }));
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}$/;
+    if (!passwordRegex.test(data.password)) {
+      setError('password', {
+        type: 'manual',
+        message: '비밀번호 조합이 일치하지 않습니다',
+      });
+      return;
     }
 
+    const fieldsToValidate: Array<keyof FormData> = ['name'];
+
     if (memberType === 'cleaner') {
-      // cleaner 타입의 경우
-      if (!formData.province) {
-        setErrors(prev => ({ ...prev, province: '시/도를 선택해주세요' }));
-      }
-
-      if (!formData.district) {
-        setErrors(prev => ({ ...prev, district: '시/구/군을 선택해주세요' }));
-      }
-
-      if (
-        isEmailValid &&
-        isPasswordValid &&
-        isConfirmPasswordValid &&
-        formData.name &&
-        formData.province &&
-        formData.district
-      ) {
-        router.push('/signup/step3?type=' + memberType);
-      }
+      fieldsToValidate.push('province', 'district');
     } else if (memberType === 'host') {
-      // host 타입의 경우
-      if (!formData.companyName) {
-        setErrors(prev => ({ ...prev, companyName: '상호명을 입력해주세요' }));
-      }
+      fieldsToValidate.push(
+        'companyName',
+        'businessType',
+        'representativeName',
+        'establishmentDate',
+      );
 
-      if (!formData.businessType) {
-        setErrors(prev => ({ ...prev, businessType: '업종을 입력해주세요' }));
-      }
-
-      if (!formData.representativeName) {
-        setErrors(prev => ({ ...prev, representativeName: '대표자명을 입력해주세요' }));
-      }
-
-      if (!formData.establishmentDate) {
-        setErrors(prev => ({ ...prev, establishmentDate: '개업일자를 선택해주세요' }));
-      }
-
-      if (!formData.businessNumber1 || !formData.businessNumber2 || !formData.businessNumber3) {
-        setErrors(prev => ({ ...prev, businessNumber: '사업자 등록번호를 입력해주세요' }));
-      }
-
-      if (!formData.businessAgreement) {
+      if (!data.businessAgreement) {
         alert('사업자 정보 제공 동의를 해주세요');
         return;
       }
+    }
 
-      if (
-        isEmailValid &&
-        isPasswordValid &&
-        isConfirmPasswordValid &&
-        formData.name &&
-        formData.companyName &&
-        formData.businessType &&
-        formData.representativeName &&
-        formData.establishmentDate &&
-        formData.businessNumber1 &&
-        formData.businessNumber2 &&
-        formData.businessNumber3 &&
-        formData.businessAgreement
-      ) {
-        router.push('/signup/step3?type=' + memberType);
+    for (const field of fieldsToValidate) {
+      if (!data[field]) {
+        setError(field as any, {
+          type: 'required',
+          message: '필수 항목입니다',
+        });
+        return;
       }
     }
+
+    if (memberType === 'host') {
+      if (!data.businessNumber1 || !data.businessNumber2 || !data.businessNumber3) {
+        setError('businessNumber1', {
+          type: 'manual',
+          message: '사업자 등록번호를 입력해주세요',
+        });
+        return;
+      }
+    }
+
+    router.push('/signup/step3?type=' + memberType);
   };
 
   const formatTimer = (seconds: number) => {
@@ -325,25 +286,20 @@ export default function SignUpStep2Page() {
                   <div className="flex-1">
                     <Input
                       placeholder="이메일 입력"
-                      value={formData.email}
-                      onChange={e => handleInputChange('email', e.target.value)}
-                      error={!!errors.email}
+                      {...register('email')}
+                      error={!!errors.email?.message}
                     />
                   </div>
                   <span className="flex items-center text-neutral-600">@</span>
                   {isCustomDomain ? (
                     <div className="flex-none [&>div]:!w-[140px]">
-                      <Input
-                        placeholder="직접 입력"
-                        value={formData.emailDomain}
-                        onChange={e => handleInputChange('emailDomain', e.target.value)}
-                      />
+                      <Input placeholder="직접 입력" {...register('emailDomain')} />
                     </div>
                   ) : (
                     <div className="flex-none [&>div]:!w-[140px]">
                       <Dropdown
                         options={emailDomains}
-                        value={formData.emailDomain}
+                        value={watch('emailDomain')}
                         onChange={handleDomainChange}
                       />
                     </div>
@@ -356,7 +312,9 @@ export default function SignUpStep2Page() {
                     중복확인
                   </Button>
                 </div>
-                {errors.email && <Caption className="text-red-500">{errors.email}</Caption>}
+                {errors.email?.message && (
+                  <Caption className="text-red-500">{errors.email.message}</Caption>
+                )}
                 {success.email && (
                   <Caption className="text-green-500">사용가능한 아이디입니다</Caption>
                 )}
@@ -371,16 +329,14 @@ export default function SignUpStep2Page() {
                   placeholder="비밀번호를 입력해주세요"
                   type="password"
                   invisible
-                  value={formData.password}
-                  onChange={e => handleInputChange('password', e.target.value)}
-                  error={!!errors.password}
+                  {...register('password')}
+                  error={!!errors.password?.message}
                 />
                 <Caption className="text-neutral-500">
                   영문 대문자, 소문자, 숫자, 특수문자(@$!%*?&) 포함, 8~16자
                 </Caption>
-                {errors.password && <Caption className="text-red-500">{errors.password}</Caption>}
-                {success.password && (
-                  <Caption className="text-green-500">비밀번호 조합이 일치합니다</Caption>
+                {errors.password?.message && (
+                  <Caption className="text-red-500">{errors.password.message}</Caption>
                 )}
               </div>
 
@@ -393,12 +349,11 @@ export default function SignUpStep2Page() {
                   placeholder="비밀번호를 다시 입력해주세요"
                   type="password"
                   invisible
-                  value={formData.confirmPassword}
-                  onChange={e => handleInputChange('confirmPassword', e.target.value)}
-                  error={!!errors.confirmPassword}
+                  {...register('confirmPassword')}
+                  error={!!errors.confirmPassword?.message}
                 />
-                {errors.confirmPassword && (
-                  <Caption className="text-red-500">{errors.confirmPassword}</Caption>
+                {errors.confirmPassword?.message && (
+                  <Caption className="text-red-500">{errors.confirmPassword.message}</Caption>
                 )}
                 {success.confirmPassword && (
                   <Caption className="text-green-500">비밀번호가 일치합니다</Caption>
@@ -412,11 +367,12 @@ export default function SignUpStep2Page() {
                 </TitleDefault>
                 <Input
                   placeholder="이름을 입력해주세요"
-                  value={formData.name}
-                  onChange={e => handleInputChange('name', e.target.value)}
-                  error={!!errors.name}
+                  {...register('name')}
+                  error={!!errors.name?.message}
                 />
-                {errors.name && <Caption className="text-red-500">{errors.name}</Caption>}
+                {errors.name?.message && (
+                  <Caption className="text-red-500">{errors.name.message}</Caption>
+                )}
               </div>
 
               {/* 전화번호 */}
@@ -428,16 +384,17 @@ export default function SignUpStep2Page() {
                   <div className="flex-1">
                     <Input
                       placeholder="휴대폰 번호를 입력해주세요 (-제외)"
-                      value={formData.phone}
-                      onChange={e => handleInputChange('phone', e.target.value)}
-                      error={!!errors.phone}
+                      {...register('phone')}
+                      error={!!errors.phone?.message}
                     />
                   </div>
                   <Button variant="primary" onClick={sendVerificationCode} className="!w-32">
                     {verificationTimer > 0 ? '인증번호 재전송' : '인증번호 받기'}
                   </Button>
                 </div>
-                {errors.phone && <Caption className="text-red-500">{errors.phone}</Caption>}
+                {errors.phone?.message && (
+                  <Caption className="text-red-500">{errors.phone.message}</Caption>
+                )}
                 {success.phone && (
                   <Caption className="text-green-500">인증번호가 전송되었습니다</Caption>
                 )}
@@ -450,9 +407,8 @@ export default function SignUpStep2Page() {
                   <div className="flex gap-2">
                     <Input
                       placeholder="4자리 숫자 입력"
-                      value={formData.verificationCode}
-                      onChange={e => handleInputChange('verificationCode', e.target.value)}
-                      error={!!errors.verificationCode}
+                      {...register('verificationCode')}
+                      error={!!errors.verificationCode?.message}
                       className="flex-1"
                     />
                     <div className="flex items-center px-3 text-red-500 font-mono">
@@ -462,8 +418,8 @@ export default function SignUpStep2Page() {
                       인증번호 확인
                     </Button>
                   </div>
-                  {errors.verificationCode && (
-                    <Caption className="text-red-500">{errors.verificationCode}</Caption>
+                  {errors.verificationCode?.message && (
+                    <Caption className="text-red-500">{errors.verificationCode.message}</Caption>
                   )}
                   {success.verificationCode && (
                     <Caption className="text-green-500">인증되었습니다</Caption>
@@ -482,22 +438,26 @@ export default function SignUpStep2Page() {
                 <div className="flex-1 space-y-2">
                   <Dropdown
                     options={provinces}
-                    value={formData.province}
+                    value={watch('province')}
                     onChange={value => handleInputChange('province', value)}
                     placeholder="시/도"
-                    error={!!errors.province}
+                    error={!!errors.province?.message}
                   />
-                  {errors.province && <Caption className="text-red-500">{errors.province}</Caption>}
+                  {errors.province?.message && (
+                    <Caption className="text-red-500">{errors.province.message}</Caption>
+                  )}
                 </div>
                 <div className="flex-1 space-y-2">
                   <Dropdown
                     options={districts}
-                    value={formData.district}
+                    value={watch('district')}
                     onChange={value => handleInputChange('district', value)}
                     placeholder="시/구/군"
-                    error={!!errors.district}
+                    error={!!errors.district?.message}
                   />
-                  {errors.district && <Caption className="text-red-500">{errors.district}</Caption>}
+                  {errors.district?.message && (
+                    <Caption className="text-red-500">{errors.district.message}</Caption>
+                  )}
                 </div>
               </div>
 
@@ -506,7 +466,7 @@ export default function SignUpStep2Page() {
                 <TitleDefault>자기소개</TitleDefault>
                 <Textarea
                   placeholder="본인의 자기소개를 입력해주세요"
-                  value={formData.introduction}
+                  value={watch('introduction')}
                   onChange={e => handleInputChange('introduction', e.target.value)}
                   maxLength={500}
                   showCharCount
@@ -534,12 +494,11 @@ export default function SignUpStep2Page() {
                   </TitleDefault>
                   <Input
                     placeholder="상호명을 입력해주세요"
-                    value={formData.companyName}
-                    onChange={e => handleInputChange('companyName', e.target.value)}
-                    error={!!errors.companyName}
+                    {...register('companyName')}
+                    error={!!errors.companyName?.message}
                   />
-                  {errors.companyName && (
-                    <Caption className="text-red-500">{errors.companyName}</Caption>
+                  {errors.companyName?.message && (
+                    <Caption className="text-red-500">{errors.companyName.message}</Caption>
                   )}
                 </div>
 
@@ -550,12 +509,11 @@ export default function SignUpStep2Page() {
                   </TitleDefault>
                   <Input
                     placeholder="사업자 등록증에 등록된 종목을 입력해주세요"
-                    value={formData.businessType}
-                    onChange={e => handleInputChange('businessType', e.target.value)}
-                    error={!!errors.businessType}
+                    {...register('businessType')}
+                    error={!!errors.businessType?.message}
                   />
-                  {errors.businessType && (
-                    <Caption className="text-red-500">{errors.businessType}</Caption>
+                  {errors.businessType?.message && (
+                    <Caption className="text-red-500">{errors.businessType.message}</Caption>
                   )}
                 </div>
 
@@ -566,12 +524,11 @@ export default function SignUpStep2Page() {
                   </TitleDefault>
                   <Input
                     placeholder="대표자명을 입력해주세요"
-                    value={formData.representativeName}
-                    onChange={e => handleInputChange('representativeName', e.target.value)}
-                    error={!!errors.representativeName}
+                    {...register('representativeName')}
+                    error={!!errors.representativeName?.message}
                   />
-                  {errors.representativeName && (
-                    <Caption className="text-red-500">{errors.representativeName}</Caption>
+                  {errors.representativeName?.message && (
+                    <Caption className="text-red-500">{errors.representativeName.message}</Caption>
                   )}
                 </div>
 
@@ -583,12 +540,11 @@ export default function SignUpStep2Page() {
                   <Input
                     type="date"
                     placeholder="개업일자를 선택해주세요"
-                    value={formData.establishmentDate}
-                    onChange={e => handleInputChange('establishmentDate', e.target.value)}
-                    error={!!errors.establishmentDate}
+                    {...register('establishmentDate')}
+                    error={!!errors.establishmentDate?.message}
                   />
-                  {errors.establishmentDate && (
-                    <Caption className="text-red-500">{errors.establishmentDate}</Caption>
+                  {errors.establishmentDate?.message && (
+                    <Caption className="text-red-500">{errors.establishmentDate.message}</Caption>
                   )}
                 </div>
 
@@ -600,32 +556,29 @@ export default function SignUpStep2Page() {
                   <div className="flex gap-2 items-center">
                     <Input
                       placeholder="000"
-                      value={formData.businessNumber1}
-                      onChange={e => handleInputChange('businessNumber1', e.target.value)}
+                      {...register('businessNumber1')}
                       maxLength={3}
                       className="flex-1"
-                      error={!!errors.businessNumber}
+                      error={!!errors.businessNumber1?.message}
                     />
                     <span className="text-neutral-600">-</span>
                     <Input
                       placeholder="00"
-                      value={formData.businessNumber2}
-                      onChange={e => handleInputChange('businessNumber2', e.target.value)}
+                      {...register('businessNumber2')}
                       maxLength={2}
                       className="flex-1"
-                      error={!!errors.businessNumber}
+                      error={!!errors.businessNumber1?.message}
                     />
                     <span className="text-neutral-600">-</span>
                     <Input
                       placeholder="000000"
-                      value={formData.businessNumber3}
-                      onChange={e => handleInputChange('businessNumber3', e.target.value)}
+                      {...register('businessNumber3')}
                       maxLength={6}
                       className="flex-1"
-                      error={!!errors.businessNumber}
+                      error={!!errors.businessNumber1?.message}
                     />
                   </div>
-                  {errors.businessNumber && (
+                  {errors.businessNumber1?.message && (
                     <Caption className="text-red-500">
                       입력한 사업자 정보가 유효하지 않습니다
                     </Caption>
@@ -638,10 +591,7 @@ export default function SignUpStep2Page() {
                     <input
                       type="checkbox"
                       id="business-consent"
-                      checked={formData.businessAgreement}
-                      onChange={e =>
-                        setFormData(prev => ({ ...prev, businessAgreement: e.target.checked }))
-                      }
+                      {...register('businessAgreement')}
                       className="w-4 h-4"
                     />
                     <label htmlFor="business-consent" className="text-sm text-neutral-1000">
@@ -683,9 +633,11 @@ export default function SignUpStep2Page() {
         </div>
 
         {/* 다음 단계 버튼 */}
-        <Button variant="secondary" onClick={handleSubmit} className="w-full max-w-[400px]">
-          다음 단계
-        </Button>
+        <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-[400px]">
+          <Button type="submit" variant="secondary" className="w-full">
+            다음 단계
+          </Button>
+        </form>
       </div>
     </div>
   );

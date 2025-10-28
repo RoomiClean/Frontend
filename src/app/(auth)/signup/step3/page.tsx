@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useForm } from 'react-hook-form';
 import { Input } from '@/app/_components/atoms/Input';
 import { Dropdown } from '@/app/_components/atoms/DropDown';
 import Button from '@/app/_components/atoms/Button';
@@ -38,53 +39,43 @@ interface FormData {
   hostRequests: string;
 }
 
-interface ValidationErrors {
-  bank?: string;
-  accountHolder?: string;
-  accountNumber?: string;
-  accommodationName?: string;
-  address?: string;
-  detailAddress?: string;
-  accessMethod?: string;
-  accommodationType?: string;
-  roomCount?: string;
-  bedCount?: string;
-  livingRoomCount?: string;
-  bathroomCount?: string;
-  area?: string;
-  maxOccupancy?: string;
-  equipmentStorage?: string;
-  trashDisposal?: string;
-  accommodationPhotos?: string;
-}
-
 export default function SignUpStep3Page() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const memberType = searchParams.get('type');
 
-  const [formData, setFormData] = useState<FormData>({
-    bank: '',
-    accountHolder: '',
-    accountNumber: '',
-    accommodationName: '',
-    zipCode: '',
-    address: '',
-    detailAddress: '',
-    accessMethod: '',
-    accommodationType: '',
-    roomCount: '',
-    bedCount: '',
-    livingRoomCount: '',
-    bathroomCount: '',
-    area: '',
-    maxOccupancy: '',
-    equipmentStorage: '',
-    trashDisposal: '',
-    hostRequests: '',
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    clearErrors,
+    setError,
+    formState: { errors },
+  } = useForm<FormData>({
+    defaultValues: {
+      bank: '',
+      accountHolder: '',
+      accountNumber: '',
+      accommodationName: '',
+      zipCode: '',
+      address: '',
+      detailAddress: '',
+      accessMethod: '',
+      accommodationType: '',
+      roomCount: '',
+      bedCount: '',
+      livingRoomCount: '',
+      bathroomCount: '',
+      area: '',
+      maxOccupancy: '',
+      equipmentStorage: '',
+      trashDisposal: '',
+      hostRequests: '',
+    },
+    mode: 'onChange',
   });
 
-  const [errors, setErrors] = useState<ValidationErrors>({});
   const [success, setSuccess] = useState<Record<string, boolean>>({});
   const [isAccountVerified, setIsAccountVerified] = useState(false);
   const [showPrivacyDetail, setShowPrivacyDetail] = useState(false);
@@ -104,12 +95,8 @@ export default function SignUpStep3Page() {
   }, [memberType, router]);
 
   const handleInputChange = (field: keyof FormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-
-    // Clear error when user starts typing
-    if (errors[field as keyof ValidationErrors]) {
-      setErrors(prev => ({ ...prev, [field as keyof ValidationErrors]: undefined }));
-    }
+    setValue(field as any, value);
+    clearErrors(field as any);
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -139,14 +126,15 @@ export default function SignUpStep3Page() {
     window.open('https://postcode.map.daum.net/guide');
   };
 
-  const verifyAccount = () => {
-    if (!formData.accountNumber) {
-      setErrors(prev => ({ ...prev, accountNumber: '계좌번호를 입력해주세요' }));
+  const verifyAccount = async () => {
+    const accountNumber = watch('accountNumber');
+    if (!accountNumber) {
+      setError('accountNumber', { type: 'manual', message: '계좌번호를 입력해주세요' });
       return;
     }
 
-    if (formData.accountNumber.length < 10) {
-      setErrors(prev => ({ ...prev, accountNumber: '올바른 계좌번호가 아닙니다' }));
+    if (accountNumber.length < 10) {
+      setError('accountNumber', { type: 'manual', message: '올바른 계좌번호가 아닙니다' });
       return;
     }
 
@@ -170,7 +158,7 @@ export default function SignUpStep3Page() {
     }
   };
 
-  const handleSubmit = () => {
+  const onSubmit = (data: FormData) => {
     if (memberType === 'cleaner') {
       // cleaner 타입의 경우
       if (!agreements.service || !agreements.privacy || !agreements.location) {
@@ -180,45 +168,43 @@ export default function SignUpStep3Page() {
       router.push('/signup/step4');
     } else if (memberType === 'host') {
       // host 타입의 경우
-      if (!formData.accommodationName) {
-        setErrors(prev => ({ ...prev, accommodationName: '숙소명을 입력해주세요' }));
+      if (!data.accommodationName) {
+        setError('accommodationName', { type: 'required', message: '숙소명을 입력해주세요' });
         return;
       }
-      if (!formData.address) {
-        setErrors(prev => ({ ...prev, address: '주소를 입력해주세요' }));
+      if (!data.address) {
+        setError('address', { type: 'required', message: '주소를 입력해주세요' });
         return;
       }
-      if (!formData.detailAddress) {
-        setErrors(prev => ({ ...prev, detailAddress: '상세주소를 입력해주세요' }));
+      if (!data.detailAddress) {
+        setError('detailAddress', { type: 'required', message: '상세주소를 입력해주세요' });
         return;
       }
-      if (!formData.accessMethod) {
-        setErrors(prev => ({ ...prev, accessMethod: '출입 방법을 입력해주세요' }));
+      if (!data.accessMethod) {
+        setError('accessMethod', { type: 'required', message: '출입 방법을 입력해주세요' });
         return;
       }
-      if (!formData.accommodationType) {
-        setErrors(prev => ({ ...prev, accommodationType: '숙소 유형을 선택해주세요' }));
+      if (!data.accommodationType) {
+        setError('accommodationType', { type: 'required', message: '숙소 유형을 선택해주세요' });
         return;
       }
-      if (
-        !formData.roomCount ||
-        !formData.bedCount ||
-        !formData.livingRoomCount ||
-        !formData.bathroomCount
-      ) {
+      if (!data.roomCount || !data.bedCount || !data.livingRoomCount || !data.bathroomCount) {
         alert('숙소 구조를 모두 입력해주세요');
         return;
       }
-      if (!formData.area || !formData.maxOccupancy) {
+      if (!data.area || !data.maxOccupancy) {
         alert('숙소 면적과 최대 수용 인원을 입력해주세요');
         return;
       }
-      if (!formData.equipmentStorage) {
-        setErrors(prev => ({ ...prev, equipmentStorage: '비품 보관장소를 입력해주세요' }));
+      if (!data.equipmentStorage) {
+        setError('equipmentStorage', {
+          type: 'required',
+          message: '비품 보관장소를 입력해주세요',
+        });
         return;
       }
-      if (!formData.trashDisposal) {
-        setErrors(prev => ({ ...prev, trashDisposal: '쓰레기 배출장소를 입력해주세요' }));
+      if (!data.trashDisposal) {
+        setError('trashDisposal', { type: 'required', message: '쓰레기 배출장소를 입력해주세요' });
         return;
       }
       if (!agreements.service || !agreements.privacy || !agreements.location) {
@@ -246,24 +232,25 @@ export default function SignUpStep3Page() {
                 <div className="space-y-2">
                   <Dropdown
                     options={banks}
-                    value={formData.bank}
+                    value={watch('bank')}
                     onChange={value => handleInputChange('bank', value)}
                     placeholder="옵션 선택"
-                    error={!!errors.bank}
+                    error={!!errors.bank?.message}
                   />
-                  {errors.bank && <Caption className="text-red-500">{errors.bank}</Caption>}
+                  {errors.bank?.message && (
+                    <Caption className="text-red-500">{errors.bank.message}</Caption>
+                  )}
                 </div>
 
                 <div className="space-y-2">
                   <TitleDefault>예금주명</TitleDefault>
                   <Input
                     placeholder="예금주명을 입력해주세요"
-                    value={formData.accountHolder}
-                    onChange={e => handleInputChange('accountHolder', e.target.value)}
-                    error={!!errors.accountHolder}
+                    {...register('accountHolder')}
+                    error={!!errors.accountHolder?.message}
                   />
-                  {errors.accountHolder && (
-                    <Caption className="text-red-500">{errors.accountHolder}</Caption>
+                  {errors.accountHolder?.message && (
+                    <Caption className="text-red-500">{errors.accountHolder.message}</Caption>
                   )}
                 </div>
 
@@ -273,17 +260,16 @@ export default function SignUpStep3Page() {
                     <div className="flex-1">
                       <Input
                         placeholder="계좌번호를 입력해주세요(-제외)"
-                        value={formData.accountNumber}
-                        onChange={e => handleInputChange('accountNumber', e.target.value)}
-                        error={!!errors.accountNumber}
+                        {...register('accountNumber')}
+                        error={!!errors.accountNumber?.message}
                       />
                     </div>
                     <Button variant="primary" onClick={verifyAccount} className="!w-24">
                       계좌 인증
                     </Button>
                   </div>
-                  {errors.accountNumber && (
-                    <Caption className="text-red-500">{errors.accountNumber}</Caption>
+                  {errors.accountNumber?.message && (
+                    <Caption className="text-red-500">{errors.accountNumber.message}</Caption>
                   )}
                   {success.accountNumber && (
                     <Caption className="text-green-500">계좌가 인증되었습니다</Caption>
@@ -356,12 +342,11 @@ export default function SignUpStep3Page() {
                   </TitleDefault>
                   <Input
                     placeholder="숙소명을 입력해주세요"
-                    value={formData.accommodationName}
-                    onChange={e => handleInputChange('accommodationName', e.target.value)}
-                    error={!!errors.accommodationName}
+                    {...register('accommodationName')}
+                    error={!!errors.accommodationName?.message}
                   />
-                  {errors.accommodationName && (
-                    <Caption className="text-red-500">{errors.accommodationName}</Caption>
+                  {errors.accommodationName?.message && (
+                    <Caption className="text-red-500">{errors.accommodationName.message}</Caption>
                   )}
                 </div>
 
@@ -373,16 +358,14 @@ export default function SignUpStep3Page() {
                   <div className="flex gap-2">
                     <Input
                       placeholder="우편번호"
-                      value={formData.zipCode}
-                      onChange={e => handleInputChange('zipCode', e.target.value)}
+                      {...register('zipCode')}
                       disabled
                       className="!w-24"
                     />
                     <Input
                       placeholder="주소"
-                      value={formData.address}
-                      onChange={e => handleInputChange('address', e.target.value)}
-                      error={!!errors.address}
+                      {...register('address')}
+                      error={!!errors.address?.message}
                       className="flex-1"
                     />
                     <Button variant="primary" onClick={findZipCode} className="!w-32">
@@ -391,13 +374,14 @@ export default function SignUpStep3Page() {
                   </div>
                   <Input
                     placeholder="상세주소 입력"
-                    value={formData.detailAddress}
-                    onChange={e => handleInputChange('detailAddress', e.target.value)}
-                    error={!!errors.detailAddress}
+                    {...register('detailAddress')}
+                    error={!!errors.detailAddress?.message}
                   />
-                  {errors.address && <Caption className="text-red-500">{errors.address}</Caption>}
-                  {errors.detailAddress && (
-                    <Caption className="text-red-500">{errors.detailAddress}</Caption>
+                  {errors.address?.message && (
+                    <Caption className="text-red-500">{errors.address.message}</Caption>
+                  )}
+                  {errors.detailAddress?.message && (
+                    <Caption className="text-red-500">{errors.detailAddress.message}</Caption>
                   )}
                 </div>
 
@@ -408,12 +392,11 @@ export default function SignUpStep3Page() {
                   </TitleDefault>
                   <Input
                     placeholder="비밀번호, 키박스 등 출입 방법을 입력해주세요"
-                    value={formData.accessMethod}
-                    onChange={e => handleInputChange('accessMethod', e.target.value)}
-                    error={!!errors.accessMethod}
+                    {...register('accessMethod')}
+                    error={!!errors.accessMethod?.message}
                   />
-                  {errors.accessMethod && (
-                    <Caption className="text-red-500">{errors.accessMethod}</Caption>
+                  {errors.accessMethod?.message && (
+                    <Caption className="text-red-500">{errors.accessMethod.message}</Caption>
                   )}
                 </div>
 
@@ -424,13 +407,13 @@ export default function SignUpStep3Page() {
                   </TitleDefault>
                   <Dropdown
                     options={accommodationTypes}
-                    value={formData.accommodationType}
+                    value={watch('accommodationType')}
                     onChange={value => handleInputChange('accommodationType', value)}
                     placeholder="옵션 선택"
-                    error={!!errors.accommodationType}
+                    error={!!errors.accommodationType?.message}
                   />
-                  {errors.accommodationType && (
-                    <Caption className="text-red-500">{errors.accommodationType}</Caption>
+                  {errors.accommodationType?.message && (
+                    <Caption className="text-red-500">{errors.accommodationType.message}</Caption>
                   )}
                 </div>
 
@@ -442,39 +425,19 @@ export default function SignUpStep3Page() {
                   <div className="grid grid-cols-2 gap-2">
                     <div className="space-y-1">
                       <TitleSmall className="text-neutral-600">방 개수</TitleSmall>
-                      <Input
-                        placeholder="0"
-                        value={formData.roomCount}
-                        onChange={e => handleInputChange('roomCount', e.target.value)}
-                        type="number"
-                      />
+                      <Input placeholder="0" {...register('roomCount')} type="number" />
                     </div>
                     <div className="space-y-1">
                       <TitleSmall className="text-neutral-600">침대 개수</TitleSmall>
-                      <Input
-                        placeholder="0"
-                        value={formData.bedCount}
-                        onChange={e => handleInputChange('bedCount', e.target.value)}
-                        type="number"
-                      />
+                      <Input placeholder="0" {...register('bedCount')} type="number" />
                     </div>
                     <div className="space-y-1">
                       <TitleSmall className="text-neutral-600">거실 개수</TitleSmall>
-                      <Input
-                        placeholder="0"
-                        value={formData.livingRoomCount}
-                        onChange={e => handleInputChange('livingRoomCount', e.target.value)}
-                        type="number"
-                      />
+                      <Input placeholder="0" {...register('livingRoomCount')} type="number" />
                     </div>
                     <div className="space-y-1">
                       <TitleSmall className="text-neutral-600">화장실 개수</TitleSmall>
-                      <Input
-                        placeholder="0"
-                        value={formData.bathroomCount}
-                        onChange={e => handleInputChange('bathroomCount', e.target.value)}
-                        type="number"
-                      />
+                      <Input placeholder="0" {...register('bathroomCount')} type="number" />
                     </div>
                   </div>
                 </div>
@@ -489,10 +452,9 @@ export default function SignUpStep3Page() {
                     <div className="flex gap-2 items-center">
                       <Input
                         placeholder=""
-                        value={formData.area}
-                        onChange={e => handleInputChange('area', e.target.value)}
+                        {...register('area')}
                         type="number"
-                        error={!!errors.area}
+                        error={!!errors.area?.message}
                       />
                       <span className="text-neutral-1000 whitespace-nowrap">평</span>
                     </div>
@@ -504,10 +466,9 @@ export default function SignUpStep3Page() {
                     <div className="flex gap-2 items-center">
                       <Input
                         placeholder=""
-                        value={formData.maxOccupancy}
-                        onChange={e => handleInputChange('maxOccupancy', e.target.value)}
+                        {...register('maxOccupancy')}
                         type="number"
-                        error={!!errors.maxOccupancy}
+                        error={!!errors.maxOccupancy?.message}
                       />
                       <span className="text-neutral-1000 whitespace-nowrap">명</span>
                     </div>
@@ -562,12 +523,11 @@ export default function SignUpStep3Page() {
                   </TitleDefault>
                   <Input
                     placeholder="청소 비품 보관장소를 입력해주세요"
-                    value={formData.equipmentStorage}
-                    onChange={e => handleInputChange('equipmentStorage', e.target.value)}
-                    error={!!errors.equipmentStorage}
+                    {...register('equipmentStorage')}
+                    error={!!errors.equipmentStorage?.message}
                   />
-                  {errors.equipmentStorage && (
-                    <Caption className="text-red-500">{errors.equipmentStorage}</Caption>
+                  {errors.equipmentStorage?.message && (
+                    <Caption className="text-red-500">{errors.equipmentStorage.message}</Caption>
                   )}
                 </div>
 
@@ -578,23 +538,18 @@ export default function SignUpStep3Page() {
                   </TitleDefault>
                   <Input
                     placeholder="쓰레기 배출장소를 입력해주세요"
-                    value={formData.trashDisposal}
-                    onChange={e => handleInputChange('trashDisposal', e.target.value)}
-                    error={!!errors.trashDisposal}
+                    {...register('trashDisposal')}
+                    error={!!errors.trashDisposal?.message}
                   />
-                  {errors.trashDisposal && (
-                    <Caption className="text-red-500">{errors.trashDisposal}</Caption>
+                  {errors.trashDisposal?.message && (
+                    <Caption className="text-red-500">{errors.trashDisposal.message}</Caption>
                   )}
                 </div>
 
                 {/* 호스트 요청사항 */}
                 <div className="space-y-2">
                   <TitleDefault>호스트 요청사항</TitleDefault>
-                  <Input
-                    placeholder="요청사항을 입력해주세요"
-                    value={formData.hostRequests}
-                    onChange={e => handleInputChange('hostRequests', e.target.value)}
-                  />
+                  <Input placeholder="요청사항을 입력해주세요" {...register('hostRequests')} />
                 </div>
               </div>
             </div>
@@ -695,9 +650,11 @@ export default function SignUpStep3Page() {
         </div>
 
         {/* 다음 단계 버튼 */}
-        <Button variant="primary" onClick={handleSubmit} className="w-full max-w-[400px]">
-          회원가입 완료
-        </Button>
+        <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-[400px]">
+          <Button type="submit" variant="primary" className="w-full">
+            회원가입 완료
+          </Button>
+        </form>
       </div>
     </div>
   );
