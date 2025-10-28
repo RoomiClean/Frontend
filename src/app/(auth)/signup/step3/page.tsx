@@ -14,6 +14,7 @@ import {
   DisplayH1,
 } from '@/app/_components/atoms/Typography';
 import StepIndicator from '@/app/_components/molecules/StepIndicator';
+import { banks, accommodationTypes } from '@/constants/business.constants';
 
 interface FormData {
   bank: string;
@@ -95,25 +96,6 @@ export default function SignUpStep3Page() {
     location: false,
     marketing: false,
   });
-
-  const banks = [
-    { value: 'kb', label: '국민은행' },
-    { value: 'shinhan', label: '신한은행' },
-    { value: 'woori', label: '우리은행' },
-    { value: 'hana', label: '하나은행' },
-    { value: 'nh', label: '농협은행' },
-    { value: 'ibk', label: '기업은행' },
-    { value: 'kdb', label: '산업은행' },
-    { value: 'keb', label: '외환은행' },
-  ];
-
-  const accommodationTypes = [
-    { value: 'house', label: '단독주택' },
-    { value: 'duplex', label: '다가구주택' },
-    { value: 'apartment', label: '아파트' },
-    { value: 'row', label: '연립주택' },
-    { value: 'multi', label: '다세대주택' },
-  ];
 
   useEffect(() => {
     if (!memberType) {

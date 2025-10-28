@@ -4,22 +4,9 @@ import Image from 'next/image';
 import ArrowUpIcon from '@/assets/svg/ArrowUp.svg';
 import ArrowDownIcon from '@/assets/svg/ArrowDown.svg';
 import { BodySmall } from './Typography';
+import type { DropdownOption, DropdownProps } from '@/types/dropdown.types';
 
-export interface DropdownOption {
-  value: string;
-  label: string;
-}
-
-export interface DropdownProps {
-  /** 드롭다운 옵션 목록 */
-  options: DropdownOption[];
-  value?: string;
-  onChange?: (value: string) => void;
-  placeholder?: string;
-  disabled?: boolean;
-  error?: boolean;
-  className?: string;
-}
+export type { DropdownOption, DropdownProps };
 
 /**
  * 드롭다운 선택 컴포넌트

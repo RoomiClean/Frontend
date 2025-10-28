@@ -16,6 +16,7 @@ import {
   DisplayH1,
 } from '@/app/_components/atoms/Typography';
 import StepIndicator from '@/app/_components/molecules/StepIndicator';
+import { emailDomains, provinces, districts } from '@/constants/business.constants';
 
 interface FormData {
   email: string;
@@ -89,57 +90,6 @@ export default function SignUpStep2Page() {
   const [verificationTimer, setVerificationTimer] = useState(0);
   const [isCustomDomain, setIsCustomDomain] = useState(false);
   const [showBusinessDetail, setShowBusinessDetail] = useState(false);
-
-  const emailDomains = [
-    { value: 'naver.com', label: 'naver.com' },
-    { value: 'gmail.com', label: 'gmail.com' },
-    { value: 'daum.net', label: 'daum.net' },
-    { value: 'icloud.com', label: 'icloud.com' },
-    { value: 'hanmail.net', label: 'hanmail.net' },
-    { value: 'nate.com', label: 'nate.com' },
-    { value: 'yahoo.com', label: 'yahoo.com' },
-    { value: 'custom', label: '직접 입력' },
-  ];
-
-  const provinces = [
-    { value: 'seoul', label: '서울특별시' },
-    { value: 'gyeonggi', label: '경기도' },
-    { value: 'busan', label: '부산광역시' },
-    { value: 'incheon', label: '인천광역시' },
-    { value: 'daegu', label: '대구광역시' },
-    { value: 'daejeon', label: '대전광역시' },
-    { value: 'gwangju', label: '광주광역시' },
-    { value: 'ulsan', label: '울산광역시' },
-    { value: 'sejong', label: '세종특별자치시' },
-  ];
-
-  const districts = [
-    { value: 'gangnam', label: '강남구' },
-    { value: 'gangdong', label: '강동구' },
-    { value: 'gangbuk', label: '강북구' },
-    { value: 'gangseo', label: '강서구' },
-    { value: 'gwanak', label: '관악구' },
-    { value: 'gwangjin', label: '광진구' },
-    { value: 'guro', label: '구로구' },
-    { value: 'geumcheon', label: '금천구' },
-    { value: 'nowon', label: '노원구' },
-    { value: 'dobong', label: '도봉구' },
-    { value: 'dongdaemun', label: '동대문구' },
-    { value: 'dongjak', label: '동작구' },
-    { value: 'mapo', label: '마포구' },
-    { value: 'seodaemun', label: '서대문구' },
-    { value: 'seocho', label: '서초구' },
-    { value: 'seongdong', label: '성동구' },
-    { value: 'seongbuk', label: '성북구' },
-    { value: 'songpa', label: '송파구' },
-    { value: 'yangcheon', label: '양천구' },
-    { value: 'yeongdeungpo', label: '영등포구' },
-    { value: 'yongsan', label: '용산구' },
-    { value: 'eunpyeong', label: '은평구' },
-    { value: 'jongno', label: '종로구' },
-    { value: 'jung', label: '중구' },
-    { value: 'jungnang', label: '중랑구' },
-  ];
 
   useEffect(() => {
     if (!memberType) {
