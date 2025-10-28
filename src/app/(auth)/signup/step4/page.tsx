@@ -42,7 +42,7 @@ export default function SignUpStep3Page() {
           <Button variant="secondary" onClick={handleGoHome} className="flex-1">
             홈으로 이동
           </Button>
-          <Button variant="tertiary" onClick={handleLogin} className="flex-1">
+          <Button variant="primary" onClick={handleLogin} className="flex-1">
             로그인 하기
           </Button>
         </div>

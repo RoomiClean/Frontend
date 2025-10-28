@@ -399,7 +399,7 @@ export default function SignUpStep2Page() {
                     </div>
                   )}
                   <Button
-                    variant="tertiary"
+                    variant="primary"
                     onClick={validateEmail}
                     className="!w-[81px] py-3 flex-shrink-0"
                   >
@@ -483,7 +483,7 @@ export default function SignUpStep2Page() {
                       error={!!errors.phone}
                     />
                   </div>
-                  <Button variant="tertiary" onClick={sendVerificationCode} className="!w-32">
+                  <Button variant="primary" onClick={sendVerificationCode} className="!w-32">
                     {verificationTimer > 0 ? '인증번호 재전송' : '인증번호 받기'}
                   </Button>
                 </div>
@@ -508,7 +508,7 @@ export default function SignUpStep2Page() {
                     <div className="flex items-center px-3 text-red-500 font-mono">
                       {formatTimer(verificationTimer)}
                     </div>
-                    <Button variant="tertiary" onClick={verifyCode} className="w-32">
+                    <Button variant="primary" onClick={verifyCode} className="w-32">
                       인증번호 확인
                     </Button>
                   </div>

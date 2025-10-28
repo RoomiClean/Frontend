@@ -296,7 +296,7 @@ export default function SignUpStep3Page() {
                         error={!!errors.accountNumber}
                       />
                     </div>
-                    <Button variant="tertiary" onClick={verifyAccount} className="!w-24">
+                    <Button variant="primary" onClick={verifyAccount} className="!w-24">
                       계좌 인증
                     </Button>
                   </div>
@@ -403,7 +403,7 @@ export default function SignUpStep3Page() {
                       error={!!errors.address}
                       className="flex-1"
                     />
-                    <Button variant="tertiary" onClick={findZipCode} className="!w-32">
+                    <Button variant="primary" onClick={findZipCode} className="!w-32">
                       우편번호 찾기
                     </Button>
                   </div>
@@ -713,7 +713,7 @@ export default function SignUpStep3Page() {
         </div>
 
         {/* 다음 단계 버튼 */}
-        <Button variant="tertiary" onClick={handleSubmit} className="w-full max-w-[400px]">
+        <Button variant="primary" onClick={handleSubmit} className="w-full max-w-[400px]">
           회원가입 완료
         </Button>
       </div>
