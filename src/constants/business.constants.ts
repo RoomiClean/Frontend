@@ -7,7 +7,7 @@ import { DropdownOption } from '@/types/dropdown.types';
 /**
  * 이메일 도메인 목록
  */
-export const emailDomains: DropdownOption[] = [
+export const EMAIL_DOMAINS: DropdownOption[] = [
   { value: 'naver.com', label: 'naver.com' },
   { value: 'gmail.com', label: 'gmail.com' },
   { value: 'daum.net', label: 'daum.net' },
@@ -21,7 +21,7 @@ export const emailDomains: DropdownOption[] = [
 /**
  * 시/도 목록
  */
-export const provinces: DropdownOption[] = [
+export const PROVINCES: DropdownOption[] = [
   { value: 'seoul', label: '서울특별시' },
   { value: 'gyeonggi', label: '경기도' },
   { value: 'busan', label: '부산광역시' },
@@ -36,7 +36,7 @@ export const provinces: DropdownOption[] = [
 /**
  * 시/구/군 목록 (서울시 기준)
  */
-export const districts: DropdownOption[] = [
+export const DISTRICTS: DropdownOption[] = [
   { value: 'gangnam', label: '강남구' },
   { value: 'gangdong', label: '강동구' },
   { value: 'gangbuk', label: '강북구' },
@@ -67,7 +67,7 @@ export const districts: DropdownOption[] = [
 /**
  * 은행 목록
  */
-export const banks: DropdownOption[] = [
+export const BANKS: DropdownOption[] = [
   { value: 'kb', label: '국민은행' },
   { value: 'shinhan', label: '신한은행' },
   { value: 'woori', label: '우리은행' },
@@ -81,7 +81,7 @@ export const banks: DropdownOption[] = [
 /**
  * 숙소 유형 목록
  */
-export const accommodationTypes: DropdownOption[] = [
+export const ACCOMMODATION_TYPES: DropdownOption[] = [
   { value: 'house', label: '단독주택' },
   { value: 'duplex', label: '다가구주택' },
   { value: 'apartment', label: '아파트' },

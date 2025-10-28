@@ -17,7 +17,7 @@ import {
   DisplayH1,
 } from '@/app/_components/atoms/Typography';
 import StepIndicator from '@/app/_components/molecules/StepIndicator';
-import { emailDomains, provinces, districts } from '@/constants/business.constants';
+import { EMAIL_DOMAINS, PROVINCES, DISTRICTS } from '@/constants/business.constants';
 
 interface FormData {
   email: string;
@@ -298,7 +298,7 @@ export default function SignUpStep2Page() {
                   ) : (
                     <div className="flex-none [&>div]:!w-[140px]">
                       <Dropdown
-                        options={emailDomains}
+                        options={EMAIL_DOMAINS}
                         value={watch('emailDomain')}
                         onChange={handleDomainChange}
                       />
@@ -446,7 +446,7 @@ export default function SignUpStep2Page() {
                 <TitleDefault>서비스 가능 지역</TitleDefault>
                 <div className="flex-1 space-y-2">
                   <Dropdown
-                    options={provinces}
+                    options={PROVINCES}
                     value={watch('province')}
                     onChange={value => handleInputChange('province', value)}
                     placeholder="시/도"
@@ -458,7 +458,7 @@ export default function SignUpStep2Page() {
                 </div>
                 <div className="flex-1 space-y-2">
                   <Dropdown
-                    options={districts}
+                    options={DISTRICTS}
                     value={watch('district')}
                     onChange={value => handleInputChange('district', value)}
                     placeholder="시/구/군"
