@@ -386,6 +386,15 @@ export default function SignUpStep2Page() {
                       placeholder="휴대폰 번호를 입력해주세요 (-제외)"
                       {...register('phone')}
                       error={!!errors.phone?.message}
+                      onChange={e => {
+                        const value = e.target.value.replace(/-/g, '');
+                        setValue('phone', value);
+                      }}
+                      onKeyDown={e => {
+                        if (e.key === '-') {
+                          e.preventDefault();
+                        }
+                      }}
                     />
                   </div>
                   <Button variant="primary" onClick={sendVerificationCode} className="!w-32">
