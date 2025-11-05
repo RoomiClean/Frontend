@@ -4,6 +4,7 @@ import AccommodationListSection from '../../_components/organisms/RoomListSectio
 
 export default function RoomMainPage() {
   const stats = { totalRooms: 3, needClean: 3, todayClean: 3 };
+  // const stats = { totalRooms: 0, needClean: 0, todayClean: 0 };
   const items = [
     {
       id: '1',
@@ -22,6 +23,7 @@ export default function RoomMainPage() {
       checkOutText: '10월 26일 오전 11시',
     },
   ];
+  // const items =[];
 
   return (
     <RoomMainTemplate>
