@@ -1091,6 +1091,21 @@ camelcase-css@^2.0.1:
   resolved "https://registry.npmjs.org/camelcase-css/-/camelcase-css-2.0.1.tgz"
   integrity sha512-QOSvevhslijgYwRx6Rv7zKdMF8lbRmx+uQGx2+vDc+KI/eBnsy9kit5aj23AgGu3pa4t9AgwbnXWqS+iOY+2aA==
 
+camelcase-keys@^10.0.1:
+  version "10.0.1"
+  resolved "https://registry.yarnpkg.com/camelcase-keys/-/camelcase-keys-10.0.1.tgz#5c1160916b58a0804e683c1d27b712375ebacc1a"
+  integrity sha512-kIH5nQUKB8ORZrwjk40GUgnhzuzxwKb6n5L+anOVmVSrjgix1pfNqVNl0tEcOP4AaFYdke3NNpNiGDSD112lcA==
+  dependencies:
+    camelcase "^8.0.0"
+    map-obj "5.0.2"
+    quick-lru "^7.1.0"
+    type-fest "^4.41.0"
+
+camelcase@^8.0.0:
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/camelcase/-/camelcase-8.0.0.tgz#c0d36d418753fb6ad9c5e0437579745c1c14a534"
+  integrity sha512-8WB3Jcas3swSvjIeA2yvCJ+Miyz5l1ZmB6HFb9R1317dt9LCQoswg/BGrmAmkWVEszSrrg4RwmO46qIm2OEnSA==
+
 caniuse-lite@^1.0.30001579, caniuse-lite@^1.0.30001702, caniuse-lite@^1.0.30001751:
   version "1.0.30001751"
   resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001751.tgz"
@@ -1103,6 +1118,11 @@ chalk@^4.0.0:
   dependencies:
     ansi-styles "^4.1.0"
     supports-color "^7.1.0"
+
+change-case@^5.4.4:
+  version "5.4.4"
+  resolved "https://registry.yarnpkg.com/change-case/-/change-case-5.4.4.tgz#0d52b507d8fb8f204343432381d1a6d7bff97a02"
+  integrity sha512-HRQyTk2/YPEkt9TnUPbOpr64Uw3KOicFWPVBb+xiHvd6eBx/qPr9xqfBFDT8P2vWsvvz4jbEkfDe71W3VyNu2w==
 
 chokidar@^3.6.0:
   version "3.6.0"
@@ -2451,6 +2471,11 @@ magic-string@^0.30.19:
   dependencies:
     "@jridgewell/sourcemap-codec" "^1.5.5"
 
+map-obj@5.0.2, map-obj@^5.0.2:
+  version "5.0.2"
+  resolved "https://registry.yarnpkg.com/map-obj/-/map-obj-5.0.2.tgz#174ad9f7e5e4e777a219126d9a734ff3e14a1c68"
+  integrity sha512-K6K2NgKnTXimT3779/4KxSvobxOtMmx1LBZ3NwRxT/MDIR3Br/fQ4Q+WCX5QxjyUR8zg5+RV9Tbf2c5pAWTD2A==
+
 math-intrinsics@^1.1.0:
   version "1.1.0"
   resolved "https://registry.npmjs.org/math-intrinsics/-/math-intrinsics-1.1.0.tgz"
@@ -2844,6 +2869,11 @@ queue-microtask@^1.2.2:
   resolved "https://registry.npmjs.org/queue-microtask/-/queue-microtask-1.2.3.tgz"
   integrity sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==
 
+quick-lru@^7.1.0:
+  version "7.3.0"
+  resolved "https://registry.yarnpkg.com/quick-lru/-/quick-lru-7.3.0.tgz#2af7e0fc72b66b7496251f6226cc723662c50665"
+  integrity sha512-k9lSsjl36EJdK7I06v7APZCbyGT2vMTsYSRX1Q2nbYmnkBqgUhRkAuzH08Ciotteu/PLJmIF2+tti7o3C/ts2g==
+
 react-dom@19.1.0:
   version "19.1.0"
   resolved "https://registry.npmjs.org/react-dom/-/react-dom-19.1.0.tgz"
@@ -3113,6 +3143,15 @@ signal-exit@^4.0.1:
   version "4.1.0"
   resolved "https://registry.npmjs.org/signal-exit/-/signal-exit-4.1.0.tgz"
   integrity sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==
+
+snakecase-keys@^9.0.2:
+  version "9.0.2"
+  resolved "https://registry.yarnpkg.com/snakecase-keys/-/snakecase-keys-9.0.2.tgz#41a80ec43f131016bc4b4698e135ef41d7e39b23"
+  integrity sha512-Tr4gONsDj1Pa6HJH9D3b411r6tuRyCGgb1l7YpzDFp/thjVSWs7rcbNjyTyRqJi5SUV23sFpzf9epIJRbLR6Yw==
+  dependencies:
+    change-case "^5.4.4"
+    map-obj "^5.0.2"
+    type-fest "^4.15.0"
 
 source-map-js@^1.0.2, source-map-js@^1.2.1:
   version "1.2.1"
@@ -3395,6 +3434,11 @@ type-check@^0.4.0, type-check@~0.4.0:
   integrity sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==
   dependencies:
     prelude-ls "^1.2.1"
+
+type-fest@^4.15.0, type-fest@^4.41.0:
+  version "4.41.0"
+  resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-4.41.0.tgz#6ae1c8e5731273c2bf1f58ad39cbae2c91a46c58"
+  integrity sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA==
 
 typed-array-buffer@^1.0.3:
   version "1.0.3"
