@@ -15,6 +15,7 @@ import {
 } from '../_components/atoms/Typography';
 import { Dropdown } from '../_components/atoms/DropDown';
 import { Textarea } from '../_components/atoms/Textarea';
+import { Calendar } from '../_components/molecules/Calendar';
 
 interface FormValues {
   id: string;
@@ -26,6 +27,46 @@ export default function ExamplePage() {
   const [textareaValue, setTextareaValue] = useState('');
   const [textareaWithError, setTextareaWithError] = useState('');
   const [textareaDisabled, setTextareaDisabled] = useState('');
+
+  const accommodationSchedulesData = [
+    {
+      id: 1,
+      startDate: '2025년 11월 7일',
+      endDate: '2025년 11월 11일',
+    },
+    {
+      id: 2,
+      startDate: '2025년 11월 18일',
+      endDate: '2025년 11월 20일',
+    },
+  ];
+
+  const lastCleaningScheduleData = {
+    id: 1,
+    date: '2025년 11월 5일',
+    cleanerName: '김청소',
+  };
+
+  const reservedCleaningSchedulesData = [
+    {
+      id: 1,
+      date: '2025년 11월 12일',
+      cleanerName: '이청소',
+      price: 50000,
+    },
+    {
+      id: 2,
+      date: '2025년 11월 22일',
+      cleanerName: '박청소',
+      price: 55000,
+    },
+    {
+      id: 3,
+      date: '2025년 11월 28일',
+      cleanerName: '최청소',
+      price: 50000,
+    },
+  ];
 
   const {
     control,
@@ -187,6 +228,15 @@ export default function ExamplePage() {
             showCharCount={true}
           />
         </div>
+      </section>
+
+      {/* Section: Calendar */}
+      <section className="w-full">
+        <Calendar
+          accommodationSchedules={accommodationSchedulesData}
+          lastCleaningSchedule={lastCleaningScheduleData}
+          reservedCleaningSchedules={reservedCleaningSchedulesData}
+        />
       </section>
     </div>
   );
