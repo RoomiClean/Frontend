@@ -1,0 +1,16 @@
+import Sidebar from '../organisms/Sidebar';
+
+interface RoomMainTemplateProps {
+  children: React.ReactNode;
+}
+
+export default function RoomMainTemplate({ children }: RoomMainTemplateProps) {
+  return (
+    <div className="mx-auto w-full px-4 md:px-6 lg:px-[36px] py-8 md:py-[60px] lg:py-20">
+      <div className="flex gap-[20px]">
+        <Sidebar />
+        <main className="flex-1 min-w-0 space-y-10">{children}</main>
+      </div>
+    </div>
+  );
+}
