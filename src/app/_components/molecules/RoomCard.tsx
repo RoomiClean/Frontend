@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Button from '../atoms/Button';
 import { BodyDefault, BodySmall, DisplayH4, DisplayLarge } from '../atoms/Typography';
-import ArrowRightIcon from '../../../assets/svg/ArrowRight.svg';
+import ArrowRightIcon from '../../../assets/svg/DetailArrow.svg';
 
 interface AccommodationCardProps {
   imageUrl: string;
