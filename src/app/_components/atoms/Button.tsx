@@ -38,7 +38,7 @@ export default function Button({
   disabled = false,
 }: ButtonProps) {
   const baseStyles =
-    'w-full py-[14px] rounded-[8px] font-medium transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50';
+    'w-full py-[14px] flex items-center justify-center rounded-[8px] font-medium transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50';
 
   const variantStyles =
     variant === 'primary'
