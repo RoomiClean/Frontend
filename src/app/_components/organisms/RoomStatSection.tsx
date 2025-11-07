@@ -20,7 +20,7 @@ export default function RoomStatusSection({
       <DisplayH3 className="text-neutral-1000 md:text-[28px] lg:text-[32px]">
         숙소 관리 현황
       </DisplayH3>
-      <div className="w-full border border-neutral-300 bg-neutral-100 lg:shadow-[0_6px_15px_0_rgba(0,0,0,0.2)]">
+      <div className="w-full border border-neutral-300 bg-neutral-100 lg:shadow-[0_6px_15px_0_rgba(0_0_0/0.2)]">
         <div className="flex divide-neutral-200 flex-row divide-y-0 divide-x">
           <StatusStatItem icon={HomeIcon} label="전체 숙소 수" value={totalRooms} />
           <StatusStatItem icon={WarningIcon} label="청소 필요" value={needClean} />
