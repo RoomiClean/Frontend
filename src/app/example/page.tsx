@@ -16,6 +16,7 @@ import {
 import { Dropdown } from '../_components/atoms/DropDown';
 import { Textarea } from '../_components/atoms/Textarea';
 import { Calendar } from '../_components/molecules/Calendar';
+import Modal from '../_components/atoms/Modal';
 
 interface FormValues {
   id: string;
@@ -27,6 +28,7 @@ export default function ExamplePage() {
   const [textareaValue, setTextareaValue] = useState('');
   const [textareaWithError, setTextareaWithError] = useState('');
   const [textareaDisabled, setTextareaDisabled] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const accommodationSchedulesData = [
     {
@@ -237,6 +239,24 @@ export default function ExamplePage() {
           lastCleaningSchedule={lastCleaningScheduleData}
           reservedCleaningSchedules={reservedCleaningSchedulesData}
         />
+      </section>
+
+      {/* Section: Modal */}
+      <section className="space-y-4">
+        <h2 className="font-semibold text-2xl mb-4">Modal</h2>
+        <div className="w-[350px]">
+          <Button onClick={() => setIsModalOpen(true)}>모달 열기</Button>
+        </div>
+
+        <Modal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          width="600px"
+          height="400px"
+          padding="40px"
+        >
+          <p>예시 모달</p>
+        </Modal>
       </section>
     </div>
   );
