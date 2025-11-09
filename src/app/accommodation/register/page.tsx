@@ -5,8 +5,6 @@ import { useForm } from 'react-hook-form';
 import { Input } from '@/app/_components/atoms/Input';
 import Button from '@/app/_components/atoms/Button';
 import {
-  DisplayH1,
-  DisplayH2,
   DisplayH3,
   TitleH4,
   TitleDefault,
@@ -31,9 +29,7 @@ export default function RegisterAccommodationPage() {
   const {
     register,
     handleSubmit,
-    setValue,
     setError,
-    clearErrors,
     formState: { errors },
   } = useForm<FormData>({
     defaultValues: {
