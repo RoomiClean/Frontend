@@ -1,13 +1,12 @@
 import axios from 'axios';
 import camelcaseKeys from 'camelcase-keys';
 import snakecaseKeys from 'snakecase-keys';
+import { API_BASE_URL, API_TIMEOUT, API_HEADERS } from '@/constants/develop.constants';
 
 const apiInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  baseURL: API_BASE_URL,
+  timeout: API_TIMEOUT,
+  headers: API_HEADERS,
 });
 
 apiInstance.interceptors.request.use(config => {
