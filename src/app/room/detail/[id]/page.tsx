@@ -3,13 +3,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import Link from 'next/link';
 import RoomMainTemplate from '@/app/_components/templates/RoomMainTemplate';
 import Button from '@/app/_components/atoms/Button';
 import { DisplayH3, BodyDefault, DisplayDefault } from '@/app/_components/atoms/Typography';
 import ImageCard from '@/app/_components/molecules/ImageCard';
 import AccommodationInfo from '@/app/_components/molecules/AccommodationInfo';
 import { Calendar, CalendarMarkerNotes } from '@/app/_components/molecules/Calendar';
+import ICalModal from '@/app/_components/molecules/ICalModal';
 import EditIcon from '@/assets/svg/Pencil.svg';
 
 const mockRoomData = {
@@ -39,6 +39,11 @@ const mockRoomData = {
     { id: 'photo-5', photoUrl: '/img/sample-room.jpg', displayOrder: 4 },
   ],
   createdAt: '2025-11-07T13:41:14.748Z',
+  icalSync: {
+    isConnected: true,
+    url: 'https://',
+    syncPeriod: '6',
+  },
 };
 
 const mockAccommodationSchedules = [{ startDate: '2025-10-07', endDate: '2025-10-11' }];
@@ -58,6 +63,18 @@ export default function RoomDetailPage() {
   const infoRef = useRef<HTMLDivElement>(null);
   const [infoHeight, setInfoHeight] = useState<number | null>(null);
   const rafRef = useRef<number | null>(null);
+
+  const [isICalModalOpen, setIsICalModalOpen] = useState(false);
+  const [icalData, setIcalData] = useState(mockRoomData.icalSync);
+
+  const handleICalSave = (url: string, syncPeriod: string) => {
+    setIcalData({
+      isConnected: true,
+      url,
+      syncPeriod,
+    });
+    // TODO: 수정 api 연동
+  };
 
   useEffect(() => {
     /**
@@ -161,9 +178,11 @@ export default function RoomDetailPage() {
         <div className="w-full lg:w-1/2 flex flex-col gap-6">
           <div className="flex items-center justify-between">
             <DisplayH3 className="text-neutral-1000">일정 정보</DisplayH3>
-            <Link href="#">
-              <BodyDefault className="text-primary-400">iCal 캘린더 연동하기 →</BodyDefault>
-            </Link>
+            <button onClick={() => setIsICalModalOpen(true)}>
+              <BodyDefault className="text-primary-400">
+                {icalData.isConnected ? 'iCal 캘린더 수정하기 →' : 'iCal 캘린더 연동하기 →'}
+              </BodyDefault>
+            </button>
           </div>
           <div
             className="transition-all duration-300 rounded-[20px] shadow-[0_6px_15px_0_rgba(0,0,0,0.1)]"
@@ -193,6 +212,15 @@ export default function RoomDetailPage() {
           <Image src={EditIcon} alt="수정" />
         </Button>
       </div>
+
+      <ICalModal
+        isOpen={isICalModalOpen}
+        onClose={() => setIsICalModalOpen(false)}
+        onSave={handleICalSave}
+        isEdit={icalData.isConnected}
+        initialUrl={icalData.url}
+        initialSyncPeriod={icalData.syncPeriod}
+      />
     </RoomMainTemplate>
   );
 }
