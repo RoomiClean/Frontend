@@ -1,6 +1,6 @@
 import { Fragment } from 'react';
 import { BodyDefault, TitleDefault } from '../atoms/Typography';
-import { ACCOMMODATION_TYPE_LABELS } from '@/constants/develop.constants';
+import { ACCOMMODATION_TYPE_LABELS } from '@/constants/business.constants';
 
 interface AccommodationInfoProps {
   accommodationType: string;

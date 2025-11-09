@@ -58,17 +58,30 @@ export default function Modal({
     return () => window.removeEventListener('keydown', handleEsc);
   }, [isOpen, onClose]);
 
-  // body 스크롤 방지
+  // body 스크롤 방지 (스크롤바는 유지)
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
+      // 현재 스크롤 위치 저장
+      const scrollY = window.scrollY;
 
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
+      // body 스타일 적용 (position: fixed로 스크롤 방지, overflowY: scroll로 스크롤바 유지)
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflowY = 'scroll';
+
+      return () => {
+        // 원래 상태로 복구
+        const scrollY = document.body.style.top;
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        document.body.style.overflowY = '';
+
+        // 스크롤 위치 복원
+        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+      };
+    }
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -81,11 +94,11 @@ export default function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-200 bg-opacity-30"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-200 bg-opacity-30 px-4"
       onClick={handleBackdropClick}
     >
       <div
-        className={`relative bg-neutral-100 border border-neutral-300 rounded-[20px]  ${className}`}
+        className={`relative bg-neutral-100 border border-neutral-300 rounded-[20px] w-full ${className}`}
         style={{ width, height, padding }}
       >
         <button onClick={onClose} className="absolute top-4 right-4" aria-label="모달 닫기">
