@@ -231,7 +231,7 @@ export default function ExamplePage() {
       </section>
 
       {/* Section: Calendar */}
-      <section className="w-full">
+      <section className="w-full h-[500px]">
         <Calendar
           accommodationSchedules={accommodationSchedulesData}
           lastCleaningSchedule={lastCleaningScheduleData}

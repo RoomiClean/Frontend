@@ -1,9 +1,11 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import Button from '../atoms/Button';
 import { BodyDefault, BodySmall, DisplayH4, DisplayLarge } from '../atoms/Typography';
 import ArrowRightIcon from '../../../assets/svg/DetailArrow.svg';
 
 interface AccommodationCardProps {
+  id: string;
   imageUrl: string;
   title: string;
   address: string;
@@ -19,6 +21,7 @@ interface AccommodationCardProps {
  * 숙소 이미지, 기본 정보, 다음 일정
  */
 export default function AccommodationCard({
+  id,
   imageUrl,
   title,
   address,
@@ -28,7 +31,7 @@ export default function AccommodationCard({
   onClickDetail,
 }: AccommodationCardProps) {
   return (
-    <div className="rounded-[16px] bg-neutral-100 md:py-6 py-4 px-4 hover:border hover:border-neutral-200 hover:shadow-[0_6px_15px_0_rgba(0,0,0,0.2)] transition-all">
+    <div className="rounded-[16px] bg-neutral-100 md:py-6 py-4 px-4 hover:border hover:border-neutral-200 hover:shadow-[0_6px_15px_0_rgba(0_0_0/0.2)] transition-all">
       <div className="flex flex-col md:flex-row items-start gap-6">
         <div className="h-[208px] w-[208px] overflow-hidden rounded-[12px] bg-neutral-200 self-center md:self-auto">
           <Image
@@ -43,13 +46,14 @@ export default function AccommodationCard({
           <div className="pb-[10px] mb-[10px] md:border-b border-neutral-300">
             <div className="flex items-start justify-between mb-1">
               <DisplayH4 className="text-neutral-1000">{title}</DisplayH4>
-              <button
+              <Link
+                href={`/room/detail/${id}`}
                 onClick={onClickDetail}
                 className="text-neutral-500 hover:text-neutral-800 flex items-center"
               >
                 <BodySmall className="text-neutral-500">상세보기</BodySmall>
                 <Image src={ArrowRightIcon} alt="arrow-right" />
-              </button>
+              </Link>
             </div>
             <BodySmall className="text-neutral-800">{address}</BodySmall>
           </div>
