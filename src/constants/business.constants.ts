@@ -88,3 +88,25 @@ export const ACCOMMODATION_TYPES: DropdownOption[] = [
   { value: 'row', label: '연립주택' },
   { value: 'multi', label: '다세대주택' },
 ];
+
+/**
+ * 숙소 유형 매핑
+ */
+export const ACCOMMODATION_TYPE_LABELS: { [key: string]: string } = {
+  APARTMENT: '아파트',
+  VILLA: '빌라',
+  OFFICETEL: '오피스텔',
+  HOUSE: '주택',
+  ETC: '다가구 주택',
+};
+
+/**
+ * iCal 동기화 주기 옵션 (시간 단위)
+ */
+export const ICAL_SYNC_PERIOD_OPTIONS: DropdownOption[] = [
+  { label: '1시간', value: '1' },
+  { label: '3시간', value: '3' },
+  { label: '6시간', value: '6' },
+  { label: '12시간', value: '12' },
+  { label: '24시간', value: '24' },
+];
