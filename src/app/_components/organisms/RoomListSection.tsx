@@ -1,8 +1,8 @@
 import Image from 'next/image';
 import Button from '../atoms/Button';
 import { BodyDefault, DisplayH2, DisplayH3 } from '../atoms/Typography';
-import AccommodationCard from '../molecules/RoomCard';
 import EmptyIcon from '../../../assets/svg/EmptyAccommodation.svg';
+import AccommodationCard from '../molecules/card/AccommodationCard';
 
 interface AccommodationItem {
   id: string;

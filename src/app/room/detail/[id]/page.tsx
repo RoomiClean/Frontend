@@ -6,7 +6,7 @@ import Image from 'next/image';
 import RoomMainTemplate from '@/app/_components/templates/RoomMainTemplate';
 import Button from '@/app/_components/atoms/Button';
 import { DisplayH3, BodyDefault, DisplayDefault } from '@/app/_components/atoms/Typography';
-import ImageCard from '@/app/_components/molecules/ImageCard';
+import ImageGallary from '@/app/_components/molecules/ImageGallary';
 import AccommodationInfo from '@/app/_components/molecules/AccommodationInfo';
 import { Calendar, CalendarMarkerNotes } from '@/app/_components/molecules/Calendar';
 import ICalModal from '@/app/_components/molecules/ICalModal';
@@ -149,7 +149,7 @@ export default function RoomDetailPage() {
 
       {/* 이미지 */}
       <div className="mb-8">
-        <ImageCard photos={mockRoomData.photos} />
+        <ImageGallary photos={mockRoomData.photos} />
       </div>
 
       {/* 정보 + 캘린더 */}

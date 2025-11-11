@@ -9,7 +9,7 @@ import {
   DisplayH3,
   DisplayLarge,
 } from '../atoms/Typography';
-import CleaningRequestCard from '../molecules/CleaningRequestCard';
+import CleaningRequestCard from '../molecules/card/CleaningRequestCard';
 import EmptyIcon from '@/assets/svg/EmptyAccommodation.svg';
 
 type MainTab = 'ongoing' | 'past';
@@ -40,6 +40,7 @@ export interface CleaningRequest {
   completionDateTime: string;
   selectedOption: string;
   status: 'pending' | 'scheduled' | 'in-progress';
+  cleaningStartDateTime?: string;
 }
 
 /**
@@ -126,6 +127,8 @@ export default function CleaningRequestListSection({ data }: CleaningRequestList
               requestDateTime={request.requestDateTime}
               completionDateTime={request.completionDateTime}
               selectedOption={request.selectedOption}
+              status={request.status}
+              cleaningStartDateTime={request.cleaningStartDateTime}
               onCheckCleaner={() => {
                 console.log('청소자 정보 확인:', request.id);
               }}

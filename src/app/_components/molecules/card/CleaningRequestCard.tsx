@@ -1,8 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import Button from '../atoms/Button';
-import { BodySmall, DisplayH4 } from '../atoms/Typography';
-import ArrowRightIcon from '../../../assets/svg/DetailArrow.svg';
+import Button from '../../atoms/Button';
+import { BodySmall, DisplayH4 } from '../../atoms/Typography';
+import ArrowRightIcon from '@/assets/svg/DetailArrow.svg';
 
 interface CleaningRequestCardProps {
   id: string;
@@ -11,6 +11,8 @@ interface CleaningRequestCardProps {
   requestDateTime: string;
   completionDateTime: string;
   selectedOption: string;
+  status: 'pending' | 'scheduled' | 'in-progress';
+  cleaningStartDateTime?: string;
   onCheckCleaner?: () => void;
   onClickDetail?: () => void;
 }
@@ -19,6 +21,9 @@ interface CleaningRequestCardProps {
  * 청소 요청 목록에서 보여주는 카드 컴포넌트
  *
  * 숙소 이미지, 청소 요청 정보, 완료 날짜 및 시각
+ * - 요청 대기 중(pending): 청소자 요청 목록 확인 버튼 표시
+ * - 청소 진행 예정(scheduled): 버튼 없음
+ * - 청소 진행 중(in-progress): 버튼 없음, 청소 시작 시각 표시
  */
 export default function CleaningRequestCard({
   id,
@@ -27,6 +32,8 @@ export default function CleaningRequestCard({
   requestDateTime,
   completionDateTime,
   selectedOption,
+  status,
+  cleaningStartDateTime,
   onCheckCleaner,
   onClickDetail,
 }: CleaningRequestCardProps) {
@@ -56,28 +63,40 @@ export default function CleaningRequestCard({
           </div>
 
           <div className="mt-4">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="flex flex-col gap-4 md:flex-row lg:flex-col min-[1363px]:flex-row items-start md:justify-between min-[1363px]:justify-between">
               <div>
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1 items-start">
                   <div className="flex">
                     <BodySmall className="text-neutral-600">요청 일시: </BodySmall>
-                    <BodySmall className="text-neutral-800">{requestDateTime}</BodySmall>
+                    <BodySmall className="text-neutral-800 ml-1">{requestDateTime}</BodySmall>
                   </div>
+                  {status === 'in-progress' && cleaningStartDateTime && (
+                    <div className="flex">
+                      <BodySmall className="text-neutral-600">청소 시작 시각: </BodySmall>
+                      <BodySmall className="text-neutral-800 ml-1">
+                        {cleaningStartDateTime}
+                      </BodySmall>
+                    </div>
+                  )}
                   <div className="flex">
-                    <BodySmall className="text-neutral-600">청소 완료 날짜 및 희망 시각:</BodySmall>
-                    <BodySmall className="text-neutral-800">{completionDateTime}</BodySmall>
+                    <BodySmall className="text-neutral-600">
+                      청소 완료 날짜 및 희망 시각:{' '}
+                    </BodySmall>
+                    <BodySmall className="text-neutral-800 ml-1">{completionDateTime}</BodySmall>
                   </div>
                   <div className="flex">
                     <BodySmall className="text-neutral-600">선택 옵션: </BodySmall>
-                    <BodySmall className="text-neutral-800">{selectedOption}</BodySmall>
+                    <BodySmall className="text-neutral-800 ml-1">{selectedOption}</BodySmall>
                   </div>
                 </div>
               </div>
-              <div className="w-full md:w-[200px]">
-                <Button onClick={onCheckCleaner} active className="h-[46px] w-full">
-                  청소자 요청 목록 확인
-                </Button>
-              </div>
+              {status === 'pending' && (
+                <div className="w-full md:w-[200px] lg:w-full min-[1363px]:w-[200px]">
+                  <Button onClick={onCheckCleaner} active className="h-[46px] w-full">
+                    청소자 요청 목록 확인
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>

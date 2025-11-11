@@ -63,6 +63,7 @@ export default function CleaningRequestManagePage() {
           imageUrl: '/img/sample-room.jpg',
           title: '강남역 원룸 청소',
           requestDateTime: '2025/11/2 08:00',
+          cleaningStartDateTime: '2025/11/3 13:29',
           completionDateTime: '2025/11/2 16:00',
           selectedOption: '청소 + 정리정돈(추가 옵션)',
           status: 'in-progress',
