@@ -46,7 +46,7 @@ const sidebarSections: SidebarSection[] = [
 
 export default function Sidebar() {
   return (
-    <aside className="hidden lg:block w-[208px] flex-shrink-0 text-left">
+    <aside className="hidden lg:block flex-shrink-0 text-left">
       <div className="mb-[36px]">
         <TitleH3 className="text-neutral-1000">마이페이지</TitleH3>
       </div>

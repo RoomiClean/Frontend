@@ -129,14 +129,14 @@ export default function CleaningRequestManagePage() {
 
   return (
     <RoomMainTemplate>
-      <div className="flex flex-col lg:flex-row gap-6 w-full lg:overflow-auto overflow-hidden h-screen lg:h-auto touch-none lg:touch-auto">
+      <div className="flex flex-col lg:flex-row gap-12 w-full lg:overflow-auto overflow-hidden h-screen lg:h-auto touch-none lg:touch-auto">
         {/* 작업 요청 목록 */}
         <div className="hidden lg:block lg:w-[60%]">
           <CleaningRequestListSection data={cleaningMockData} />
         </div>
 
         {/* 캘린더 */}
-        <div className="lg:w-[40%] flex flex-col gap-6">
+        <div className="lg:w-[40%] flex flex-col gap-6 lg:pt-[98px]">
           <div ref={calendarRef}>
             <Calendar className="lg:min-h-[450px]" memos={calendarMemos} />
           </div>

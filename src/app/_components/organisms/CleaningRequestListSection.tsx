@@ -91,7 +91,7 @@ export default function CleaningRequestListSection({ data }: CleaningRequestList
           >
             <DisplayLarge>{tab.label}</DisplayLarge>
             {mainTab === tab.id && (
-              <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary-400" />
+              <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-primary-400" />
             )}
           </button>
         ))}
