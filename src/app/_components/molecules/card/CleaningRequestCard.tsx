@@ -92,9 +92,11 @@ export default function CleaningRequestCard({
               </div>
               {status === 'pending' && (
                 <div className="w-full md:w-[200px] lg:w-full min-[1363px]:w-[200px]">
-                  <Button onClick={onCheckCleaner} active className="h-[46px] w-full">
-                    청소자 요청 목록 확인
-                  </Button>
+                  <Link href={`/room/request/cleaner-list/${id}`}>
+                    <Button onClick={onCheckCleaner} active className="h-[46px] w-full">
+                      청소자 요청 목록 확인
+                    </Button>
+                  </Link>
                 </div>
               )}
             </div>
