@@ -265,7 +265,7 @@ export default function RegisterAccommodationPage() {
         </div>
 
         {/* 다음 단계 버튼 */}
-        <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-[400px]">
+        <form onSubmit={handleSubmit(onSubmit)} className="w-full">
           <Button type="submit" variant="primary" className="w-full">
             다음 단계로
           </Button>
