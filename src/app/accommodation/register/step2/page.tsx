@@ -1,4 +1,5 @@
 'use client';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import { Input } from '@/app/_components/atoms/Input';
@@ -16,6 +17,14 @@ import { ACCOMMODATION_TYPES } from '@/constants/business.constants';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { useAgreements } from '@/hooks/useAgreements';
 import { useAccountVerification } from '@/hooks/useAccountVerification';
+
+declare global {
+  interface Window {
+    daum?: {
+      Postcode: new (config: { oncomplete: (data: any) => void }) => { open: () => void };
+    };
+  }
+}
 
 interface FormData {
   bank: string;
@@ -46,6 +55,8 @@ export default function RegisterAccommodationStep2Page() {
     handleSubmit,
     watch,
     control,
+    setValue,
+    setFocus,
     formState: { errors },
   } = useForm<FormData>({
     defaultValues: {
@@ -71,6 +82,59 @@ export default function RegisterAccommodationStep2Page() {
     mode: 'onChange',
   });
 
+  const [isPostcodeLoaded, setIsPostcodeLoaded] = useState(false);
+
+  useEffect(() => {
+    if (window.daum?.Postcode) {
+      setIsPostcodeLoaded(true);
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = '//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
+    script.async = true;
+    script.onload = () => setIsPostcodeLoaded(true);
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  const {
+    ref: zipCodeRef,
+    onBlur: zipCodeOnBlur,
+    ...zipCodeRest
+  } = register('zipCode', {
+    required: '우편번호를 입력해주세요',
+  });
+  const {
+    ref: addressRef,
+    onBlur: addressOnBlur,
+    ...addressRest
+  } = register('address', {
+    required: '주소를 입력해주세요',
+  });
+  const zipCodeValue = watch('zipCode');
+  const addressValue = watch('address');
+  const accommodationNameValue = watch('accommodationName');
+  const detailAddressValue = watch('detailAddress');
+  const accessMethodValue = watch('accessMethod');
+  const roomCountValue = watch('roomCount');
+  const bedCountValue = watch('bedCount');
+  const livingRoomCountValue = watch('livingRoomCount');
+  const bathroomCountValue = watch('bathroomCount');
+  const areaValue = watch('area');
+  const maxOccupancyValue = watch('maxOccupancy');
+  const equipmentStorageValue = watch('equipmentStorage');
+  const trashDisposalValue = watch('trashDisposal');
+  const hostRequestsValue = watch('hostRequests');
+  const [isAddressSelected, setIsAddressSelected] = useState(false);
+
+  useEffect(() => {
+    setIsAddressSelected(!!addressValue?.trim());
+  }, [addressValue]);
+
   // 커스텀 훅 사용
   const {
     files: accommodationPhotos,
@@ -90,8 +154,21 @@ export default function RegisterAccommodationStep2Page() {
   const { isVerified: isAccountVerified, verifyAccount } = useAccountVerification();
 
   const findZipCode = () => {
-    // 우편번호 찾기 API 연동 (예시)
-    window.open('https://postcode.map.daum.net/guide');
+    if (!isPostcodeLoaded || !window.daum?.Postcode) {
+      alert('우편번호 서비스를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+      return;
+    }
+
+    new window.daum.Postcode({
+      oncomplete: data => {
+        setValue('zipCode', data.zonecode, { shouldValidate: true, shouldDirty: true });
+        setValue('address', data.roadAddress || data.jibunAddress, {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+        setFocus('detailAddress');
+      },
+    }).open();
   };
 
   const handleVerifyAccount = async () => {
@@ -141,6 +218,7 @@ export default function RegisterAccommodationStep2Page() {
                     required: '숙소명을 입력해주세요',
                   })}
                   error={!!errors.accommodationName?.message}
+                  value={accommodationNameValue ?? ''}
                 />
                 {errors.accommodationName?.message && (
                   <Caption className="text-red-500">{errors.accommodationName.message}</Caption>
@@ -148,39 +226,60 @@ export default function RegisterAccommodationStep2Page() {
               </div>
 
               {/* 주소 */}
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <TitleDefault>
                   주소 <span className="text-red-500">*</span>
                 </TitleDefault>
                 <div className="flex gap-2">
                   <Input
                     placeholder="우편번호"
-                    {...register('zipCode')}
-                    disabled
-                    className="!w-24"
-                  />
-                  <Input
-                    placeholder="주소"
-                    {...register('address', {
-                      required: '주소를 입력해주세요',
-                    })}
-                    error={!!errors.address?.message}
+                    ref={zipCodeRef}
+                    {...zipCodeRest}
+                    onBlur={e => {
+                      zipCodeOnBlur?.(e);
+                      if (!e.target.value.trim()) {
+                        setValue('zipCode', '');
+                      }
+                    }}
+                    value={zipCodeValue}
+                    error={!!errors.zipCode?.message}
                     className="flex-1"
+                    readOnly={isAddressSelected}
+                    disabled={!isAddressSelected}
                   />
                   <Button variant="primary" onClick={findZipCode} className="!w-32">
                     우편번호 찾기
                   </Button>
                 </div>
+                {errors.zipCode?.message && (
+                  <Caption className="text-red-500">{errors.zipCode.message}</Caption>
+                )}
+                <Input
+                  placeholder="주소"
+                  ref={addressRef}
+                  {...addressRest}
+                  onBlur={e => {
+                    addressOnBlur?.(e);
+                    if (!e.target.value.trim()) {
+                      setValue('address', '');
+                    }
+                  }}
+                  value={addressValue}
+                  error={!!errors.address?.message}
+                  readOnly={isAddressSelected}
+                  disabled={!isAddressSelected}
+                />
+                {errors.address?.message && (
+                  <Caption className="text-red-500">{errors.address.message}</Caption>
+                )}
                 <Input
                   placeholder="상세주소 입력"
                   {...register('detailAddress', {
                     required: '상세주소를 입력해주세요',
                   })}
                   error={!!errors.detailAddress?.message}
+                  value={detailAddressValue ?? ''}
                 />
-                {errors.address?.message && (
-                  <Caption className="text-red-500">{errors.address.message}</Caption>
-                )}
                 {errors.detailAddress?.message && (
                   <Caption className="text-red-500">{errors.detailAddress.message}</Caption>
                 )}
@@ -197,6 +296,7 @@ export default function RegisterAccommodationStep2Page() {
                     required: '출입 방법을 입력해주세요',
                   })}
                   error={!!errors.accessMethod?.message}
+                  value={accessMethodValue ?? ''}
                 />
                 {errors.accessMethod?.message && (
                   <Caption className="text-red-500">{errors.accessMethod.message}</Caption>
@@ -245,6 +345,7 @@ export default function RegisterAccommodationStep2Page() {
                         },
                       })}
                       type="number"
+                      value={roomCountValue ?? ''}
                     />
                     {errors.roomCount?.message && (
                       <Caption className="text-red-500 text-xs">{errors.roomCount.message}</Caption>
@@ -262,6 +363,7 @@ export default function RegisterAccommodationStep2Page() {
                         },
                       })}
                       type="number"
+                      value={bedCountValue ?? ''}
                     />
                     {errors.bedCount?.message && (
                       <Caption className="text-red-500 text-xs">{errors.bedCount.message}</Caption>
@@ -279,6 +381,7 @@ export default function RegisterAccommodationStep2Page() {
                         },
                       })}
                       type="number"
+                      value={livingRoomCountValue ?? ''}
                     />
                     {errors.livingRoomCount?.message && (
                       <Caption className="text-red-500 text-xs">
@@ -298,6 +401,7 @@ export default function RegisterAccommodationStep2Page() {
                         },
                       })}
                       type="number"
+                      value={bathroomCountValue ?? ''}
                     />
                     {errors.bathroomCount?.message && (
                       <Caption className="text-red-500 text-xs">
@@ -327,6 +431,7 @@ export default function RegisterAccommodationStep2Page() {
                       })}
                       type="number"
                       error={!!errors.area?.message}
+                      value={areaValue ?? ''}
                     />
                     <span className="text-neutral-1000 whitespace-nowrap">평</span>
                   </div>
@@ -349,6 +454,7 @@ export default function RegisterAccommodationStep2Page() {
                       })}
                       type="number"
                       error={!!errors.maxOccupancy?.message}
+                      value={maxOccupancyValue ?? ''}
                     />
                     <span className="text-neutral-1000 whitespace-nowrap">명</span>
                   </div>
@@ -410,6 +516,7 @@ export default function RegisterAccommodationStep2Page() {
                     required: '비품 보관장소를 입력해주세요',
                   })}
                   error={!!errors.equipmentStorage?.message}
+                  value={equipmentStorageValue ?? ''}
                 />
                 {errors.equipmentStorage?.message && (
                   <Caption className="text-red-500">{errors.equipmentStorage.message}</Caption>
@@ -427,6 +534,7 @@ export default function RegisterAccommodationStep2Page() {
                     required: '쓰레기 배출장소를 입력해주세요',
                   })}
                   error={!!errors.trashDisposal?.message}
+                  value={trashDisposalValue ?? ''}
                 />
                 {errors.trashDisposal?.message && (
                   <Caption className="text-red-500">{errors.trashDisposal.message}</Caption>
@@ -436,7 +544,11 @@ export default function RegisterAccommodationStep2Page() {
               {/* 호스트 요청사항 */}
               <div className="space-y-2">
                 <TitleDefault>호스트 요청사항</TitleDefault>
-                <Input placeholder="요청사항을 입력해주세요" {...register('hostRequests')} />
+                <Input
+                  placeholder="요청사항을 입력해주세요"
+                  {...register('hostRequests')}
+                  value={hostRequestsValue ?? ''}
+                />
               </div>
             </div>
           </div>
