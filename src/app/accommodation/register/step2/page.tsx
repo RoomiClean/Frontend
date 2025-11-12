@@ -187,7 +187,7 @@ export default function RegisterAccommodationStep2Page() {
     console.log('Submitted data:', { ...data, accommodationPhotos, agreements });
 
     // 완료 페이지로 이동 또는 목록으로 이동
-    router.push('/accommodation');
+    router.push('/accommodation/register/done');
   };
 
   return (
@@ -247,7 +247,11 @@ export default function RegisterAccommodationStep2Page() {
                     readOnly={isAddressSelected}
                     disabled={!isAddressSelected}
                   />
-                  <Button variant="primary" onClick={findZipCode} className="!w-32">
+                  <Button
+                    variant="primary"
+                    onClick={findZipCode}
+                    className="!w-32 !h-12 flex items-center justify-center"
+                  >
                     우편번호 찾기
                   </Button>
                 </div>
@@ -648,7 +652,7 @@ export default function RegisterAccommodationStep2Page() {
         </div>
 
         {/* 다음 단계 버튼 */}
-        <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-[400px]">
+        <form onSubmit={handleSubmit(onSubmit)} className="w-full">
           <Button type="submit" variant="primary" className="w-full">
             숙소 등록하기
           </Button>
