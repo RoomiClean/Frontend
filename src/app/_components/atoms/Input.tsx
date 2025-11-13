@@ -30,7 +30,7 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
  */
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, value, placeholder, disabled, error, type = 'text', invisible, ...props }, ref) => {
+  ({ className, value, placeholder, disabled, error, type = 'text', invisible, onFocus, onBlur, onChange, ...props }, ref) => {
     const [isFocused, setIsFocused] = useState(false);
     const [showPassword, setShowPassword] = useState(true);
 
@@ -61,12 +61,16 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 
     const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
       setIsFocused(true);
-      props.onFocus?.(e);
+      onFocus?.(e);
     };
 
     const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
       setIsFocused(false);
-      props.onBlur?.(e);
+      onBlur?.(e);
+    };
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      onChange?.(e);
     };
 
     const inputType = invisible ? (showPassword ? 'text' : 'password') : type;
@@ -82,6 +86,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           className={`${baseStyles} ${getStateStyles()} ${className}`}
           onFocus={handleFocus}
           onBlur={handleBlur}
+          onChange={handleChange}
           {...props}
         />
 
