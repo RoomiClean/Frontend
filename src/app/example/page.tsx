@@ -15,6 +15,8 @@ import {
 } from '../_components/atoms/Typography';
 import { Dropdown } from '../_components/atoms/DropDown';
 import { Textarea } from '../_components/atoms/Textarea';
+import { Calendar } from '../_components/molecules/Calendar';
+import Modal from '../_components/atoms/Modal';
 
 interface FormValues {
   id: string;
@@ -26,6 +28,47 @@ export default function ExamplePage() {
   const [textareaValue, setTextareaValue] = useState('');
   const [textareaWithError, setTextareaWithError] = useState('');
   const [textareaDisabled, setTextareaDisabled] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const accommodationSchedulesData = [
+    {
+      id: 1,
+      startDate: '2025년 11월 7일',
+      endDate: '2025년 11월 11일',
+    },
+    {
+      id: 2,
+      startDate: '2025년 11월 18일',
+      endDate: '2025년 11월 20일',
+    },
+  ];
+
+  const lastCleaningScheduleData = {
+    id: 1,
+    date: '2025년 11월 5일',
+    cleanerName: '김청소',
+  };
+
+  const reservedCleaningSchedulesData = [
+    {
+      id: 1,
+      date: '2025년 11월 12일',
+      cleanerName: '이청소',
+      price: 50000,
+    },
+    {
+      id: 2,
+      date: '2025년 11월 22일',
+      cleanerName: '박청소',
+      price: 55000,
+    },
+    {
+      id: 3,
+      date: '2025년 11월 28일',
+      cleanerName: '최청소',
+      price: 50000,
+    },
+  ];
 
   const {
     control,
@@ -187,6 +230,33 @@ export default function ExamplePage() {
             showCharCount={true}
           />
         </div>
+      </section>
+
+      {/* Section: Calendar */}
+      <section className="w-full h-[500px]">
+        <Calendar
+          accommodationSchedules={accommodationSchedulesData}
+          lastCleaningSchedule={lastCleaningScheduleData}
+          reservedCleaningSchedules={reservedCleaningSchedulesData}
+        />
+      </section>
+
+      {/* Section: Modal */}
+      <section className="space-y-4">
+        <h2 className="font-semibold text-2xl mb-4">Modal</h2>
+        <div className="w-[350px]">
+          <Button onClick={() => setIsModalOpen(true)}>모달 열기</Button>
+        </div>
+
+        <Modal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          width="600px"
+          height="400px"
+          padding="40px"
+        >
+          <p>예시 모달</p>
+        </Modal>
       </section>
     </div>
   );
