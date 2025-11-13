@@ -478,9 +478,9 @@ export default function RegisterAccommodationStep2Page() {
               {/* 숙소 사진 업로드 */}
               <div className="space-y-2">
                 <TitleDefault>숙소 사진 업로드</TitleDefault>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="flex flex-nowrap gap-2 overflow-x-auto overflow-y-hidden pb-2">
                   {accommodationPhotos.map((file, index) => (
-                    <div key={index} className="relative aspect-square">
+                    <div key={index} className="relative w-28 h-28 flex-shrink-0">
                       <img
                         src={URL.createObjectURL(file)}
                         alt={`숙소 사진 ${index + 1}`}
@@ -496,22 +496,26 @@ export default function RegisterAccommodationStep2Page() {
                     </div>
                   ))}
                   {accommodationPhotos.length < 20 && (
-                    <label className="aspect-square border-2 border-dashed border-neutral-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-neutral-1000">
-                      <input
-                        type="file"
-                        multiple
-                        accept="image/jpeg,image/png,image/gif"
-                        onChange={e => {
-                          handleFileUpload(e);
-                          setPhotoError(null);
-                        }}
-                        className="hidden"
-                      />
-                      <div className="flex flex-col items-center gap-2">
-                        <span className="text-2xl">📷</span>
-                        <span className="text-xs text-neutral-600">사진첨부</span>
-                      </div>
-                    </label>
+                    <div className="flex-shrink-0">
+                      <label className="w-28 h-28 border-2 border-dashed border-neutral-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-neutral-1000">
+                        <input
+                          type="file"
+                          multiple
+                          accept="image/jpeg,image/png,image/gif"
+                          onChange={e => {
+                            handleFileUpload(e);
+                            setPhotoError(null);
+                          }}
+                          className="hidden"
+                        />
+                        <div className="flex flex-col items-center gap-2">
+                          <span className="text-2xl">📷</span>
+                          <span className="text-xs text-neutral-600 whitespace-nowrap">
+                            사진첨부
+                          </span>
+                        </div>
+                      </label>
+                    </div>
                   )}
                 </div>
                 <Caption className="text-neutral-500">
