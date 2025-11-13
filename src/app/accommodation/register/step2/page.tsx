@@ -130,6 +130,7 @@ export default function RegisterAccommodationStep2Page() {
   const trashDisposalValue = watch('trashDisposal');
   const hostRequestsValue = watch('hostRequests');
   const [isAddressSelected, setIsAddressSelected] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
 
   useEffect(() => {
     setIsAddressSelected(!!addressValue?.trim());
@@ -178,6 +179,12 @@ export default function RegisterAccommodationStep2Page() {
   };
 
   const onSubmit = (data: FormData) => {
+    if (accommodationPhotos.length < 5) {
+      setPhotoError('숙소 사진을 최소 5장 이상 업로드해주세요.');
+      alert('숙소 사진을 최소 5장 이상 업로드해주세요.');
+      return;
+    }
+
     if (!isRequiredMet) {
       alert('필수 약관에 동의해주세요');
       return;
@@ -494,7 +501,10 @@ export default function RegisterAccommodationStep2Page() {
                         type="file"
                         multiple
                         accept="image/jpeg,image/png,image/gif"
-                        onChange={handleFileUpload}
+                        onChange={e => {
+                          handleFileUpload(e);
+                          setPhotoError(null);
+                        }}
                         className="hidden"
                       />
                       <div className="flex flex-col items-center gap-2">
@@ -505,8 +515,10 @@ export default function RegisterAccommodationStep2Page() {
                   )}
                 </div>
                 <Caption className="text-neutral-500">
-                  사진은 최대 20장, 각각 5MB, 전체 100MB를 넘을 수 없습니다. (JPG, PNG, GIF 가능)
+                  사진은 최소 5장, 최대 20장까지 업로드해야 하며 각각 5MB, 전체 100MB를 넘을 수
+                  없습니다. (JPG, PNG, GIF 가능)
                 </Caption>
+                {photoError && <Caption className="text-red-500">{photoError}</Caption>}
               </div>
 
               {/* 비품 보관장소 */}
