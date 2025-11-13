@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
+import Image from 'next/image';
 import { Input } from '@/app/_components/atoms/Input';
 import { Dropdown } from '@/app/_components/atoms/DropDown';
 import Button from '@/app/_components/atoms/Button';
@@ -25,10 +26,18 @@ import { useFileUpload } from '@/hooks/useFileUpload';
 import { useAgreements } from '@/hooks/useAgreements';
 import { useAccountVerification } from '@/hooks/useAccountVerification';
 
+interface DaumPostcodeData {
+  zonecode: string;
+  roadAddress: string;
+  jibunAddress: string;
+}
+
 declare global {
   interface Window {
     daum?: {
-      Postcode: new (config: { oncomplete: (data: any) => void }) => { open: () => void };
+      Postcode: new (config: { oncomplete: (data: DaumPostcodeData) => void }) => {
+        open: () => void;
+      };
     };
   }
 }
@@ -562,24 +571,10 @@ export default function RegisterAccommodationStep2Page() {
 
                 {/* 숙소 사진 업로드 */}
                 <div className="space-y-2">
-                  <TitleDefault>숙소 사진 업로드</TitleDefault>
+                  <TitleDefault>
+                    숙소 사진 업로드 <span className="text-red-500">*</span>
+                  </TitleDefault>
                   <div className="flex flex-nowrap gap-2 overflow-x-auto overflow-y-hidden pb-2">
-                    {accommodationPhotos.map((file, index) => (
-                      <div key={index} className="relative w-28 h-28 flex-shrink-0">
-                        <img
-                          src={URL.createObjectURL(file)}
-                          alt={`숙소 사진 ${index + 1}`}
-                          className="w-full h-full object-cover rounded-lg border border-neutral-200"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removePhoto(index)}
-                          className="absolute top-1 right-1 w-6 h-6 bg-neutral-900 rounded-full flex items-center justify-center text-white hover:bg-neutral-700"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
                     {accommodationPhotos.length < 20 && (
                       <div className="flex-shrink-0">
                         <label className="w-28 h-28 border-2 border-dashed border-neutral-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-neutral-1000">
@@ -602,6 +597,25 @@ export default function RegisterAccommodationStep2Page() {
                         </label>
                       </div>
                     )}
+                    {accommodationPhotos.map((file, index) => (
+                      <div key={index} className="relative w-28 h-28 flex-shrink-0">
+                        <Image
+                          src={URL.createObjectURL(file)}
+                          alt={`숙소 사진 ${index + 1}`}
+                          width={112}
+                          height={112}
+                          unoptimized
+                          className="w-full h-full object-cover rounded-lg border border-neutral-200"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removePhoto(index)}
+                          className="absolute top-1 right-1 w-6 h-6 bg-neutral-900 rounded-full flex items-center justify-center text-white hover:bg-neutral-700"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
                   </div>
                   <Caption className="text-neutral-500">
                     사진은 최소 5장, 최대 20장까지 업로드해야 하며 각각 5MB, 전체 100MB를 넘을 수
