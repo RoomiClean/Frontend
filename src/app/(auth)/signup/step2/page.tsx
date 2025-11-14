@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ChangeEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { Input } from '@/app/_components/atoms/Input';
@@ -18,6 +18,9 @@ import {
 } from '@/app/_components/atoms/Typography';
 import StepIndicator from '@/app/_components/molecules/StepIndicator';
 import { EMAIL_DOMAINS, PROVINCES, DISTRICTS } from '@/constants/business.constants';
+
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}$/;
+const HANGUL_REGEX = /[\u1100-\u11FF\u3130-\u318F\uAC00-\uD7A3]/g;
 
 interface FormData {
   email: string;
@@ -81,6 +84,38 @@ export default function SignUpStep2Page() {
 
   const password = watch('password');
   const confirmPassword = watch('confirmPassword');
+  const passwordRegister = register('password');
+  const confirmPasswordRegister = register('confirmPassword');
+  const preventHangulInput = (
+    event: ChangeEvent<HTMLInputElement>,
+    originalHandler?: (event: ChangeEvent<HTMLInputElement>) => void,
+  ) => {
+    const sanitizedValue = event.target.value.replace(HANGUL_REGEX, '');
+    if (sanitizedValue !== event.target.value) {
+      event.target.value = sanitizedValue;
+    }
+    originalHandler?.(event);
+  };
+
+  useEffect(() => {
+    if (!password) {
+      clearErrors('password');
+      setSuccess(prev => ({ ...prev, password: false }));
+      return;
+    }
+
+    if (!PASSWORD_REGEX.test(password)) {
+      setError('password', {
+        type: 'manual',
+        message: '비밀번호 조합이 일치하지 않습니다',
+      });
+      setSuccess(prev => ({ ...prev, password: false }));
+      return;
+    }
+
+    clearErrors('password');
+    setSuccess(prev => ({ ...prev, password: true }));
+  }, [password, clearErrors, setError]);
 
   const [success, setSuccess] = useState<Record<string, boolean>>({});
   const [isEmailChecked, setIsEmailChecked] = useState(false);
@@ -201,8 +236,7 @@ export default function SignUpStep2Page() {
     const isEmailValid = await validateEmail();
     if (!isEmailValid) return;
 
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}$/;
-    if (!passwordRegex.test(data.password)) {
+    if (!PASSWORD_REGEX.test(data.password)) {
       setError('password', {
         type: 'manual',
         message: '비밀번호 조합이 일치하지 않습니다',
@@ -329,7 +363,8 @@ export default function SignUpStep2Page() {
                   placeholder="비밀번호를 입력해주세요"
                   type="password"
                   invisible
-                  {...register('password')}
+                  {...passwordRegister}
+                  onChange={event => preventHangulInput(event, passwordRegister.onChange)}
                   error={!!errors.password?.message}
                 />
                 <Caption className="text-neutral-500">
@@ -337,6 +372,9 @@ export default function SignUpStep2Page() {
                 </Caption>
                 {errors.password?.message && (
                   <Caption className="text-red-500">{errors.password.message}</Caption>
+                )}
+                {success.password && (
+                  <Caption className="text-green-500">사용 가능한 비밀번호입니다</Caption>
                 )}
               </div>
 
@@ -349,7 +387,8 @@ export default function SignUpStep2Page() {
                   placeholder="비밀번호를 다시 입력해주세요"
                   type="password"
                   invisible
-                  {...register('confirmPassword')}
+                  {...confirmPasswordRegister}
+                  onChange={event => preventHangulInput(event, confirmPasswordRegister.onChange)}
                   error={!!errors.confirmPassword?.message}
                 />
                 {errors.confirmPassword?.message && (
@@ -397,7 +436,11 @@ export default function SignUpStep2Page() {
                       }}
                     />
                   </div>
-                  <Button variant="primary" onClick={sendVerificationCode} className="!w-32">
+                  <Button
+                    variant="primary"
+                    onClick={sendVerificationCode}
+                    className="!w-32 !h-12 flex items-center justify-center"
+                  >
                     {verificationTimer > 0 ? '인증번호 재전송' : '인증번호 받기'}
                   </Button>
                 </div>
