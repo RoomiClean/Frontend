@@ -147,6 +147,7 @@ export default function SignUpStep2Page() {
           type: 'manual',
           message: '비밀번호가 일치하지 않습니다',
         });
+        setSuccess(prev => ({ ...prev, confirmPassword: false }));
       } else {
         clearErrors('confirmPassword');
         setSuccess(prev => ({ ...prev, confirmPassword: true }));
@@ -177,20 +178,24 @@ export default function SignUpStep2Page() {
 
     if (!email) {
       setError('email', { type: 'manual', message: '이메일을 입력해주세요' });
+      setSuccess(prev => ({ ...prev, email: false }));
       return false;
     }
 
     if (!emailRegex.test(fullEmail)) {
       setError('email', { type: 'manual', message: '올바른 이메일 형식이 아닙니다' });
+      setSuccess(prev => ({ ...prev, email: false }));
       return false;
     }
 
     // Simulate duplicate check
     if (email === 'test') {
       setError('email', { type: 'manual', message: '중복된 아이디입니다' });
+      setSuccess(prev => ({ ...prev, email: false }));
       return false;
     }
 
+    clearErrors('email');
     setSuccess(prev => ({ ...prev, email: true }));
     setIsEmailChecked(true);
     return true;
@@ -200,16 +205,19 @@ export default function SignUpStep2Page() {
     const phone = watch('phone');
     if (!phone) {
       setError('phone', { type: 'manual', message: '전화번호를 입력해주세요' });
+      setSuccess(prev => ({ ...prev, phone: false }));
       return;
     }
 
     const phoneRegex = /^010\d{8}$/;
     if (!phoneRegex.test(phone)) {
       setError('phone', { type: 'manual', message: '올바른 전화번호 형식이 아닙니다' });
+      setSuccess(prev => ({ ...prev, phone: false }));
       return;
     }
 
     setVerificationTimer(180); // 3 minutes
+    clearErrors('phone');
     setSuccess(prev => ({ ...prev, phone: true }));
   };
 
@@ -217,6 +225,7 @@ export default function SignUpStep2Page() {
     const verificationCode = watch('verificationCode');
     if (!verificationCode) {
       setError('verificationCode', { type: 'manual', message: '인증번호를 입력해주세요' });
+      setSuccess(prev => ({ ...prev, verificationCode: false }));
       return;
     }
 
@@ -225,9 +234,11 @@ export default function SignUpStep2Page() {
         type: 'manual',
         message: '인증번호가 일치하지 않습니다',
       });
+      setSuccess(prev => ({ ...prev, verificationCode: false }));
       return;
     }
 
+    clearErrors('verificationCode');
     setSuccess(prev => ({ ...prev, verificationCode: true }));
     setIsPhoneVerified(true);
   };
@@ -428,6 +439,8 @@ export default function SignUpStep2Page() {
                       onChange={e => {
                         const value = e.target.value.replace(/-/g, '');
                         setValue('phone', value);
+                        clearErrors('phone');
+                        setSuccess(prev => ({ ...prev, phone: false }));
                       }}
                       onKeyDown={e => {
                         if (e.key === '-') {
