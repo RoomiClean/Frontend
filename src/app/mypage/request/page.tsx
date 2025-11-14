@@ -18,24 +18,24 @@ export default function CleaningRequestManagePage() {
   const cleaningMockData: CleaningRequestData = {
     ongoing: {
       pending: [
-        // {
-        //   id: '1',
-        //   imageUrl: '/img/sample-room.jpg',
-        //   title: '외대 앞 에어비앤비 자동 청소',
-        //   requestDateTime: '2025/10/31 18:29',
-        //   completionDateTime: '2025/11/3 18:00',
-        //   selectedOption: '청소만(기본 옵션)',
-        //   status: 'pending',
-        // },
-        // {
-        //   id: '2',
-        //   imageUrl: '/img/sample-room.jpg',
-        //   title: '경희대 앞 에어비앤비',
-        //   requestDateTime: '2025/10/31 20:15',
-        //   completionDateTime: '2025/11/4 14:00',
-        //   selectedOption: '청소만(기본 옵션)',
-        //   status: 'pending',
-        // },
+        {
+          id: '1',
+          imageUrl: '/img/sample-room.jpg',
+          title: '외대 앞 에어비앤비 자동 청소',
+          requestDateTime: '2025/10/31 18:29',
+          completionDateTime: '2025/11/3 18:00',
+          selectedOption: '청소만(기본 옵션)',
+          status: 'pending',
+        },
+        {
+          id: '2',
+          imageUrl: '/img/sample-room.jpg',
+          title: '경희대 앞 에어비앤비',
+          requestDateTime: '2025/10/31 20:15',
+          completionDateTime: '2025/11/4 14:00',
+          selectedOption: '청소만(기본 옵션)',
+          status: 'pending',
+        },
       ],
       scheduled: [
         {
@@ -72,16 +72,50 @@ export default function CleaningRequestManagePage() {
     },
     past: {
       all: [
-        // 데이터 없는 경우 UI 확인용 (주석 처리)
-        // {
-        //   id: '6',
-        //   imageUrl: '/img/sample-room.jpg',
-        //   title: '이태원 아파트 청소',
-        //   requestDateTime: '2025/10/20 10:00',
-        //   completionDateTime: '2025/10/21 15:00',
-        //   selectedOption: '청소만(기본 옵션)',
-        //   status: 'in-progress',
-        // },
+        {
+          id: '6',
+          imageUrl: '/img/sample-room.jpg',
+          title: '외대 앞 에어비앤비 자동 청소',
+          requestDateTime: '2025/10/31 18:29',
+          cleaningStartDateTime: '2025/11/3 13:29',
+          completionDateTime: '2025/11/3 18:00',
+          selectedOption: '청소만(기본 옵션)',
+          status: 'completed',
+        },
+        {
+          id: '7',
+          imageUrl: '/img/sample-room.jpg',
+          title: '외대 앞 에어비앤비 자동 청소',
+          requestDateTime: '2025/10/31 18:29',
+          cleaningStartDateTime: '2025/11/3 13:29',
+          completionDateTime: '2025/11/3 18:00',
+          selectedOption: '청소만(기본 옵션)',
+          status: 'canceled',
+        },
+      ],
+      completed: [
+        {
+          id: '6',
+          imageUrl: '/img/sample-room.jpg',
+          title: '외대 앞 에어비앤비 자동 청소',
+          requestDateTime: '2025/10/31 18:29',
+          cleaningStartDateTime: '2025/11/3 13:29',
+          completionDateTime: '2025/11/3 18:00',
+          selectedOption: '청소만(기본 옵션)',
+          status: 'completed',
+        },
+      ],
+      canceled: [
+        {
+          id: '7',
+          imageUrl: '/img/sample-room.jpg',
+          title: '외대 앞 에어비앤비 자동 청소',
+          requestDateTime: '2025/10/31 18:29',
+          cleaningStartDateTime: '2025/11/3 13:29',
+          completionDateTime: '2025/11/3 18:00',
+          selectedOption: '청소만(기본 옵션)',
+          status: 'canceled',
+        },
       ],
     },
   };

@@ -2,20 +2,13 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import {
-  BodyDefault,
-  DisplayDefault,
-  DisplayH2,
-  DisplayH3,
-  DisplayLarge,
-  TitleH4,
-} from '../atoms/Typography';
+import { DisplayDefault, DisplayH3, DisplayLarge, TitleH4 } from '../atoms/Typography';
 import CleaningRequestCard from '../molecules/card/CleaningRequestCard';
 import EmptyIcon from '@/assets/svg/Search.svg';
 import Button from '../atoms/Button';
 
 type MainTab = 'ongoing' | 'past';
-type SubTab = 'pending' | 'scheduled' | 'in-progress' | 'all';
+type SubTab = 'pending' | 'scheduled' | 'in-progress' | 'all' | 'completed' | 'canceled';
 
 const MAIN_TABS: {
   id: MainTab;
@@ -25,11 +18,17 @@ const MAIN_TABS: {
   { id: 'past', label: '과거 요청 내역' },
 ];
 
-const SUB_TABS: { id: SubTab; label: string }[] = [
+const ONGOING_SUB_TABS: { id: SubTab; label: string }[] = [
   { id: 'all', label: '전체' },
   { id: 'pending', label: '요청 대기 중' },
   { id: 'scheduled', label: '청소 진행 예정' },
   { id: 'in-progress', label: '청소 진행 중' },
+];
+
+const PAST_SUB_TABS: { id: SubTab; label: string }[] = [
+  { id: 'all', label: '전체' },
+  { id: 'completed', label: '청소 완료' },
+  { id: 'canceled', label: '요청 취소' },
 ];
 
 /**
@@ -42,7 +41,7 @@ export interface CleaningRequest {
   requestDateTime: string;
   completionDateTime: string;
   selectedOption: string;
-  status: 'pending' | 'scheduled' | 'in-progress';
+  status: 'pending' | 'scheduled' | 'in-progress' | 'completed' | 'canceled';
   cleaningStartDateTime?: string;
 }
 
@@ -58,6 +57,8 @@ export interface CleaningRequestData {
   };
   past: {
     all: CleaningRequest[];
+    completed: CleaningRequest[];
+    canceled: CleaningRequest[];
   };
 }
 
@@ -74,13 +75,34 @@ export default function CleaningRequestListSection({ data }: CleaningRequestList
   const [mainTab, setMainTab] = useState<MainTab>('ongoing');
   const [subTab, setSubTab] = useState<SubTab>('all');
 
+  // 메인 탭 변경 시 서브 탭을 'all'로 리셋
+  const handleMainTabChange = (tab: MainTab) => {
+    setMainTab(tab);
+    setSubTab('all');
+  };
+
   // 탭에 따른 데이터 필터링
-  const requests =
-    mainTab === 'past'
-      ? data.past.all
-      : subTab === 'all'
-        ? [...data.ongoing.pending, ...data.ongoing.scheduled, ...data.ongoing['in-progress']]
-        : data.ongoing[subTab] || [];
+  const getFilteredRequests = (): CleaningRequest[] => {
+    if (mainTab === 'past') {
+      if (subTab === 'all') {
+        return data.past.all;
+      }
+      if (subTab === 'completed') {
+        return data.past.completed;
+      }
+      return data.past.canceled;
+    }
+
+    if (subTab === 'all') {
+      return [...data.ongoing.pending, ...data.ongoing.scheduled, ...data.ongoing['in-progress']];
+    }
+    if (subTab === 'pending' || subTab === 'scheduled' || subTab === 'in-progress') {
+      return data.ongoing[subTab];
+    }
+    return [];
+  };
+
+  const requests = getFilteredRequests();
 
   return (
     <div className="w-full h-full flex flex-col">
@@ -93,7 +115,7 @@ export default function CleaningRequestListSection({ data }: CleaningRequestList
         {MAIN_TABS.map(tab => (
           <button
             key={tab.id}
-            onClick={() => setMainTab(tab.id)}
+            onClick={() => handleMainTabChange(tab.id)}
             className={`flex-1 md:flex-none w-full md:w-auto px-0 md:px-4 py-[14px] transition-colors relative md:text-[20px] whitespace-nowrap text-center justify-center ${
               mainTab === tab.id ? 'text-neutral-1000' : 'text-neutral-500'
             }`}
@@ -106,10 +128,25 @@ export default function CleaningRequestListSection({ data }: CleaningRequestList
         ))}
       </div>
 
-      {/* 서브 탭 (진행중인 요청일 때만 표시) */}
+      {/* 서브 탭 */}
       {mainTab === 'ongoing' && (
         <div className="flex gap-4">
-          {SUB_TABS.map(tab => (
+          {ONGOING_SUB_TABS.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setSubTab(tab.id)}
+              className={`whitespace-nowrap transition-colors md:text-[16px] ${
+                subTab === tab.id ? 'text-primary-400' : 'text-neutral-500'
+              }`}
+            >
+              <DisplayDefault>{tab.label}</DisplayDefault>
+            </button>
+          ))}
+        </div>
+      )}
+      {mainTab === 'past' && (
+        <div className="flex gap-4">
+          {PAST_SUB_TABS.map(tab => (
             <button
               key={tab.id}
               onClick={() => setSubTab(tab.id)}
@@ -138,11 +175,15 @@ export default function CleaningRequestListSection({ data }: CleaningRequestList
               status={request.status}
               cleaningStartDateTime={request.cleaningStartDateTime}
               showStatusLabel={mainTab === 'ongoing' && subTab === 'all'}
+              isPastRequest={mainTab === 'past'}
               onCheckCleaner={() => {
                 console.log('청소자 정보 확인:', request.id);
               }}
               onClickDetail={() => {
                 console.log('상세보기:', request.id);
+              }}
+              onWriteReview={() => {
+                console.log('리뷰 작성:', request.id);
               }}
             />
           ))
