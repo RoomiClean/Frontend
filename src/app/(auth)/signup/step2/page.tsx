@@ -24,6 +24,7 @@ import { BiSolidCamera } from 'react-icons/bi';
 
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}$/;
 const HANGUL_REGEX = /[\u1100-\u11FF\u3130-\u318F\uAC00-\uD7A3]/g;
+const VERIFICATION_DURATION = 180;
 
 interface FormData {
   email: string;
@@ -133,6 +134,7 @@ export default function SignUpStep2Page() {
   const [isEmailChecked, setIsEmailChecked] = useState(false);
   const [isPhoneVerified, setIsPhoneVerified] = useState(false);
   const [verificationTimer, setVerificationTimer] = useState(0);
+  const [isVerificationRequested, setIsVerificationRequested] = useState(false);
   const [isCustomDomain, setIsCustomDomain] = useState(false);
   const [showBusinessDetail, setShowBusinessDetail] = useState(false);
   const [profilePhotoError, setProfilePhotoError] = useState<string | null>(null);
@@ -207,12 +209,12 @@ export default function SignUpStep2Page() {
   }, [memberType, router]);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (verificationTimer > 0) {
-      interval = setInterval(() => {
-        setVerificationTimer(prev => prev - 1);
-      }, 1000);
-    }
+    if (verificationTimer <= 0) return;
+
+    const interval = setInterval(() => {
+      setVerificationTimer(prev => (prev <= 1 ? 0 : prev - 1));
+    }, 1000);
+
     return () => clearInterval(interval);
   }, [verificationTimer]);
 
@@ -292,7 +294,8 @@ export default function SignUpStep2Page() {
       return;
     }
 
-    setVerificationTimer(180); // 3 minutes
+    setVerificationTimer(VERIFICATION_DURATION); // 3 minutes
+    setIsVerificationRequested(true);
     clearErrors('phone');
     setSuccess(prev => ({ ...prev, phone: true }));
   };
@@ -317,6 +320,7 @@ export default function SignUpStep2Page() {
     clearErrors('verificationCode');
     setSuccess(prev => ({ ...prev, verificationCode: true }));
     setIsPhoneVerified(true);
+    setVerificationTimer(0);
   };
 
   const onSubmit = async (data: FormData) => {
@@ -388,6 +392,15 @@ export default function SignUpStep2Page() {
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
+
+  const isVerificationActive = verificationTimer > 0;
+  const isVerificationInputDisabled =
+    !isVerificationRequested || (!isVerificationActive && !success.verificationCode);
+  const verificationTimerLabel = isVerificationActive
+    ? formatTimer(verificationTimer)
+    : isVerificationRequested
+      ? '00:00'
+      : formatTimer(VERIFICATION_DURATION);
 
   return (
     <div className="min-h-[calc(100dvh-68px)] py-8">
@@ -693,31 +706,41 @@ export default function SignUpStep2Page() {
               </div>
 
               {/* 인증번호 */}
-              {verificationTimer > 0 && (
-                <div className="space-y-2">
-                  <BodySmall className="text-neutral-1000">인증번호</BodySmall>
-                  <div className="flex gap-2">
+              <div className="space-y-2">
+                <BodySmall className="text-neutral-1000">인증번호</BodySmall>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
                     <Input
                       placeholder="4자리 숫자 입력"
                       {...register('verificationCode')}
                       error={!!errors.verificationCode?.message}
-                      className="flex-1"
+                      disabled={isVerificationInputDisabled}
+                      style={{ paddingRight: '64px' }}
                     />
-                    <div className="flex items-center px-3 text-red-500 font-mono">
-                      {formatTimer(verificationTimer)}
-                    </div>
-                    <Button variant="primary" onClick={verifyCode} className="w-32">
-                      인증번호 확인
-                    </Button>
+                    <span
+                      className={`pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-sm font-mono ${
+                        isVerificationActive ? 'text-red-500' : 'text-neutral-400'
+                      }`}
+                    >
+                      {verificationTimerLabel}
+                    </span>
                   </div>
-                  {errors.verificationCode?.message && (
-                    <Caption className="text-red-500">{errors.verificationCode.message}</Caption>
-                  )}
-                  {success.verificationCode && (
-                    <Caption className="text-green-500">인증되었습니다</Caption>
-                  )}
+                  <Button
+                    variant="primary"
+                    onClick={verifyCode}
+                    disabled={!isVerificationActive}
+                    className="!w-32 !h-12 flex items-center justify-center"
+                  >
+                    인증번호 확인
+                  </Button>
                 </div>
-              )}
+                {errors.verificationCode?.message && (
+                  <Caption className="text-red-500">{errors.verificationCode.message}</Caption>
+                )}
+                {success.verificationCode && (
+                  <Caption className="text-green-500">인증되었습니다</Caption>
+                )}
+              </div>
             </div>
           </div>
 
