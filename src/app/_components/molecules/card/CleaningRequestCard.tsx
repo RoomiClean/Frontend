@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import Button from '../../atoms/Button';
-import { BodySmall, DisplayH4 } from '../../atoms/Typography';
+import { BodySmall, DisplayDefault } from '../../atoms/Typography';
 import ArrowRightIcon from '@/assets/svg/DetailArrow.svg';
 
 interface CleaningRequestCardProps {
@@ -15,6 +15,7 @@ interface CleaningRequestCardProps {
   cleaningStartDateTime?: string;
   onCheckCleaner?: () => void;
   onClickDetail?: () => void;
+  showStatusLabel?: boolean;
 }
 
 /**
@@ -36,30 +37,68 @@ export default function CleaningRequestCard({
   cleaningStartDateTime,
   onCheckCleaner,
   onClickDetail,
+  showStatusLabel = false,
 }: CleaningRequestCardProps) {
+  const getStatusLabel = () => {
+    const statusConfig = {
+      pending: {
+        label: '요청 대기 중',
+        textColor: 'text-red-100',
+        bgColor: 'bg-red-alpha10',
+      },
+      scheduled: {
+        label: '청소 진행 예정',
+        textColor: 'text-secondary-400',
+        bgColor: 'bg-secondary-alpha10',
+      },
+      'in-progress': {
+        label: '청소 진행 중',
+        textColor: 'text-primary-500',
+        bgColor: 'bg-primary-alpha10',
+      },
+    };
+
+    const config = statusConfig[status];
+    if (!config) return null;
+
+    return (
+      <div
+        className={`px-4 py-3 rounded-[12px] whitespace-nowrap ${config.bgColor} ${config.textColor}`}
+      >
+        <BodySmall className={config.textColor}>{config.label}</BodySmall>
+      </div>
+    );
+  };
+
   return (
-    <div className="rounded-[16px] bg-neutral-100 md:py-6 py-4 px-4 box-sizing: border-box hover:border hover:border-neutral-200 hover:shadow-[0_3px_10px_0_rgba(0_0_0/0.2)] transition-all">
+    <div className="rounded-[16px] bg-neutral-100 md:py-6 py-4 px-4 box-sizing: border-box border border-neutral-200 shadow-[0_3px_10px_0_rgba(0_0_0/0.2)] md:border-0 md:shadow-none md:hover:border md:hover:border-neutral-200 md:hover:shadow-[0_3px_10px_0_rgba(0_0_0/0.2)] transition-all overflow-visible">
       <div className="flex flex-col md:flex-row items-start gap-6">
-        <div className="overflow-hidden rounded-[20px] w-[112px] h-[112px] bg-neutral-200 self-center md:self-auto">
+        <div className="overflow-hidden rounded-[20px] w-[219px] h-[219px] md:w-[112px] md:h-[112px] bg-neutral-200 self-center md:self-auto">
           <Image
             src={imageUrl}
             alt={title}
-            width={112}
-            height={112}
+            width={219}
+            height={219}
             className="h-full w-full object-cover"
           />
         </div>
         <div className="flex-1 w-full">
-          <div className="flex items-start justify-between">
-            <DisplayH4 className="text-neutral-1000">{title}</DisplayH4>
-            <Link
-              href={`/room/detail/${id}`}
-              onClick={onClickDetail}
-              className="w-[70px] whitespace-nowrap text-neutral-500 hover:text-neutral-800 flex items-center"
-            >
-              <BodySmall className="text-neutral-500">상세보기</BodySmall>
-              <Image src={ArrowRightIcon} alt="arrow-right" />
-            </Link>
+          <div className="flex items-center justify-between gap-2">
+            <DisplayDefault className="text-neutral-1000 md:text-[20px] truncate flex-1">
+              {title}
+            </DisplayDefault>
+            {showStatusLabel ? (
+              getStatusLabel()
+            ) : (
+              <Link
+                href={`/mypage/request/detail/${id}`}
+                onClick={onClickDetail}
+                className="w-[70px] whitespace-nowrap text-neutral-500 hover:text-neutral-800 flex items-center flex-shrink-0"
+              >
+                <BodySmall className="text-neutral-500">상세보기</BodySmall>
+                <Image src={ArrowRightIcon} alt="arrow-right" />
+              </Link>
+            )}
           </div>
 
           <div className="mt-4">
@@ -91,8 +130,8 @@ export default function CleaningRequestCard({
                 </div>
               </div>
               {status === 'pending' && (
-                <div className="w-full md:w-[200px] lg:w-full min-[1363px]:w-[200px]">
-                  <Link href={`/room/request/cleaner-list/${id}`}>
+                <div className="w-full md:w-[200px] lg:w-full min-[1363px]:w-[200px] self-end">
+                  <Link href={`/mypage/request/cleaner-list/${id}`}>
                     <Button onClick={onCheckCleaner} active className="h-[46px] w-full">
                       청소자 요청 목록 확인
                     </Button>

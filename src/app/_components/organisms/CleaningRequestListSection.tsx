@@ -13,7 +13,7 @@ import CleaningRequestCard from '../molecules/card/CleaningRequestCard';
 import EmptyIcon from '@/assets/svg/EmptyAccommodation.svg';
 
 type MainTab = 'ongoing' | 'past';
-type SubTab = 'pending' | 'scheduled' | 'in-progress';
+type SubTab = 'pending' | 'scheduled' | 'in-progress' | 'all';
 
 const MAIN_TABS: {
   id: MainTab;
@@ -24,6 +24,7 @@ const MAIN_TABS: {
 ];
 
 const SUB_TABS: { id: SubTab; label: string }[] = [
+  { id: 'all', label: '전체' },
   { id: 'pending', label: '요청 대기 중' },
   { id: 'scheduled', label: '청소 진행 예정' },
   { id: 'in-progress', label: '청소 진행 중' },
@@ -69,10 +70,15 @@ interface CleaningRequestListSectionProps {
  */
 export default function CleaningRequestListSection({ data }: CleaningRequestListSectionProps) {
   const [mainTab, setMainTab] = useState<MainTab>('ongoing');
-  const [subTab, setSubTab] = useState<SubTab>('pending');
+  const [subTab, setSubTab] = useState<SubTab>('all');
 
   // 탭에 따른 데이터 필터링
-  const requests = mainTab === 'past' ? data.past.all : data.ongoing[subTab] || [];
+  const requests =
+    mainTab === 'past'
+      ? data.past.all
+      : subTab === 'all'
+        ? [...data.ongoing.pending, ...data.ongoing.scheduled, ...data.ongoing['in-progress']]
+        : data.ongoing[subTab] || [];
 
   return (
     <div className="w-full h-full flex flex-col overflow-visible">
@@ -86,13 +92,13 @@ export default function CleaningRequestListSection({ data }: CleaningRequestList
           <button
             key={tab.id}
             onClick={() => setMainTab(tab.id)}
-            className={`px-4 py-[14px] transition-colors relative md:text-[20px] whitespace-nowrap ${
+            className={`flex-1 md:flex-none w-full md:w-auto px-0 md:px-4 py-[14px] transition-colors relative md:text-[20px] whitespace-nowrap text-center justify-center ${
               mainTab === tab.id ? 'text-neutral-1000' : 'text-neutral-500'
             }`}
           >
             <DisplayLarge>{tab.label}</DisplayLarge>
             {mainTab === tab.id && (
-              <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-primary-400" />
+              <div className="absolute bottom-0 left-0 right-0 w-full h-[3px] bg-primary-400" />
             )}
           </button>
         ))}
@@ -116,7 +122,7 @@ export default function CleaningRequestListSection({ data }: CleaningRequestList
       )}
 
       {/* 요청 카드 리스트 */}
-      <div className="flex-1 space-y-6 scrollbar-hide overflow-y-auto p-1">
+      <div className="flex-1 space-y-6 scrollbar-hide overflow-y-auto p-1 overflow-x-visible">
         {requests.length > 0 ? (
           requests.map(request => (
             <CleaningRequestCard
@@ -129,6 +135,7 @@ export default function CleaningRequestListSection({ data }: CleaningRequestList
               selectedOption={request.selectedOption}
               status={request.status}
               cleaningStartDateTime={request.cleaningStartDateTime}
+              showStatusLabel={mainTab === 'ongoing' && subTab === 'all'}
               onCheckCleaner={() => {
                 console.log('청소자 정보 확인:', request.id);
               }}
