@@ -1,7 +1,8 @@
 'use client';
-import { useState, useEffect, ChangeEvent } from 'react';
+import { useState, useEffect, useMemo, ChangeEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
+import Image from 'next/image';
 import { Input } from '@/app/_components/atoms/Input';
 import { Textarea } from '@/app/_components/atoms/Textarea';
 import { Dropdown } from '@/app/_components/atoms/DropDown';
@@ -18,6 +19,8 @@ import {
 } from '@/app/_components/atoms/Typography';
 import StepIndicator from '@/app/_components/molecules/StepIndicator';
 import { EMAIL_DOMAINS, PROVINCES, DISTRICTS } from '@/constants/business.constants';
+import { useFileUpload } from '@/hooks/useFileUpload';
+import { BiSolidCamera } from 'react-icons/bi';
 
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}$/;
 const HANGUL_REGEX = /[\u1100-\u11FF\u3130-\u318F\uAC00-\uD7A3]/g;
@@ -28,6 +31,10 @@ interface FormData {
   password: string;
   confirmPassword: string;
   name: string;
+  gender: string;
+  birthYear: string;
+  birthMonth: string;
+  birthDay: string;
   phone: string;
   verificationCode: string;
   province: string;
@@ -56,6 +63,7 @@ export default function SignUpStep2Page() {
     setValue,
     setError,
     clearErrors,
+    control,
     formState: { errors },
     trigger,
   } = useForm<FormData>({
@@ -65,6 +73,10 @@ export default function SignUpStep2Page() {
       password: '',
       confirmPassword: '',
       name: '',
+      gender: '',
+      birthYear: '',
+      birthMonth: '',
+      birthDay: '',
       phone: '',
       verificationCode: '',
       province: '',
@@ -123,6 +135,70 @@ export default function SignUpStep2Page() {
   const [verificationTimer, setVerificationTimer] = useState(0);
   const [isCustomDomain, setIsCustomDomain] = useState(false);
   const [showBusinessDetail, setShowBusinessDetail] = useState(false);
+  const [profilePhotoError, setProfilePhotoError] = useState<string | null>(null);
+
+  const {
+    files: profilePhotos,
+    uploadFile: handleProfilePhotoUpload,
+    removeFile: removeProfilePhoto,
+    clearFiles: clearProfilePhoto,
+  } = useFileUpload({
+    maxFiles: 1,
+    maxSize: 5 * 1024 * 1024,
+    allowedTypes: ['image/jpeg', 'image/png'],
+    onError: message => {
+      setProfilePhotoError(message);
+      alert(message);
+    },
+  });
+
+  const profilePhotoPreview = useMemo(() => {
+    if (!profilePhotos[0]) return null;
+    return URL.createObjectURL(profilePhotos[0]);
+  }, [profilePhotos]);
+
+  useEffect(() => {
+    return () => {
+      if (profilePhotoPreview) {
+        URL.revokeObjectURL(profilePhotoPreview);
+      }
+    };
+  }, [profilePhotoPreview]);
+
+  const genderValue = watch('gender');
+  const birthYearValue = watch('birthYear');
+  const birthMonthValue = watch('birthMonth');
+  const birthDayValue = watch('birthDay');
+  const birthDateErrorMessage =
+    errors.birthYear?.message || errors.birthMonth?.message || errors.birthDay?.message;
+
+  const yearOptions = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    return Array.from({ length: 100 }, (_, index) => {
+      const year = currentYear - index;
+      return { value: String(year), label: `${year}년` };
+    });
+  }, []);
+
+  const monthOptions = useMemo(
+    () =>
+      Array.from({ length: 12 }, (_, index) => {
+        const month = index + 1;
+        return { value: String(month).padStart(2, '0'), label: `${month}월` };
+      }),
+    [],
+  );
+
+  const dayOptions = useMemo(() => {
+    const year = Number(birthYearValue);
+    const month = Number(birthMonthValue);
+    const lastDay = year && month ? new Date(year, month, 0).getDate() : 31;
+
+    return Array.from({ length: lastDay }, (_, index) => {
+      const day = index + 1;
+      return { value: String(day).padStart(2, '0'), label: `${day}일` };
+    });
+  }, [birthYearValue, birthMonthValue]);
 
   useEffect(() => {
     if (!memberType) {
@@ -255,7 +331,13 @@ export default function SignUpStep2Page() {
       return;
     }
 
-    const fieldsToValidate: Array<keyof FormData> = ['name'];
+    const fieldsToValidate: Array<keyof FormData> = [
+      'name',
+      'gender',
+      'birthYear',
+      'birthMonth',
+      'birthDay',
+    ];
 
     if (memberType === 'cleaner') {
       fieldsToValidate.push('province', 'district');
@@ -291,6 +373,11 @@ export default function SignUpStep2Page() {
         });
         return;
       }
+    }
+
+    if (profilePhotos.length === 0) {
+      setProfilePhotoError('프로필 사진을 등록해주세요');
+      return;
     }
 
     router.push('/signup/step3?type=' + memberType);
@@ -422,6 +509,146 @@ export default function SignUpStep2Page() {
                 />
                 {errors.name?.message && (
                   <Caption className="text-red-500">{errors.name.message}</Caption>
+                )}
+              </div>
+
+              {/* 성별 */}
+              <div className="space-y-2">
+                <TitleDefault>
+                  성별 <span className="text-red-500">*</span>
+                </TitleDefault>
+                <div className="flex gap-6">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      value="male"
+                      {...register('gender', { required: '성별을 선택해주세요' })}
+                      checked={genderValue === 'male'}
+                      className="w-4 h-4"
+                    />
+                    <BodySmall className="text-neutral-1000">남</BodySmall>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      value="female"
+                      {...register('gender', { required: '성별을 선택해주세요' })}
+                      checked={genderValue === 'female'}
+                      className="w-4 h-4"
+                    />
+                    <BodySmall className="text-neutral-1000">여</BodySmall>
+                  </label>
+                </div>
+                {errors.gender?.message && (
+                  <Caption className="text-red-500">{errors.gender.message}</Caption>
+                )}
+              </div>
+
+              {/* 생년월일 */}
+              <div className="space-y-2">
+                <TitleDefault>
+                  생년월일 <span className="text-red-500">*</span>
+                </TitleDefault>
+                <div className="grid grid-cols-3 gap-2">
+                  <Controller
+                    name="birthYear"
+                    control={control}
+                    rules={{ required: '생년월일을 선택해주세요' }}
+                    render={({ field }) => (
+                      <Dropdown
+                        options={yearOptions}
+                        value={field.value}
+                        onChange={field.onChange}
+                        placeholder="년"
+                        error={!!errors.birthYear?.message}
+                      />
+                    )}
+                  />
+                  <Controller
+                    name="birthMonth"
+                    control={control}
+                    rules={{ required: '생년월일을 선택해주세요' }}
+                    render={({ field }) => (
+                      <Dropdown
+                        options={monthOptions}
+                        value={field.value}
+                        onChange={field.onChange}
+                        placeholder="월"
+                        error={!!errors.birthMonth?.message}
+                      />
+                    )}
+                  />
+                  <Controller
+                    name="birthDay"
+                    control={control}
+                    rules={{ required: '생년월일을 선택해주세요' }}
+                    render={({ field }) => (
+                      <Dropdown
+                        options={dayOptions}
+                        value={field.value}
+                        onChange={field.onChange}
+                        placeholder="일"
+                        error={!!errors.birthDay?.message}
+                      />
+                    )}
+                  />
+                </div>
+                {birthDateErrorMessage && (
+                  <Caption className="text-red-500">{birthDateErrorMessage}</Caption>
+                )}
+              </div>
+
+              {/* 프로필 사진 업로드 */}
+              <div className="space-y-2">
+                <TitleDefault>
+                  프로필 사진 업로드 <span className="text-red-500">*</span>
+                </TitleDefault>
+                <div className="flex flex-wrap gap-4">
+                  {profilePhotos[0] && profilePhotoPreview ? (
+                    <div className="relative w-28 h-28">
+                      <Image
+                        src={profilePhotoPreview}
+                        alt="프로필 사진"
+                        fill
+                        sizes="112px"
+                        className="rounded-lg object-cover border border-neutral-200"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          removeProfilePhoto(0);
+                          setProfilePhotoError(null);
+                        }}
+                        className="absolute top-1 right-1 w-6 h-6 bg-neutral-900 text-white rounded-full flex items-center justify-center text-sm"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="w-28 h-28 border-2 border-neutral-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-neutral-1000 gap-2">
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png"
+                        onChange={event => {
+                          clearProfilePhoto();
+                          handleProfilePhotoUpload(event);
+                          setProfilePhotoError(null);
+                          event.target.value = '';
+                        }}
+                        className="hidden"
+                      />
+                      <span className="text-2xl">
+                        <BiSolidCamera className="w-3 h-3" />
+                      </span>
+                      <TitleDefault className="text-neutral-600">사진첨부</TitleDefault>
+                    </label>
+                  )}
+                </div>
+                <Caption className="text-neutral-500">
+                  사진은 최대 1장, 5MB를 넘을 수 없습니다. (JPG, PNG 가능)
+                </Caption>
+                {profilePhotoError && (
+                  <Caption className="text-red-500">{profilePhotoError}</Caption>
                 )}
               </div>
 
