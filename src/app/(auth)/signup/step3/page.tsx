@@ -15,7 +15,7 @@ import {
   DisplayH1,
 } from '@/app/_components/atoms/Typography';
 import StepIndicator from '@/app/_components/molecules/StepIndicator';
-import { banks, accommodationTypes } from '@/constants/business.constants';
+import { BANKS, ACCOMMODATION_TYPES } from '@/constants/business.constants';
 
 interface FormData {
   bank: string;
@@ -231,7 +231,7 @@ export default function SignUpStep3Page() {
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Dropdown
-                    options={banks}
+                    options={BANKS}
                     value={watch('bank')}
                     onChange={value => handleInputChange('bank', value)}
                     placeholder="옵션 선택"
@@ -406,7 +406,7 @@ export default function SignUpStep3Page() {
                     숙소 유형 <span className="text-red-500">*</span>
                   </TitleDefault>
                   <Dropdown
-                    options={accommodationTypes}
+                    options={ACCOMMODATION_TYPES}
                     value={watch('accommodationType')}
                     onChange={value => handleInputChange('accommodationType', value)}
                     placeholder="옵션 선택"
