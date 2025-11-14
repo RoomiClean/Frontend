@@ -209,7 +209,7 @@ export default function BottomSheet({ children, initialHeight, maxHeight }: Bott
 
       {/* 내부 컨텐츠 */}
       <div
-        className="h-[calc(100%-64px)] overflow-hidden px-6"
+        className="h-[calc(100%-64px)] overflow-y-auto overflow-x-hidden px-6 scrollbar-hide"
         onTouchStart={handleContentTouchStart}
         style={{
           touchAction: 'pan-y',

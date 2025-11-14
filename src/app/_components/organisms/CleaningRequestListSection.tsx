@@ -8,9 +8,11 @@ import {
   DisplayH2,
   DisplayH3,
   DisplayLarge,
+  TitleH4,
 } from '../atoms/Typography';
 import CleaningRequestCard from '../molecules/card/CleaningRequestCard';
-import EmptyIcon from '@/assets/svg/EmptyAccommodation.svg';
+import EmptyIcon from '@/assets/svg/Search.svg';
+import Button from '../atoms/Button';
 
 type MainTab = 'ongoing' | 'past';
 type SubTab = 'pending' | 'scheduled' | 'in-progress' | 'all';
@@ -81,13 +83,13 @@ export default function CleaningRequestListSection({ data }: CleaningRequestList
         : data.ongoing[subTab] || [];
 
   return (
-    <div className="w-full h-full flex flex-col overflow-visible">
+    <div className="w-full h-full flex flex-col">
       <DisplayH3 className="text-neutral-1000 mb-2 md:mb-8 md:text-[28px] lg:text-[32px]">
         작업 요청 목록
       </DisplayH3>
 
       {/* 메인 탭 */}
-      <div className="flex mb-4 border-b border-neutral-300 overflow-x-auto scrollbar-hide">
+      <div className="flex mb-4 border-b border-neutral-300">
         {MAIN_TABS.map(tab => (
           <button
             key={tab.id}
@@ -106,7 +108,7 @@ export default function CleaningRequestListSection({ data }: CleaningRequestList
 
       {/* 서브 탭 (진행중인 요청일 때만 표시) */}
       {mainTab === 'ongoing' && (
-        <div className="flex gap-4 mb-6 md:mb-8 overflow-x-auto scrollbar-hide">
+        <div className="flex gap-4">
           {SUB_TABS.map(tab => (
             <button
               key={tab.id}
@@ -122,7 +124,7 @@ export default function CleaningRequestListSection({ data }: CleaningRequestList
       )}
 
       {/* 요청 카드 리스트 */}
-      <div className="flex-1 space-y-6 scrollbar-hide overflow-y-auto p-1 overflow-x-visible">
+      <div className="flex-1 space-y-6 pb-4 mt-6 md:mt-8">
         {requests.length > 0 ? (
           requests.map(request => (
             <CleaningRequestCard
@@ -145,16 +147,12 @@ export default function CleaningRequestListSection({ data }: CleaningRequestList
             />
           ))
         ) : (
-          <div className="flex flex-col items-center pt-5 h-full">
-            <div className="flex flex-col items-center justify-center text-center gap-4">
-              <Image src={EmptyIcon} alt="EmptyIcon" />
-              <DisplayH2 className="text-neutral-1000 md:text-[32px]">
-                요청 내역이 없습니다
-              </DisplayH2>
-              <BodyDefault className="text-neutral-800 md:text-[18px]">
-                현재 진행중인 청소 요청이 없습니다
-              </BodyDefault>
-            </div>
+          <div className="flex flex-col mt-2 md:mt-0 items-center justify-center text-center gap-4">
+            <Image src={EmptyIcon} alt="EmptyIcon" />
+            <TitleH4 className="text-neutral-1000">아직 요청하신 작업이 없어요</TitleH4>
+            <Button variant="primary" active className="w-[151px]">
+              청소 요청하기
+            </Button>
           </div>
         )}
       </div>
