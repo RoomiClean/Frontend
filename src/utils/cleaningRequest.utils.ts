@@ -10,12 +10,12 @@ export interface StatusLabelConfig {
 
 /**
  * 청소 요청 상태에 따른 라벨 설정을 반환하는 함수
- * @param status - 청소 요청 상태
+ * @param requestStatus - 청소 요청 상태
  * @param isPastRequest - 과거 요청 여부
  * @returns 상태 라벨 설정 객체 또는 null
  */
 export const getStatusLabelConfig = (
-  status: CleaningRequestStatus,
+  requestStatus: CleaningRequestStatus,
   isPastRequest: boolean,
 ): StatusLabelConfig | null => {
   if (isPastRequest) {
@@ -32,7 +32,7 @@ export const getStatusLabelConfig = (
       },
     };
 
-    return pastStatusConfig[status as PastStatus] || null;
+    return pastStatusConfig[requestStatus as PastStatus] || null;
   }
 
   const ongoingStatusConfig: Record<OngoingStatus, StatusLabelConfig> = {
@@ -53,6 +53,5 @@ export const getStatusLabelConfig = (
     },
   };
 
-  return ongoingStatusConfig[status as OngoingStatus] || null;
+  return ongoingStatusConfig[requestStatus as OngoingStatus] || null;
 };
-

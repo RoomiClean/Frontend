@@ -12,7 +12,7 @@ interface CleaningRequestCardProps {
   requestDateTime: string;
   completionDateTime: string;
   selectedOption: string;
-  status: 'pending' | 'scheduled' | 'in-progress' | 'completed' | 'canceled';
+  requestStatus: 'pending' | 'scheduled' | 'in-progress' | 'completed' | 'canceled';
   cleaningStartDateTime?: string;
   onCheckCleaner?: () => void;
   onClickDetail?: () => void;
@@ -36,7 +36,7 @@ export default function CleaningRequestCard({
   requestDateTime,
   completionDateTime,
   selectedOption,
-  status,
+  requestStatus,
   cleaningStartDateTime,
   onCheckCleaner,
   onClickDetail,
@@ -45,7 +45,7 @@ export default function CleaningRequestCard({
   onWriteReview,
 }: CleaningRequestCardProps) {
   const getStatusLabel = () => {
-    const config = getStatusLabelConfig(status, isPastRequest);
+    const config = getStatusLabelConfig(requestStatus, isPastRequest);
     if (!config) return null;
 
     return (
@@ -86,7 +86,7 @@ export default function CleaningRequestCard({
                 getStatusLabel()
               ) : (
                 <Link
-                  href={`/mypage/request/detail/${id}`}
+                  href={`/mypage/request/detail/${id}?requestStatus=${requestStatus}`}
                   onClick={onClickDetail}
                   className="w-[70px] whitespace-nowrap text-neutral-500 hover:text-neutral-800 flex items-center flex-shrink-0"
                 >
@@ -104,7 +104,8 @@ export default function CleaningRequestCard({
                       <BodySmall className="text-neutral-600">요청 일시: </BodySmall>
                       <BodySmall className="text-neutral-800 ml-1">{requestDateTime}</BodySmall>
                     </div>
-                    {(status === 'in-progress' || (isPastRequest && status === 'completed')) &&
+                    {(requestStatus === 'in-progress' ||
+                      (isPastRequest && requestStatus === 'completed')) &&
                       cleaningStartDateTime && (
                         <div className="flex">
                           <BodySmall className="text-neutral-600">청소 시작 시각: </BodySmall>
@@ -125,7 +126,7 @@ export default function CleaningRequestCard({
                     </div>
                   </div>
                 </div>
-                {status === 'pending' && !isPastRequest && (
+                {requestStatus === 'pending' && !isPastRequest && (
                   <div className="w-full md:w-[200px] lg:w-full min-[1363px]:w-[200px] self-end">
                     <Link href={`/mypage/request/cleaner-list/${id}`}>
                       <Button onClick={onCheckCleaner} active className="h-[46px] w-full">
@@ -134,7 +135,7 @@ export default function CleaningRequestCard({
                     </Link>
                   </div>
                 )}
-                {isPastRequest && status === 'completed' && (
+                {isPastRequest && requestStatus === 'completed' && (
                   <div className="w-full md:w-[200px] lg:w-full min-[1363px]:w-[200px] self-end">
                     <Button onClick={onWriteReview} active className="h-[46px] w-full">
                       리뷰 작성하기

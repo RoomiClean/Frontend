@@ -41,7 +41,7 @@ export interface CleaningRequest {
   requestDateTime: string;
   completionDateTime: string;
   selectedOption: string;
-  status: 'pending' | 'scheduled' | 'in-progress' | 'completed' | 'canceled';
+  requestStatus: 'pending' | 'scheduled' | 'in-progress' | 'completed' | 'canceled';
   cleaningStartDateTime?: string;
 }
 
@@ -172,7 +172,7 @@ export default function CleaningRequestListSection({ data }: CleaningRequestList
               requestDateTime={request.requestDateTime}
               completionDateTime={request.completionDateTime}
               selectedOption={request.selectedOption}
-              status={request.status}
+              requestStatus={request.requestStatus}
               cleaningStartDateTime={request.cleaningStartDateTime}
               showStatusLabel={mainTab === 'ongoing' && subTab === 'all'}
               isPastRequest={mainTab === 'past'}
