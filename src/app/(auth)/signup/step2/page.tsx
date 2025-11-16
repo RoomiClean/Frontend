@@ -137,7 +137,9 @@ export default function SignUpStep2Page() {
   const [isVerificationRequested, setIsVerificationRequested] = useState(false);
   const [isCustomDomain, setIsCustomDomain] = useState(false);
   const [showBusinessDetail, setShowBusinessDetail] = useState(false);
+  const [openBusinessConsentModal, setOpenBusinessConsentModal] = useState(false);
   const [profilePhotoError, setProfilePhotoError] = useState<string | null>(null);
+  const businessAgreementValue = watch('businessAgreement');
 
   const {
     files: profilePhotos,
@@ -916,35 +918,11 @@ export default function SignUpStep2Page() {
                       상호명, 사업자명, 사업자 등록번호 정보 제공 동의
                     </label>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowBusinessDetail(!showBusinessDetail)}
-                    className="text-sm text-primary-400 underline"
-                  >
-                    보기
+                  <button type="button" onClick={() => setOpenBusinessConsentModal(true)}>
+                    <BodySmall className="text-neutral-600">보기</BodySmall>
                   </button>
                 </div>
-                {showBusinessDetail && (
-                  <div className="border border-neutral-200 rounded-lg p-4 bg-neutral-50">
-                    <BodyDefault className="font-medium mb-3">사업자 정보 제공 동의</BodyDefault>
-                    <div className="space-y-2 text-sm text-neutral-600">
-                      <p>아래와 같은 목적으로 사업자 정보를 수집 및 이용합니다.</p>
-                      <p>
-                        <strong>수집 항목:</strong> 상호명, 업종, 대표자명, 개업일자, 사업자
-                        등록번호
-                      </p>
-                      <p>
-                        <strong>수집 목적:</strong> 사업자 인증 및 서비스 이용
-                      </p>
-                      <p>
-                        <strong>보유 기간:</strong> 정보 삭제 요청 또는 회원 탈퇴 시 파기
-                      </p>
-                      <p className="text-red-500">
-                        동의를 거부할 수 있으나, 동의 거부 시 사업자 인증 처리가 어렵습니다.
-                      </p>
-                    </div>
-                  </div>
-                )}
+                {/* 인라인 상세 박스 제거: 모달로 대체 */}
               </div>
             </div>
           )}
@@ -956,6 +934,87 @@ export default function SignUpStep2Page() {
             다음 단계
           </Button>
         </form>
+        {openBusinessConsentModal && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/50 px-4 py-8 backdrop-blur-sm"
+            onClick={() => setOpenBusinessConsentModal(false)}
+          >
+            <div
+              role="dialog"
+              aria-modal="true"
+              className="relative w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-[0_20px_60px_rgba(15,23,42,0.18)]"
+              onClick={event => event.stopPropagation()}
+            >
+              <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4">
+                <div>
+                  <TitleDefault className="text-neutral-1000">사업자 정보 제공 동의</TitleDefault>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setOpenBusinessConsentModal(false)}
+                  aria-label="닫기"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-xl text-neutral-500 transition hover:bg-neutral-200 hover:text-neutral-700"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="max-h-[65vh] overflow-y-auto px-6 py-6">
+                <div className="border border-neutral-200 rounded-lg p-4 bg-neutral-50">
+                  <BodyDefault className="font-medium mb-3">사업자 정보 제공 동의</BodyDefault>
+                  <div className="space-y-2 text-sm text-neutral-600">
+                    <p>아래와 같은 목적으로 사업자 정보를 수집 및 이용합니다.</p>
+                    <p>
+                      <strong>수집 항목:</strong> 상호명, 업종, 대표자명, 개업일자, 사업자 등록번호
+                    </p>
+                    <p>
+                      <strong>수집 목적:</strong> 사업자 인증 및 서비스 이용
+                    </p>
+                    <p>
+                      <strong>보유 기간:</strong> 정보 삭제 요청 또는 회원 탈퇴 시 파기
+                    </p>
+                    <p className="text-red-500">
+                      동의를 거부할 수 있으나, 동의 거부 시 사업자 인증 처리가 어렵습니다.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3 border-t border-neutral-200 bg-white px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <label className="flex items-center gap-2 text-sm text-neutral-800">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4"
+                    checked={!!businessAgreementValue}
+                    onChange={event =>
+                      setValue('businessAgreement', event.target.checked, {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      })
+                    }
+                  />
+                  <span className="leading-tight">사업자 정보 제공에 동의합니다.</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setValue('businessAgreement', !businessAgreementValue, {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    })
+                  }
+                  className={`rounded-lg px-6 py-2 text-sm font-semibold transition ${
+                    businessAgreementValue
+                      ? 'border border-neutral-300 text-neutral-700 hover:border-neutral-500'
+                      : 'bg-neutral-900 text-white hover:bg-neutral-800'
+                  }`}
+                >
+                  {businessAgreementValue ? '동의안함' : '동의하기'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
