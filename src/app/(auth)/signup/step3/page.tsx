@@ -262,6 +262,13 @@ export default function SignUpStep3Page() {
                         placeholder="계좌번호를 입력해주세요(-제외)"
                         {...register('accountNumber')}
                         inputMode="numeric"
+                        value={watch('accountNumber') ?? ''}
+                        onChange={e =>
+                          setValue('accountNumber', e.target.value.replace(/\D/g, ''), {
+                            shouldValidate: true,
+                            shouldDirty: true,
+                          })
+                        }
                         error={!!errors.accountNumber?.message}
                       />
                     </div>
