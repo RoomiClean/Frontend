@@ -25,7 +25,7 @@ export default function CleaningRequestManagePage() {
           requestDateTime: '2025/10/31 18:29',
           completionDateTime: '2025/11/3 18:00',
           selectedOption: '청소만(기본 옵션)',
-          status: 'pending',
+          requestStatus: 'pending',
         },
         {
           id: '2',
@@ -34,7 +34,7 @@ export default function CleaningRequestManagePage() {
           requestDateTime: '2025/10/31 20:15',
           completionDateTime: '2025/11/4 14:00',
           selectedOption: '청소만(기본 옵션)',
-          status: 'pending',
+          requestStatus: 'pending',
         },
       ],
       scheduled: [
@@ -45,7 +45,7 @@ export default function CleaningRequestManagePage() {
           requestDateTime: '2025/11/1 09:30',
           completionDateTime: '2025/11/5 10:00',
           selectedOption: '청소 + 빨래(추가 옵션)',
-          status: 'scheduled',
+          requestStatus: 'scheduled',
         },
         {
           id: '4',
@@ -54,7 +54,7 @@ export default function CleaningRequestManagePage() {
           requestDateTime: '2025/11/1 14:20',
           completionDateTime: '2025/11/6 09:00',
           selectedOption: '청소만(기본 옵션)',
-          status: 'scheduled',
+          requestStatus: 'scheduled',
         },
       ],
       'in-progress': [
@@ -66,7 +66,7 @@ export default function CleaningRequestManagePage() {
           cleaningStartDateTime: '2025/11/3 13:29',
           completionDateTime: '2025/11/2 16:00',
           selectedOption: '청소 + 정리정돈(추가 옵션)',
-          status: 'in-progress',
+          requestStatus: 'in-progress',
         },
       ],
     },
@@ -80,7 +80,7 @@ export default function CleaningRequestManagePage() {
           cleaningStartDateTime: '2025/11/3 13:29',
           completionDateTime: '2025/11/3 18:00',
           selectedOption: '청소만(기본 옵션)',
-          status: 'completed',
+          requestStatus: 'completed',
         },
         {
           id: '7',
@@ -90,7 +90,7 @@ export default function CleaningRequestManagePage() {
           cleaningStartDateTime: '2025/11/3 13:29',
           completionDateTime: '2025/11/3 18:00',
           selectedOption: '청소만(기본 옵션)',
-          status: 'canceled',
+          requestStatus: 'canceled',
         },
       ],
       completed: [
@@ -102,7 +102,7 @@ export default function CleaningRequestManagePage() {
           cleaningStartDateTime: '2025/11/3 13:29',
           completionDateTime: '2025/11/3 18:00',
           selectedOption: '청소만(기본 옵션)',
-          status: 'completed',
+          requestStatus: 'completed',
         },
       ],
       canceled: [
@@ -114,7 +114,7 @@ export default function CleaningRequestManagePage() {
           cleaningStartDateTime: '2025/11/3 13:29',
           completionDateTime: '2025/11/3 18:00',
           selectedOption: '청소만(기본 옵션)',
-          status: 'canceled',
+          requestStatus: 'canceled',
         },
       ],
     },
