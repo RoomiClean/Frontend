@@ -11,7 +11,7 @@ export default function RoomMainTemplate({ children, showSidebar = true }: RoomM
       {showSidebar ? (
         <div className="flex gap-12">
           <Sidebar />
-          <main className="flex-1 min-w-0 space-y-10">{children}</main>
+          <main className="flex-1 min-w-0">{children}</main>
         </div>
       ) : (
         <main className="w-full space-y-10">{children}</main>
