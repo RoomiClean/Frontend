@@ -874,6 +874,7 @@ export default function SignUpStep2Page() {
                       {...register('businessNumber1')}
                       maxLength={3}
                       className="flex-1"
+                      inputMode="numeric"
                       error={!!errors.businessNumber1?.message}
                     />
                     <span className="text-neutral-600">-</span>
@@ -882,6 +883,7 @@ export default function SignUpStep2Page() {
                       {...register('businessNumber2')}
                       maxLength={2}
                       className="flex-1"
+                      inputMode="numeric"
                       error={!!errors.businessNumber1?.message}
                     />
                     <span className="text-neutral-600">-</span>
@@ -890,6 +892,7 @@ export default function SignUpStep2Page() {
                       {...register('businessNumber3')}
                       maxLength={6}
                       className="flex-1"
+                      inputMode="numeric"
                       error={!!errors.businessNumber1?.message}
                     />
                   </div>

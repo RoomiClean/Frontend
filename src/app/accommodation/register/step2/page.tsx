@@ -340,6 +340,7 @@ export default function RegisterAccommodationStep2Page() {
                         }
                       }}
                       value={zipCodeValue}
+                      inputMode="numeric"
                       error={!!errors.zipCode?.message}
                       className="flex-1"
                       readOnly={isAddressSelected}
@@ -447,6 +448,7 @@ export default function RegisterAccommodationStep2Page() {
                           },
                         })}
                         type="number"
+                        inputMode="numeric"
                         value={roomCountValue ?? ''}
                       />
                       {errors.roomCount?.message && (
@@ -467,6 +469,7 @@ export default function RegisterAccommodationStep2Page() {
                           },
                         })}
                         type="number"
+                        inputMode="numeric"
                         value={bedCountValue ?? ''}
                       />
                       {errors.bedCount?.message && (
@@ -487,6 +490,7 @@ export default function RegisterAccommodationStep2Page() {
                           },
                         })}
                         type="number"
+                        inputMode="numeric"
                         value={livingRoomCountValue ?? ''}
                       />
                       {errors.livingRoomCount?.message && (
@@ -507,6 +511,7 @@ export default function RegisterAccommodationStep2Page() {
                           },
                         })}
                         type="number"
+                        inputMode="numeric"
                         value={bathroomCountValue ?? ''}
                       />
                       {errors.bathroomCount?.message && (
@@ -536,6 +541,7 @@ export default function RegisterAccommodationStep2Page() {
                           },
                         })}
                         type="number"
+                        inputMode="decimal"
                         error={!!errors.area?.message}
                         value={areaValue ?? ''}
                       />
@@ -559,6 +565,7 @@ export default function RegisterAccommodationStep2Page() {
                           },
                         })}
                         type="number"
+                        inputMode="numeric"
                         error={!!errors.maxOccupancy?.message}
                         value={maxOccupancyValue ?? ''}
                       />

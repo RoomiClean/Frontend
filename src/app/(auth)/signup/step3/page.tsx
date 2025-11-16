@@ -261,6 +261,7 @@ export default function SignUpStep3Page() {
                       <Input
                         placeholder="계좌번호를 입력해주세요(-제외)"
                         {...register('accountNumber')}
+                        inputMode="numeric"
                         error={!!errors.accountNumber?.message}
                       />
                     </div>
@@ -425,19 +426,39 @@ export default function SignUpStep3Page() {
                   <div className="grid grid-cols-2 gap-2">
                     <div className="space-y-1">
                       <TitleSmall className="text-neutral-600">방 개수</TitleSmall>
-                      <Input placeholder="0" {...register('roomCount')} type="number" />
+                      <Input
+                        placeholder="0"
+                        {...register('roomCount')}
+                        type="number"
+                        inputMode="numeric"
+                      />
                     </div>
                     <div className="space-y-1">
                       <TitleSmall className="text-neutral-600">침대 개수</TitleSmall>
-                      <Input placeholder="0" {...register('bedCount')} type="number" />
+                      <Input
+                        placeholder="0"
+                        {...register('bedCount')}
+                        type="number"
+                        inputMode="numeric"
+                      />
                     </div>
                     <div className="space-y-1">
                       <TitleSmall className="text-neutral-600">거실 개수</TitleSmall>
-                      <Input placeholder="0" {...register('livingRoomCount')} type="number" />
+                      <Input
+                        placeholder="0"
+                        {...register('livingRoomCount')}
+                        type="number"
+                        inputMode="numeric"
+                      />
                     </div>
                     <div className="space-y-1">
                       <TitleSmall className="text-neutral-600">화장실 개수</TitleSmall>
-                      <Input placeholder="0" {...register('bathroomCount')} type="number" />
+                      <Input
+                        placeholder="0"
+                        {...register('bathroomCount')}
+                        type="number"
+                        inputMode="numeric"
+                      />
                     </div>
                   </div>
                 </div>
@@ -454,6 +475,7 @@ export default function SignUpStep3Page() {
                         placeholder=""
                         {...register('area')}
                         type="number"
+                        inputMode="decimal"
                         error={!!errors.area?.message}
                       />
                       <span className="text-neutral-1000 whitespace-nowrap">평</span>
@@ -468,6 +490,7 @@ export default function SignUpStep3Page() {
                         placeholder=""
                         {...register('maxOccupancy')}
                         type="number"
+                        inputMode="numeric"
                         error={!!errors.maxOccupancy?.message}
                       />
                       <span className="text-neutral-1000 whitespace-nowrap">명</span>
