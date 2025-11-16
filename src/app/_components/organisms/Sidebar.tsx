@@ -30,7 +30,7 @@ const sidebarSections: SidebarSection[] = [
   {
     title: '작업 진행 관리',
     items: [
-      { label: '작업 요청 목록', href: '/room4' },
+      { label: '작업 요청 목록', href: '/mypage/request' },
       { label: '검수 대기 목록', href: '/room5' },
     ],
   },
@@ -46,7 +46,7 @@ const sidebarSections: SidebarSection[] = [
 
 export default function Sidebar() {
   return (
-    <aside className="hidden lg:block w-[208px] flex-shrink-0 text-left">
+    <aside className="hidden lg:block flex-shrink-0 text-left">
       <div className="mb-[36px]">
         <TitleH3 className="text-neutral-1000">마이페이지</TitleH3>
       </div>

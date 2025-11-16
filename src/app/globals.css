@@ -113,3 +113,14 @@ body {
     local('Pretendard Thin'),
     url('/fonts/Pretendard-Thin.ttf') format('truetype');
 }
+
+/* 스크롤바 숨기기 */
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
