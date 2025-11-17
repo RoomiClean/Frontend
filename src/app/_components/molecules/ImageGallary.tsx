@@ -6,16 +6,16 @@ interface Photo {
   displayOrder: number;
 }
 
-interface ImageCardProps {
+interface ImageGallaryProps {
   photos: Photo[];
 }
 
 /**
- * 숙소 이미지 갤러리 카드 컴포넌트
+ * 숙소 이미지 갤러리 컴포넌트
  *
  * 메인 이미지 1개와 서브 이미지 4개를 그리드 형태로 표시합니다.
  */
-export default function ImageCard({ photos }: ImageCardProps) {
+export default function ImageGallary({ photos }: ImageGallaryProps) {
   const sortedPhotos = [...photos].sort((a, b) => a.displayOrder - b.displayOrder);
   const mainPhoto = sortedPhotos[0];
   const subPhotos = sortedPhotos.slice(1, 5);
