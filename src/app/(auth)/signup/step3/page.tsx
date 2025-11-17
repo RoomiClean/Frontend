@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
+import Image from 'next/image';
 import { Input } from '@/app/_components/atoms/Input';
 import { Dropdown } from '@/app/_components/atoms/DropDown';
 import Button from '@/app/_components/atoms/Button';
@@ -24,6 +25,24 @@ import {
   LOCATION_TERMS,
 } from '@/constants/agreements.constants';
 import { useAgreements } from '@/hooks/useAgreements';
+import { useFileUpload } from '@/hooks/useFileUpload';
+import { BiSolidCamera } from 'react-icons/bi';
+
+interface DaumPostcodeData {
+  zonecode: string;
+  roadAddress: string;
+  jibunAddress: string;
+}
+
+declare global {
+  interface Window {
+    daum?: {
+      Postcode: new (config: { oncomplete: (data: DaumPostcodeData) => void }) => {
+        open: () => void;
+      };
+    };
+  }
+}
 
 interface FormData {
   bank: string;
@@ -57,6 +76,7 @@ export default function SignUpStep3Page() {
     handleSubmit,
     watch,
     setValue,
+    setFocus,
     clearErrors,
     setError,
     formState: { errors },
@@ -86,7 +106,9 @@ export default function SignUpStep3Page() {
 
   const [success, setSuccess] = useState<Record<string, boolean>>({});
   const [isAccountVerified, setIsAccountVerified] = useState(false);
-  const [accommodationPhotos, setAccommodationPhotos] = useState<File[]>([]);
+  const [isPostcodeLoaded, setIsPostcodeLoaded] = useState(false);
+  const [isAddressSelected, setIsAddressSelected] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
   const { agreements, toggleAgreement, isRequiredMet } = useAgreements({
     required: ['service', 'privacy', 'location'],
   });
@@ -157,36 +179,78 @@ export default function SignUpStep3Page() {
     }
   }, [memberType, router]);
 
+  useEffect(() => {
+    if (window.daum?.Postcode) {
+      setIsPostcodeLoaded(true);
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = '//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
+    script.async = true;
+    script.onload = () => setIsPostcodeLoaded(true);
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  const {
+    ref: zipCodeRef,
+    onBlur: zipCodeOnBlur,
+    ...zipCodeRest
+  } = register('zipCode', {
+    required: '우편번호를 입력해주세요',
+  });
+  const {
+    ref: addressRef,
+    onBlur: addressOnBlur,
+    ...addressRest
+  } = register('address', {
+    required: '주소를 입력해주세요',
+  });
+  const zipCodeValue = watch('zipCode');
+  const addressValue = watch('address');
+  const detailAddressValue = watch('detailAddress');
+
+  useEffect(() => {
+    setIsAddressSelected(!!addressValue?.trim());
+  }, [addressValue]);
+
+  // 커스텀 훅 사용
+  const {
+    files: accommodationPhotos,
+    uploadFile: handleFileUpload,
+    removeFile: removePhoto,
+  } = useFileUpload({
+    maxFiles: 20,
+    maxSize: 5 * 1024 * 1024,
+    allowedTypes: ['image/jpeg', 'image/png', 'image/gif'],
+    onError: alert,
+  });
+
   const handleInputChange = (field: keyof FormData, value: string) => {
     setValue(field as any, value);
     clearErrors(field as any);
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-
-    const newFiles = Array.from(files);
-    const validFiles = newFiles.filter(file => {
-      const isValidSize = file.size <= 5 * 1024 * 1024; // 5MB
-      const isValidType = ['image/jpeg', 'image/png', 'image/gif'].includes(file.type);
-      return isValidSize && isValidType;
-    });
-
-    if (validFiles.length !== newFiles.length) {
-      alert('5MB 이하의 JPG, PNG, GIF 파일만 업로드 가능합니다.');
+  const findZipCode = () => {
+    if (!isPostcodeLoaded || !window.daum?.Postcode) {
+      alert('우편번호 서비스를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+      return;
     }
 
-    setAccommodationPhotos(prev => [...prev, ...validFiles].slice(0, 20)); // 최대 20장
-  };
-
-  const removePhoto = (index: number) => {
-    setAccommodationPhotos(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const findZipCode = () => {
-    // 우편번호 찾기 API 연동 (예시)
-    window.open('https://postcode.map.daum.net/guide');
+    new window.daum.Postcode({
+      oncomplete: data => {
+        setValue('zipCode', data.zonecode, { shouldValidate: true, shouldDirty: true });
+        setValue('address', data.roadAddress || data.jibunAddress, {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+        setFocus('detailAddress');
+      },
+    }).open();
   };
 
   const verifyAccount = async () => {
@@ -215,6 +279,11 @@ export default function SignUpStep3Page() {
       router.push('/signup/step4');
     } else if (memberType === 'host') {
       // host 타입의 경우
+      if (accommodationPhotos.length < 5) {
+        setPhotoError('숙소 사진을 최소 5장 이상 업로드해주세요.');
+        alert('숙소 사진을 최소 5장 이상 업로드해주세요.');
+        return;
+      }
       if (!data.accommodationName) {
         setError('accommodationName', { type: 'required', message: '숙소명을 입력해주세요' });
         return;
@@ -381,35 +450,65 @@ export default function SignUpStep3Page() {
                   </div>
 
                   {/* 주소 */}
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <TitleDefault>
                       주소 <span className="text-red-500">*</span>
                     </TitleDefault>
                     <div className="flex gap-2">
                       <Input
                         placeholder="우편번호"
-                        {...register('zipCode')}
-                        disabled
-                        className="!w-24"
-                      />
-                      <Input
-                        placeholder="주소"
-                        {...register('address')}
-                        error={!!errors.address?.message}
+                        ref={zipCodeRef}
+                        {...zipCodeRest}
+                        onBlur={e => {
+                          zipCodeOnBlur?.(e);
+                          if (!e.target.value.trim()) {
+                            setValue('zipCode', '');
+                          }
+                        }}
+                        value={zipCodeValue}
+                        inputMode="numeric"
+                        error={!!errors.zipCode?.message}
                         className="flex-1"
+                        readOnly={isAddressSelected}
+                        disabled={!isAddressSelected}
                       />
-                      <Button variant="primary" onClick={findZipCode} className="!w-32">
+                      <Button
+                        variant="primary"
+                        onClick={findZipCode}
+                        className="!w-32 !h-12 flex items-center justify-center"
+                      >
                         우편번호 찾기
                       </Button>
                     </div>
+                    {errors.zipCode?.message && (
+                      <Caption className="text-red-500">{errors.zipCode.message}</Caption>
+                    )}
                     <Input
-                      placeholder="상세주소 입력"
-                      {...register('detailAddress')}
-                      error={!!errors.detailAddress?.message}
+                      placeholder="주소"
+                      ref={addressRef}
+                      {...addressRest}
+                      onBlur={e => {
+                        addressOnBlur?.(e);
+                        if (!e.target.value.trim()) {
+                          setValue('address', '');
+                        }
+                      }}
+                      value={addressValue}
+                      error={!!errors.address?.message}
+                      readOnly={isAddressSelected}
+                      disabled={!isAddressSelected}
                     />
                     {errors.address?.message && (
                       <Caption className="text-red-500">{errors.address.message}</Caption>
                     )}
+                    <Input
+                      placeholder="상세주소 입력"
+                      {...register('detailAddress', {
+                        required: '상세주소를 입력해주세요',
+                      })}
+                      error={!!errors.detailAddress?.message}
+                      value={detailAddressValue ?? ''}
+                    />
                     {errors.detailAddress?.message && (
                       <Caption className="text-red-500">{errors.detailAddress.message}</Caption>
                     )}
@@ -529,13 +628,40 @@ export default function SignUpStep3Page() {
 
                   {/* 숙소 사진 업로드 */}
                   <div className="space-y-2">
-                    <TitleDefault>숙소 사진 업로드</TitleDefault>
-                    <div className="grid grid-cols-4 gap-2">
+                    <TitleDefault>
+                      숙소 사진 업로드 <span className="text-red-500">*</span>
+                    </TitleDefault>
+                    <div className="flex flex-nowrap gap-2 overflow-x-auto overflow-y-hidden pb-2">
+                      {accommodationPhotos.length < 20 && (
+                        <div className="flex-shrink-0">
+                          <label className="w-28 h-28 border-2 border-neutral-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-neutral-1000">
+                            <input
+                              type="file"
+                              multiple
+                              accept="image/jpeg,image/png,image/gif"
+                              onChange={e => {
+                                handleFileUpload(e);
+                                setPhotoError(null);
+                              }}
+                              className="hidden"
+                            />
+                            <div className="flex flex-col items-center gap-2">
+                              <span className="text-2xl">
+                                <BiSolidCamera className="w-3 h-3" />
+                              </span>
+                              <TitleDefault className="text-neutral-600">사진첨부</TitleDefault>
+                            </div>
+                          </label>
+                        </div>
+                      )}
                       {accommodationPhotos.map((file, index) => (
-                        <div key={index} className="relative aspect-square">
-                          <img
+                        <div key={index} className="relative w-28 h-28 flex-shrink-0">
+                          <Image
                             src={URL.createObjectURL(file)}
                             alt={`숙소 사진 ${index + 1}`}
+                            width={112}
+                            height={112}
+                            unoptimized
                             className="w-full h-full object-cover rounded-lg border border-neutral-200"
                           />
                           <button
@@ -547,26 +673,12 @@ export default function SignUpStep3Page() {
                           </button>
                         </div>
                       ))}
-                      {accommodationPhotos.length < 20 && (
-                        <label className="aspect-square border-2 border-dashed border-neutral-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-neutral-1000">
-                          <input
-                            type="file"
-                            multiple
-                            accept="image/jpeg,image/png,image/gif"
-                            onChange={handleFileUpload}
-                            className="hidden"
-                          />
-                          <div className="flex flex-col items-center gap-2">
-                            <span className="text-2xl">📷</span>
-                            <span className="text-xs text-neutral-600">사진첨부</span>
-                          </div>
-                        </label>
-                      )}
                     </div>
                     <Caption className="text-neutral-500">
-                      사진은 최대 20장, 각각 5MB, 전체 100MB를 넘을 수 없습니다. (JPG, PNG, GIF
-                      가능)
+                      사진은 최소 5장, 최대 20장까지 업로드해야 하며 각각 5MB, 전체 100MB를 넘을 수
+                      없습니다. (JPG, PNG, GIF 가능)
                     </Caption>
+                    {photoError && <Caption className="text-red-500">{photoError}</Caption>}
                   </div>
 
                   {/* 비품 보관장소 */}

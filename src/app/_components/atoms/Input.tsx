@@ -9,6 +9,8 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   /** 에러 상태 여부 */
   error?: boolean;
   invisible?: boolean;
+  /** 숫자만 입력 허용 */
+  onlyNumber?: boolean;
 }
 
 /**
@@ -30,7 +32,24 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
  */
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, value, placeholder, disabled, error, type = 'text', invisible, onFocus, onBlur, onChange, ...props }, ref) => {
+  (
+    {
+      className,
+      value,
+      placeholder,
+      disabled,
+      error,
+      type = 'text',
+      invisible,
+      onlyNumber,
+      onFocus,
+      onBlur,
+      onChange,
+      onKeyDown,
+      ...props
+    },
+    ref,
+  ) => {
     const [isFocused, setIsFocused] = useState(false);
     const [showPassword, setShowPassword] = useState(true);
 
@@ -70,7 +89,34 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (onlyNumber) {
+        const numericOnly = e.target.value.replace(/[^0-9]/g, '');
+        if (numericOnly !== e.target.value) {
+          e.target.value = numericOnly;
+        }
+      }
       onChange?.(e);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (onlyNumber) {
+        const allowedKeys = [
+          'Backspace',
+          'Delete',
+          'ArrowLeft',
+          'ArrowRight',
+          'Tab',
+          'Home',
+          'End',
+          'Enter',
+        ];
+        const isCtrlCmdCombo = e.ctrlKey || e.metaKey || e.altKey; // allow shortcuts like copy/paste
+        const isNumberKey = /^[0-9]$/.test(e.key);
+        if (!isNumberKey && !allowedKeys.includes(e.key) && !isCtrlCmdCombo) {
+          e.preventDefault();
+        }
+      }
+      onKeyDown?.(e);
     };
 
     const inputType = invisible ? (showPassword ? 'text' : 'password') : type;
@@ -87,6 +133,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           onFocus={handleFocus}
           onBlur={handleBlur}
           onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          inputMode={onlyNumber ? 'numeric' : props.inputMode}
+          pattern={onlyNumber ? '[0-9]*' : props.pattern}
           {...props}
         />
 

@@ -676,6 +676,10 @@ export default function SignUpStep2Page() {
                   <div className="flex-1">
                     <Input
                       placeholder="휴대폰 번호를 입력해주세요 (-제외)"
+                      type="tel"
+                      onlyNumber
+                      inputMode="numeric"
+                      maxLength={11}
                       {...register('phone')}
                       error={!!errors.phone?.message}
                       onChange={e => {
@@ -683,11 +687,6 @@ export default function SignUpStep2Page() {
                         setValue('phone', value);
                         clearErrors('phone');
                         setSuccess(prev => ({ ...prev, phone: false }));
-                      }}
-                      onKeyDown={e => {
-                        if (e.key === '-') {
-                          e.preventDefault();
-                        }
                       }}
                     />
                   </div>
@@ -714,6 +713,9 @@ export default function SignUpStep2Page() {
                   <div className="relative flex-1">
                     <Input
                       placeholder="4자리 숫자 입력"
+                      onlyNumber
+                      inputMode="numeric"
+                      maxLength={4}
                       {...register('verificationCode')}
                       error={!!errors.verificationCode?.message}
                       disabled={isVerificationInputDisabled}
@@ -873,6 +875,8 @@ export default function SignUpStep2Page() {
                   <div className="flex gap-2 items-center">
                     <Input
                       placeholder="000"
+                      type="tel"
+                      onlyNumber
                       {...register('businessNumber1')}
                       maxLength={3}
                       className="flex-1"
@@ -882,6 +886,8 @@ export default function SignUpStep2Page() {
                     <span className="text-neutral-600">-</span>
                     <Input
                       placeholder="00"
+                      type="tel"
+                      onlyNumber
                       {...register('businessNumber2')}
                       maxLength={2}
                       className="flex-1"
@@ -891,6 +897,8 @@ export default function SignUpStep2Page() {
                     <span className="text-neutral-600">-</span>
                     <Input
                       placeholder="000000"
+                      type="tel"
+                      onlyNumber
                       {...register('businessNumber3')}
                       maxLength={6}
                       className="flex-1"
