@@ -4,8 +4,6 @@ import { BiSolidUserPlus, BiSolidBuildings } from 'react-icons/bi';
 import Button from '@/app/_components/atoms/Button';
 import {
   DisplayH1,
-  TitleDefault,
-  BodyDefault,
   DisplayH3,
 } from '@/app/_components/atoms/Typography';
 import { AuthTemplate } from '@/app/_components/templates/AuthTemplate';

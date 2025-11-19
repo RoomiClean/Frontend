@@ -241,8 +241,6 @@ export default function RegisterAccommodationStep2Page() {
     onError: alert,
   });
 
-  const { isVerified: isAccountVerified, verifyAccount } = useAccountVerification();
-
   const findZipCode = () => {
     if (!isPostcodeLoaded || !window.daum?.Postcode) {
       alert('우편번호 서비스를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
@@ -259,12 +257,6 @@ export default function RegisterAccommodationStep2Page() {
         setFocus('detailAddress');
       },
     }).open();
-  };
-
-  const handleVerifyAccount = async () => {
-    const accountNumber = watch('accountNumber');
-    const bank = watch('bank');
-    await verifyAccount(accountNumber, bank);
   };
 
   const onSubmit = (data: FormData) => {

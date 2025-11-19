@@ -6,7 +6,6 @@ import { Input } from '@/app/_components/atoms/Input';
 import { Dropdown } from '@/app/_components/atoms/DropDown';
 import Button from '@/app/_components/atoms/Button';
 import {
-  DisplayDefault,
   BodyDefault,
   Caption,
   TitleDefault,
@@ -77,7 +76,6 @@ export default function SignUpStep3Page() {
   });
 
   const [success, setSuccess] = useState<Record<string, boolean>>({});
-  const [isAccountVerified, setIsAccountVerified] = useState(false);
   const [showPrivacyDetail, setShowPrivacyDetail] = useState(false);
   const [accommodationPhotos, setAccommodationPhotos] = useState<File[]>([]);
   const [agreements, setAgreements] = useState({
@@ -95,8 +93,8 @@ export default function SignUpStep3Page() {
   }, [memberType, router]);
 
   const handleInputChange = (field: keyof FormData, value: string) => {
-    setValue(field as any, value);
-    clearErrors(field as any);
+    setValue(field, value);
+    clearErrors(field);
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -481,6 +479,7 @@ export default function SignUpStep3Page() {
                   <div className="grid grid-cols-4 gap-2">
                     {accommodationPhotos.map((file, index) => (
                       <div key={index} className="relative aspect-square">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={URL.createObjectURL(file)}
                           alt={`숙소 사진 ${index + 1}`}

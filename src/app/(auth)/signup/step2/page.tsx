@@ -7,7 +7,6 @@ import { Textarea } from '@/app/_components/atoms/Textarea';
 import { Dropdown } from '@/app/_components/atoms/DropDown';
 import Button from '@/app/_components/atoms/Button';
 import {
-  DisplayDefault,
   BodyDefault,
   BodySmall,
   Caption,
@@ -54,7 +53,6 @@ export default function SignUpStep2Page() {
     setError,
     clearErrors,
     formState: { errors },
-    trigger,
   } = useForm<FormData>({
     defaultValues: {
       email: '',
@@ -83,8 +81,6 @@ export default function SignUpStep2Page() {
   const confirmPassword = watch('confirmPassword');
 
   const [success, setSuccess] = useState<Record<string, boolean>>({});
-  const [isEmailChecked, setIsEmailChecked] = useState(false);
-  const [isPhoneVerified, setIsPhoneVerified] = useState(false);
   const [verificationTimer, setVerificationTimer] = useState(0);
   const [isCustomDomain, setIsCustomDomain] = useState(false);
   const [showBusinessDetail, setShowBusinessDetail] = useState(false);
@@ -120,8 +116,8 @@ export default function SignUpStep2Page() {
   }, [password, confirmPassword, setError, clearErrors]);
 
   const handleInputChange = (field: keyof FormData, value: string) => {
-    setValue(field as any, value);
-    clearErrors(field as any);
+    setValue(field, value);
+    clearErrors(field);
   };
 
   const handleDomainChange = (value: string) => {
@@ -230,7 +226,7 @@ export default function SignUpStep2Page() {
 
     for (const field of fieldsToValidate) {
       if (!data[field]) {
-        setError(field as any, {
+        setError(field, {
           type: 'required',
           message: '필수 항목입니다',
         });

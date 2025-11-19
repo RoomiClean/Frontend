@@ -4,7 +4,7 @@ import Header from './_components/atoms/Header';
 import Footer from './_components/atoms/Footer';
 import Providers from './providers';
 
-const metadata: Metadata = {
+export const metadata: Metadata = {
   title: 'RumiClean',
 };
 
