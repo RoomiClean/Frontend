@@ -89,7 +89,7 @@ export default function CleanerListPage({ params }: CleanerListPageProps) {
   };
 
   const handleViewReviews = (cleanerId: string) => {
-    console.log('리뷰 보기:', cleanerId);
+    router.push(`/mypage/request/cleaner-list/detail?cleanerId=${cleanerId}`);
   };
 
   return (
