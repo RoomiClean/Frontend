@@ -137,7 +137,6 @@ export default function SignUpStep3Page() {
     }
 
     setSuccess(prev => ({ ...prev, accountNumber: true }));
-    setIsAccountVerified(true);
   };
 
   const handleAgreementChange = (type: keyof typeof agreements, checked: boolean) => {

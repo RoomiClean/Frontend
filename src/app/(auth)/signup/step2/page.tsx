@@ -153,7 +153,6 @@ export default function SignUpStep2Page() {
     }
 
     setSuccess(prev => ({ ...prev, email: true }));
-    setIsEmailChecked(true);
     return true;
   };
 
@@ -190,7 +189,6 @@ export default function SignUpStep2Page() {
     }
 
     setSuccess(prev => ({ ...prev, verificationCode: true }));
-    setIsPhoneVerified(true);
   };
 
   const onSubmit = async (data: FormData) => {
