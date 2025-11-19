@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cleanb-front
+  labels:
+    app: cleanb-front
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cleanb-front
+  template:
+    metadata:
+      labels:
+        app: cleanb-front
+    spec:
+      containers:
+      - name: cleanb-front
+        image: your-registry/cleanb-front:latest  # TODO: 실제 이미지 레지스트리 주소로 변경
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NODE_ENV
+          value: "production"
+        # Secret에서 환경 변수 가져오기
+        envFrom:
+        - secretRef:
+            name: cleanb-front-secret
+        # 또는 개별 환경 변수로 참조
+        # env:
+        # - name: NEXT_PUBLIC_API_URL
+        #   valueFrom:
+        #     secretKeyRef:
+        #       name: cleanb-front-secret
+        #       key: NEXT_PUBLIC_API_URL
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
