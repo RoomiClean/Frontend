@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
@@ -42,7 +42,7 @@ interface FormData {
   businessAgreement: boolean;
 }
 
-export default function SignUpStep2Page() {
+function SignUpStep2Content() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const memberType = searchParams.get('type');
@@ -219,7 +219,9 @@ export default function SignUpStep2Page() {
       );
 
       if (!data.businessAgreement) {
-        alert('사업자 정보 제공 동의를 해주세요');
+        if (typeof window !== 'undefined') {
+          alert('사업자 정보 제공 동의를 해주세요');
+        }
         return;
       }
     }
@@ -645,5 +647,19 @@ export default function SignUpStep2Page() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function SignUpStep2Page() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-[calc(100dvh-68px)] py-8 flex items-center justify-center">
+          로딩 중...
+        </div>
+      }
+    >
+      <SignUpStep2Content />
+    </Suspense>
   );
 }

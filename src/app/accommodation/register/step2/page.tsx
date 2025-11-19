@@ -238,12 +238,18 @@ export default function RegisterAccommodationStep2Page() {
     maxFiles: 20,
     maxSize: 5 * 1024 * 1024,
     allowedTypes: ['image/jpeg', 'image/png', 'image/gif'],
-    onError: alert,
+    onError: (message: string) => {
+      if (typeof window !== 'undefined') {
+        alert(message);
+      }
+    },
   });
 
   const findZipCode = () => {
     if (!isPostcodeLoaded || !window.daum?.Postcode) {
-      alert('우편번호 서비스를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+      if (typeof window !== 'undefined') {
+        alert('우편번호 서비스를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+      }
       return;
     }
 
@@ -262,12 +268,16 @@ export default function RegisterAccommodationStep2Page() {
   const onSubmit = (data: FormData) => {
     if (accommodationPhotos.length < 5) {
       setPhotoError('숙소 사진을 최소 5장 이상 업로드해주세요.');
-      alert('숙소 사진을 최소 5장 이상 업로드해주세요.');
+      if (typeof window !== 'undefined') {
+        alert('숙소 사진을 최소 5장 이상 업로드해주세요.');
+      }
       return;
     }
 
     if (!isRequiredMet) {
-      alert('필수 약관에 동의해주세요');
+      if (typeof window !== 'undefined') {
+        alert('필수 약관에 동의해주세요');
+      }
       return;
     }
 

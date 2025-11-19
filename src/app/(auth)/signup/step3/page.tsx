@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
@@ -40,7 +40,7 @@ interface FormData {
   hostRequests: string;
 }
 
-export default function SignUpStep3Page() {
+function SignUpStep3Content() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const memberType = searchParams.get('type');
@@ -111,7 +111,9 @@ export default function SignUpStep3Page() {
     });
 
     if (validFiles.length !== newFiles.length) {
-      alert('5MB 이하의 JPG, PNG, GIF 파일만 업로드 가능합니다.');
+      if (typeof window !== 'undefined') {
+        alert('5MB 이하의 JPG, PNG, GIF 파일만 업로드 가능합니다.');
+      }
     }
 
     setAccommodationPhotos(prev => [...prev, ...validFiles].slice(0, 20)); // 최대 20장
@@ -161,7 +163,9 @@ export default function SignUpStep3Page() {
     if (memberType === 'cleaner') {
       // cleaner 타입의 경우
       if (!agreements.service || !agreements.privacy || !agreements.location) {
-        alert('필수 약관에 동의해주세요');
+        if (typeof window !== 'undefined') {
+          alert('필수 약관에 동의해주세요');
+        }
         return;
       }
       router.push('/signup/step4');
@@ -188,11 +192,15 @@ export default function SignUpStep3Page() {
         return;
       }
       if (!data.roomCount || !data.bedCount || !data.livingRoomCount || !data.bathroomCount) {
-        alert('숙소 구조를 모두 입력해주세요');
+        if (typeof window !== 'undefined') {
+          alert('숙소 구조를 모두 입력해주세요');
+        }
         return;
       }
       if (!data.area || !data.maxOccupancy) {
-        alert('숙소 면적과 최대 수용 인원을 입력해주세요');
+        if (typeof window !== 'undefined') {
+          alert('숙소 면적과 최대 수용 인원을 입력해주세요');
+        }
         return;
       }
       if (!data.equipmentStorage) {
@@ -207,7 +215,9 @@ export default function SignUpStep3Page() {
         return;
       }
       if (!agreements.service || !agreements.privacy || !agreements.location) {
-        alert('필수 약관에 동의해주세요');
+        if (typeof window !== 'undefined') {
+          alert('필수 약관에 동의해주세요');
+        }
         return;
       }
       router.push('/signup/step4');
@@ -657,5 +667,19 @@ export default function SignUpStep3Page() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function SignUpStep3Page() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-[calc(100dvh-68px)] py-8 flex items-center justify-center">
+          로딩 중...
+        </div>
+      }
+    >
+      <SignUpStep3Content />
+    </Suspense>
   );
 }

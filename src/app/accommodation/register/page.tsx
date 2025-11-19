@@ -90,7 +90,9 @@ export default function RegisterAccommodationPage() {
     }
 
     if (!data.businessAgreement) {
-      alert('사업자 정보 제공 동의를 해주세요');
+      if (typeof window !== 'undefined') {
+        alert('사업자 정보 제공 동의를 해주세요');
+      }
       return;
     }
 
