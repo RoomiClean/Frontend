@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: cleanb-front
-        image: your-registry/cleanb-front:latest  # TODO: 실제 이미지 레지스트리 주소로 변경
+        image: hyunwoo12/cleanb-front:latest
         ports:
         - containerPort: 3000
         env:
