@@ -21,6 +21,9 @@ import StepIndicator from '@/app/_components/molecules/StepIndicator';
 import { EMAIL_DOMAINS, PROVINCES, DISTRICTS } from '@/constants/business.constants';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { BiSolidCamera } from 'react-icons/bi';
+import { checkEmail, sendSmsCode, verifySmsCode } from '@/app/_lib/api/auth.api';
+import { generatePresignedUrls, uploadFileToS3 } from '@/app/_lib/api/s3.api';
+import { registerBusinessVerification } from '@/app/_lib/api/business.api';
 
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}$/;
 const HANGUL_REGEX = /[\u1100-\u11FF\u3130-\u318F\uAC00-\uD7A3]/g;
@@ -268,17 +271,19 @@ export default function SignUpStep2Page() {
       return false;
     }
 
-    // Simulate duplicate check
-    if (email === 'test') {
-      setError('email', { type: 'manual', message: '중복된 아이디입니다' });
+    try {
+      await checkEmail(fullEmail);
+      clearErrors('email');
+      setSuccess(prev => ({ ...prev, email: true }));
+      setIsEmailChecked(true);
+      return true;
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || '이메일 중복 확인에 실패했습니다';
+      setError('email', { type: 'manual', message: errorMessage });
       setSuccess(prev => ({ ...prev, email: false }));
+      setIsEmailChecked(false);
       return false;
     }
-
-    clearErrors('email');
-    setSuccess(prev => ({ ...prev, email: true }));
-    setIsEmailChecked(true);
-    return true;
   };
 
   const sendVerificationCode = async () => {
@@ -296,38 +301,57 @@ export default function SignUpStep2Page() {
       return;
     }
 
-    setVerificationTimer(VERIFICATION_DURATION); // 3 minutes
-    setIsVerificationRequested(true);
-    clearErrors('phone');
-    setSuccess(prev => ({ ...prev, phone: true }));
+    try {
+      await sendSmsCode(phone);
+      setVerificationTimer(VERIFICATION_DURATION); // 3 minutes
+      setIsVerificationRequested(true);
+      clearErrors('phone');
+      setSuccess(prev => ({ ...prev, phone: true }));
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || '인증번호 전송에 실패했습니다';
+      setError('phone', { type: 'manual', message: errorMessage });
+      setSuccess(prev => ({ ...prev, phone: false }));
+    }
   };
 
   const verifyCode = async () => {
     const verificationCode = watch('verificationCode');
+    const phone = watch('phone');
     if (!verificationCode) {
       setError('verificationCode', { type: 'manual', message: '인증번호를 입력해주세요' });
       setSuccess(prev => ({ ...prev, verificationCode: false }));
       return;
     }
 
-    if (verificationCode !== '1234') {
+    try {
+      await verifySmsCode(phone, verificationCode);
+      clearErrors('verificationCode');
+      setSuccess(prev => ({ ...prev, verificationCode: true }));
+      setIsPhoneVerified(true);
+      setVerificationTimer(0);
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || '인증번호가 일치하지 않습니다';
       setError('verificationCode', {
         type: 'manual',
-        message: '인증번호가 일치하지 않습니다',
+        message: errorMessage,
       });
       setSuccess(prev => ({ ...prev, verificationCode: false }));
-      return;
     }
-
-    clearErrors('verificationCode');
-    setSuccess(prev => ({ ...prev, verificationCode: true }));
-    setIsPhoneVerified(true);
-    setVerificationTimer(0);
   };
 
   const onSubmit = async (data: FormData) => {
     const isEmailValid = await validateEmail();
     if (!isEmailValid) return;
+
+    if (!isEmailChecked) {
+      alert('이메일 중복 확인을 해주세요');
+      return;
+    }
+
+    if (!isPhoneVerified) {
+      alert('전화번호 인증을 완료해주세요');
+      return;
+    }
 
     if (!PASSWORD_REGEX.test(data.password)) {
       setError('password', {
@@ -386,7 +410,131 @@ export default function SignUpStep2Page() {
       return;
     }
 
-    router.push('/signup/step3?type=' + memberType);
+    try {
+      // 프로필 사진 업로드
+      const profilePhoto = profilePhotos[0];
+      const presignedUrlResponse = await generatePresignedUrls({
+        type: 'SIGNUP',
+        file_count: 1,
+        file_types: [profilePhoto.type],
+      });
+
+      console.log('Presigned URL 응답:', presignedUrlResponse);
+
+      // API 응답 구조: { statusCode, success, message, data: { urls: [...] }, timestamp }
+      // camelcaseKeys 변환 후: { statusCode, success, message, data: { urls: [{ uploadUrl, fileUrl, contentType }] } }
+      const urls = presignedUrlResponse?.data?.urls;
+      if (!urls || !urls[0]) {
+        console.error('Presigned URL 응답 구조:', presignedUrlResponse);
+        throw new Error('Presigned URL 생성에 실패했습니다');
+      }
+
+      // camelcaseKeys 변환으로 upload_url → uploadUrl, file_url → fileUrl, content_type → contentType
+      const { uploadUrl, fileUrl, contentType } = urls[0];
+      console.log('추출된 URL 정보:', { uploadUrl, fileUrl, contentType });
+
+      if (!uploadUrl || !fileUrl || !contentType) {
+        console.error('URL 정보 누락:', { uploadUrl, fileUrl, contentType });
+        throw new Error('Presigned URL 정보가 올바르지 않습니다');
+      }
+
+      await uploadFileToS3(uploadUrl, profilePhoto, contentType);
+
+      const email = watch('email');
+      const emailDomain = watch('emailDomain');
+      const fullEmail = `${email}@${emailDomain}`;
+      const birthdate = `${data.birthYear}-${data.birthMonth}-${data.birthDay}`;
+      const gender =
+        data.gender === 'male' ? 'MALE' : data.gender === 'female' ? 'FEMALE' : 'OTHER';
+
+      if (memberType === 'host') {
+        // 사업자 검증
+        const businessNumber = `${data.businessNumber1}${data.businessNumber2}${data.businessNumber3}`;
+        const establishmentDate = data.establishmentDate.replace(/-/g, ''); // YYYYMMDD 형식
+
+        const businessVerificationResponse = await registerBusinessVerification({
+          business_name: data.companyName,
+          business_number: businessNumber,
+          business_type: data.businessType,
+          ceo_name: data.representativeName,
+          start_date: establishmentDate,
+        });
+
+        // 호스트 회원가입은 step3에서 숙소 정보와 함께 처리
+        // 여기서는 기본 정보만 저장
+        sessionStorage.setItem(
+          'signupData',
+          JSON.stringify({
+            email: fullEmail,
+            password: data.password,
+            name: data.name,
+            phone: data.phone,
+            role: 'ROLE_HOST',
+            gender: gender as 'MALE' | 'FEMALE' | 'OTHER',
+            birthdate,
+            image: fileUrl,
+            businessVerificationId: businessVerificationResponse.data.id,
+          }),
+        );
+      } else if (memberType === 'cleaner') {
+        // 청소자 회원가입은 step3에서 계좌 정보와 약관 동의를 포함하여 처리
+        // 여기서는 기본 정보만 저장
+        sessionStorage.setItem(
+          'signupData',
+          JSON.stringify({
+            email: fullEmail,
+            password: data.password,
+            name: data.name,
+            phone: data.phone,
+            role: 'ROLE_CLEANER',
+            gender: gender as 'MALE' | 'FEMALE' | 'OTHER',
+            birthdate,
+            image: fileUrl,
+            service_city: data.province,
+            service_district: data.district,
+            introduction: data.introduction || '',
+          }),
+        );
+      }
+
+      router.push('/signup/step3?type=' + memberType);
+    } catch (error: any) {
+      console.error('회원가입 오류 상세:', error);
+      console.error('에러 응답:', error?.response);
+      console.error('에러 데이터:', error?.response?.data);
+      console.error('에러 상태 코드:', error?.response?.status);
+      console.error('에러 요청 URL:', error?.config?.url);
+
+      let errorMessage = '회원가입 처리 중 오류가 발생했습니다';
+
+      // 403 Forbidden 에러 처리
+      if (error?.response?.status === 403) {
+        errorMessage =
+          '접근 권한이 없습니다. (403 Forbidden)\n\n이미 로그인되어 있거나, 인증이 필요한 요청입니다.';
+      } else if (error?.response?.status === 401) {
+        errorMessage = '인증이 필요합니다. (401 Unauthorized)';
+      } else if (error?.response?.status === 400) {
+        errorMessage = '잘못된 요청입니다. 입력 정보를 확인해주세요. (400 Bad Request)';
+      } else if (error?.response?.status === 500) {
+        errorMessage =
+          '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요. (500 Internal Server Error)';
+      }
+
+      if (error?.response?.data) {
+        // API 응답이 있는 경우
+        if (error.response.data.message) {
+          errorMessage = `${errorMessage}\n\n상세: ${error.response.data.message}`;
+        } else if (error.response.data.error) {
+          errorMessage = `${errorMessage}\n\n상세: ${error.response.data.error}`;
+        } else if (typeof error.response.data === 'string') {
+          errorMessage = `${errorMessage}\n\n상세: ${error.response.data}`;
+        }
+      } else if (error?.message) {
+        errorMessage = `${errorMessage}\n\n상세: ${error.message}`;
+      }
+
+      alert(errorMessage);
+    }
   };
 
   const formatTimer = (seconds: number) => {
@@ -712,10 +860,10 @@ export default function SignUpStep2Page() {
                 <div className="flex gap-2">
                   <div className="relative flex-1">
                     <Input
-                      placeholder="4자리 숫자 입력"
+                      placeholder="6자리 숫자 입력"
                       onlyNumber
                       inputMode="numeric"
-                      maxLength={4}
+                      maxLength={6}
                       {...register('verificationCode')}
                       error={!!errors.verificationCode?.message}
                       disabled={isVerificationInputDisabled}

@@ -27,6 +27,10 @@ import {
 import { useAgreements } from '@/hooks/useAgreements';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { BiSolidCamera } from 'react-icons/bi';
+import { signupCleaner, signupHost } from '@/app/_lib/api/auth.api';
+import { generatePresignedUrls, uploadFileToS3 } from '@/app/_lib/api/s3.api';
+import { createAccommodation } from '@/app/_lib/api/accommodation.api';
+import { getClientIpAddress } from '@/utils/ip.utils';
 
 interface DaumPostcodeData {
   zonecode: string;
@@ -269,14 +273,98 @@ export default function SignUpStep3Page() {
     setIsAccountVerified(true);
   };
 
-  const onSubmit = (data: FormData) => {
+  const onSubmit = async (data: FormData) => {
     if (memberType === 'cleaner') {
       // cleaner 타입의 경우
       if (!isRequiredMet) {
         alert('필수 약관에 동의해주세요');
         return;
       }
-      router.push('/signup/step4');
+
+      if (!data.bank || !data.accountHolder || !data.accountNumber) {
+        alert('은행 정보를 모두 입력해주세요');
+        return;
+      }
+
+      if (!isAccountVerified) {
+        alert('계좌 인증을 완료해주세요');
+        return;
+      }
+
+      if (!privacyCollectionConsent) {
+        alert('개인정보 수집 및 이용 동의를 해주세요');
+        return;
+      }
+
+      try {
+        // step2에서 저장한 데이터 가져오기
+        const signupDataStr = sessionStorage.getItem('signupData');
+        if (!signupDataStr) {
+          alert('회원가입 정보를 찾을 수 없습니다. 처음부터 다시 진행해주세요.');
+          router.push('/signup/step1');
+          return;
+        }
+
+        const signupData = JSON.parse(signupDataStr);
+
+        // IP 주소 가져오기
+        const ipAddress = await getClientIpAddress();
+
+        // 청소자 회원가입 완료
+        await signupCleaner({
+          ...signupData,
+          bank_name: data.bank,
+          account_holder: data.accountHolder,
+          account_number: data.accountNumber,
+          is_privacy_consent_agreement: privacyCollectionConsent,
+          is_service_policy_agreement: agreements.service,
+          is_privacy_policy_agreement: agreements.privacy,
+          is_location_policy_agreement: agreements.location,
+          is_marketing_policy_agreement: agreements.marketing,
+          ip_address: ipAddress || undefined,
+        });
+
+        // sessionStorage 정리
+        sessionStorage.removeItem('signupData');
+
+        router.push('/signup/step4');
+      } catch (error: any) {
+        console.error('청소자 회원가입 오류 상세:', error);
+        console.error('에러 응답:', error?.response);
+        console.error('에러 데이터:', error?.response?.data);
+        console.error('에러 상태 코드:', error?.response?.status);
+        console.error('에러 요청 URL:', error?.config?.url);
+
+        let errorMessage = '회원가입 처리 중 오류가 발생했습니다';
+
+        // 403 Forbidden 에러 처리
+        if (error?.response?.status === 403) {
+          errorMessage =
+            '접근 권한이 없습니다. (403 Forbidden)\n\n이미 로그인되어 있거나, 인증이 필요한 요청입니다.';
+        } else if (error?.response?.status === 401) {
+          errorMessage = '인증이 필요합니다. (401 Unauthorized)';
+        } else if (error?.response?.status === 400) {
+          errorMessage = '잘못된 요청입니다. 입력 정보를 확인해주세요. (400 Bad Request)';
+        } else if (error?.response?.status === 500) {
+          errorMessage =
+            '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요. (500 Internal Server Error)';
+        }
+
+        if (error?.response?.data) {
+          // API 응답이 있는 경우
+          if (error.response.data.message) {
+            errorMessage = `${errorMessage}\n\n상세: ${error.response.data.message}`;
+          } else if (error.response.data.error) {
+            errorMessage = `${errorMessage}\n\n상세: ${error.response.data.error}`;
+          } else if (typeof error.response.data === 'string') {
+            errorMessage = `${errorMessage}\n\n상세: ${error.response.data}`;
+          }
+        } else if (error?.message) {
+          errorMessage = `${errorMessage}\n\n상세: ${error.message}`;
+        }
+
+        alert(errorMessage);
+      }
     } else if (memberType === 'host') {
       // host 타입의 경우
       if (accommodationPhotos.length < 5) {
@@ -327,7 +415,121 @@ export default function SignUpStep3Page() {
         alert('필수 약관에 동의해주세요');
         return;
       }
-      router.push('/signup/step4');
+
+      try {
+        // step2에서 저장한 데이터 가져오기
+        const signupDataStr = sessionStorage.getItem('signupData');
+        if (!signupDataStr) {
+          alert('회원가입 정보를 찾을 수 없습니다. 처음부터 다시 진행해주세요.');
+          router.push('/signup/step1');
+          return;
+        }
+
+        const signupData = JSON.parse(signupDataStr);
+        const { businessVerificationId, ...hostSignupData } = signupData;
+
+        // 호스트 회원가입
+        await signupHost(hostSignupData);
+
+        // 숙소 사진 업로드
+        const photoUrls: string[] = [];
+        for (const photo of accommodationPhotos) {
+          const presignedUrlResponse = await generatePresignedUrls({
+            type: 'ACCOMMODATION',
+            file_count: 1,
+            file_types: [photo.type],
+          });
+
+          console.log('Presigned URL 응답:', presignedUrlResponse);
+
+          // API 응답 구조: { statusCode, success, message, data: { urls: [...] }, timestamp }
+          // camelcaseKeys 변환 후: { statusCode, success, message, data: { urls: [{ uploadUrl, fileUrl, contentType }] } }
+          const urls = presignedUrlResponse?.data?.urls;
+          if (!urls || !urls[0]) {
+            console.error('Presigned URL 응답 구조:', presignedUrlResponse);
+            throw new Error('Presigned URL 생성에 실패했습니다');
+          }
+
+          // camelcaseKeys 변환으로 upload_url → uploadUrl, file_url → fileUrl, content_type → contentType
+          const { uploadUrl, fileUrl, contentType } = urls[0];
+          console.log('추출된 URL 정보:', { uploadUrl, fileUrl, contentType });
+
+          if (!uploadUrl || !fileUrl || !contentType) {
+            console.error('URL 정보 누락:', { uploadUrl, fileUrl, contentType });
+            throw new Error('Presigned URL 정보가 올바르지 않습니다');
+          }
+
+          await uploadFileToS3(uploadUrl, photo, contentType);
+          photoUrls.push(fileUrl);
+        }
+
+        // 숙소 등록
+        await createAccommodation({
+          business_verification_id: businessVerificationId,
+          name: data.accommodationName,
+          address: data.address,
+          detailed_address: data.detailAddress,
+          access_method: data.accessMethod,
+          accommodation_type: data.accommodationType as
+            | 'ETC'
+            | 'APARTMENT'
+            | 'VILLA'
+            | 'STUDIO'
+            | 'HOUSE',
+          area_pyeong: parseFloat(data.area) || undefined,
+          room_count: parseInt(data.roomCount, 10) || undefined,
+          bed_count: parseInt(data.bedCount, 10) || undefined,
+          living_room_count: parseInt(data.livingRoomCount, 10) || undefined,
+          bathroom_count: parseInt(data.bathroomCount, 10) || undefined,
+          max_occupancy: parseInt(data.maxOccupancy, 10) || undefined,
+          supply_storage_location: data.equipmentStorage,
+          trash_location: data.trashDisposal,
+          recycle_location: data.trashDisposal, // 재활용 배출장소는 쓰레기 배출장소와 동일하게 처리
+          cleaning_notes: data.hostRequests || undefined,
+          photo_urls: photoUrls,
+        });
+
+        // sessionStorage 정리
+        sessionStorage.removeItem('signupData');
+
+        router.push('/signup/step4');
+      } catch (error: any) {
+        console.error('숙소 등록 오류 상세:', error);
+        console.error('에러 응답:', error?.response);
+        console.error('에러 데이터:', error?.response?.data);
+        console.error('에러 상태 코드:', error?.response?.status);
+        console.error('에러 요청 URL:', error?.config?.url);
+
+        let errorMessage = '숙소 등록 처리 중 오류가 발생했습니다';
+
+        // 403 Forbidden 에러 처리
+        if (error?.response?.status === 403) {
+          errorMessage =
+            '접근 권한이 없습니다. (403 Forbidden)\n\n이미 로그인되어 있거나, 인증이 필요한 요청입니다.';
+        } else if (error?.response?.status === 401) {
+          errorMessage = '인증이 필요합니다. (401 Unauthorized)';
+        } else if (error?.response?.status === 400) {
+          errorMessage = '잘못된 요청입니다. 입력 정보를 확인해주세요. (400 Bad Request)';
+        } else if (error?.response?.status === 500) {
+          errorMessage =
+            '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요. (500 Internal Server Error)';
+        }
+
+        if (error?.response?.data) {
+          // API 응답이 있는 경우
+          if (error.response.data.message) {
+            errorMessage = `${errorMessage}\n\n상세: ${error.response.data.message}`;
+          } else if (error.response.data.error) {
+            errorMessage = `${errorMessage}\n\n상세: ${error.response.data.error}`;
+          } else if (typeof error.response.data === 'string') {
+            errorMessage = `${errorMessage}\n\n상세: ${error.response.data}`;
+          }
+        } else if (error?.message) {
+          errorMessage = `${errorMessage}\n\n상세: ${error.message}`;
+        }
+
+        alert(errorMessage);
+      }
     }
   };
 
@@ -338,7 +540,7 @@ export default function SignUpStep3Page() {
           <DisplayH1>회원가입</DisplayH1>
 
           {/* Step 표시 */}
-          <StepIndicator currentStep={2} />
+          <StepIndicator currentStep={3} />
 
           <div className="w-full space-y-8">
             {/* cleaner 타입일 때 은행 정보 */}
