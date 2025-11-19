@@ -98,7 +98,7 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
 
         {/* 드롭다운 메뉴 */}
         {isOpen && !disabled && (
-          <div className="absolute left-0 right-0 bg-neutral-100 rounded-[8px] shadow-[0_6px_15px_rgba(0,0,0,0.2)] overflow-hidden z-50">
+          <div className="absolute left-0 right-0 bg-neutral-100 rounded-[8px] shadow-[0_6px_15px_rgba(0,0,0,0.2)] overflow-y-auto z-50 max-h-[270px]">
             {options.map(option => (
               <button
                 key={option.value}
