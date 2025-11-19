@@ -16,7 +16,7 @@ export default function RoomStatusSection({
   todayClean,
 }: RoomStatusSectionProps) {
   return (
-    <section className="space-y-6">
+    <section className="space-y-6 mb-12">
       <DisplayH3 className="text-neutral-1000 md:text-[28px] lg:text-[32px]">
         숙소 관리 현황
       </DisplayH3>
