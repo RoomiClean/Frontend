@@ -12,9 +12,9 @@ spec:
 
   # 소스 저장소 설정
   source:
-    # Git 저장소 URL (실제 저장소 URL로 변경 필요)
-    repoURL: https://github.com/RoomiClean/CleanB-Front.git
-    targetRevision: dev  # 백엔드는 main, 프론트는 dev 브랜치 사용
+    # Git 저장소 URL
+    repoURL: https://github.com/RoomiClean/Frontend.git
+    targetRevision: dev
     path: k8s
 
   # 배포 대상 클러스터
