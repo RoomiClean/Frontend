@@ -7,7 +7,7 @@ import {
   DisplayH3,
 } from '@/app/_components/atoms/Typography';
 import { AuthTemplate } from '@/app/_components/templates/AuthTemplate';
-import StepIndicator from '@/app/_components/molecules/StepIndicator';
+// import StepIndicator from '@/app/_components/molecules/StepIndicator';
 
 export default function SignUpStep1Page() {
   const router = useRouter();
@@ -21,8 +21,8 @@ export default function SignUpStep1Page() {
       <div className="flex flex-col items-center gap-16 w-full max-w-[800px] px-4">
         <DisplayH1>회원가입</DisplayH1>
 
-        {/* Step 표시 */}
-        <StepIndicator currentStep={1} />
+        {/* Step 표시 - TODO: Suspense boundary 추가 필요 */}
+        {/* <StepIndicator currentStep={1} /> */}
 
         {/* 회원 유형 선택 */}
         <div className="flex w-[688px] h-[386px] border py-8 border-neutral-200 rounded-lg overflow-hidden items-center justify-center">
