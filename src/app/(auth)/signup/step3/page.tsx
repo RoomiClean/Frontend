@@ -1,6 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+
+export const dynamic = 'force-dynamic';
 import { useForm } from 'react-hook-form';
 import { Input } from '@/app/_components/atoms/Input';
 import { Dropdown } from '@/app/_components/atoms/DropDown';
