@@ -30,9 +30,24 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
  */
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, value, placeholder, disabled, error, type = 'text', invisible, onFocus, onBlur, onChange, ...props }, ref) => {
+  (
+    {
+      className,
+      value,
+      placeholder,
+      disabled,
+      error,
+      type = 'text',
+      invisible,
+      onFocus,
+      onBlur,
+      onChange,
+      ...props
+    },
+    ref,
+  ) => {
     const [isFocused, setIsFocused] = useState(false);
-    const [showPassword, setShowPassword] = useState(true);
+    const [showPassword, setShowPassword] = useState(false);
 
     const baseStyles =
       'w-full px-4 py-[14px] rounded-lg transition-all duration-200 outline-none text-[14px] leading-[140%] placeholder:text-[14px] placeholder:leading-[140%]';

@@ -14,7 +14,7 @@ export default function Header() {
     console.log('햄버거 메뉴 아이콘 클릭');
   };
   return (
-    <div className="h-[68px] px-[36px] py-[12px] flex justify-between items-center border-b">
+    <div className="h-[68px] px-4 md:px-6 lg:px-8 py-[12px] flex justify-between items-center border-b">
       <Image src={Logo} alt="Logo" />
       <div className="flex items-center gap-8">
         {/* 태블릿 크기 이상에서만 링크 표시 */}
