@@ -78,6 +78,7 @@ export default function SignUpStep3Page() {
   const [success, setSuccess] = useState<Record<string, boolean>>({});
   const [showPrivacyDetail, setShowPrivacyDetail] = useState(false);
   const [accommodationPhotos, setAccommodationPhotos] = useState<File[]>([]);
+  const [isAccountVerified, setIsAccountVerified] = useState(false);
   const [agreements, setAgreements] = useState({
     all: false,
     service: false,
