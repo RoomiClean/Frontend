@@ -23,7 +23,7 @@ export default function ImageGallary({ photos }: ImageGallaryProps) {
   return (
     <div className="w-full">
       {/* 모바일 레이아웃 */}
-      <div className="block md:hidden space-y-6">
+      <div className="block md:hidden space-y-4">
         {/* 메인 이미지 */}
         <div className="w-full aspect-square rounded-[20px] overflow-hidden bg-neutral-200 shadow-[0_6px_15px_0_rgba(0_0_0/0.2)]">
           {mainPhoto && (
@@ -38,7 +38,7 @@ export default function ImageGallary({ photos }: ImageGallaryProps) {
         </div>
 
         {/* 서브 이미지 그리드 */}
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-2 gap-4">
           {subPhotos.map((photo, index) => (
             <div
               key={photo.id}
@@ -57,7 +57,7 @@ export default function ImageGallary({ photos }: ImageGallaryProps) {
       </div>
 
       {/* 태블릿/PC 레이아웃 */}
-      <div className="hidden md:flex gap-4">
+      <div className="hidden md:flex gap-6">
         {/* 메인 이미지 */}
         <div className="flex-1 aspect-square rounded-[16px] overflow-hidden bg-neutral-200 shadow-[0_6px_15px_0_rgba(0_0_0/0.2)]">
           {mainPhoto && (
@@ -72,7 +72,10 @@ export default function ImageGallary({ photos }: ImageGallaryProps) {
         </div>
 
         {/* 서브 이미지 그리드 */}
-        <div className="grid grid-cols-2 gap-4 flex-shrink-0" style={{ width: 'calc(50% - 8px)' }}>
+        <div
+          className="grid grid-cols-2 gap-4 md:gap-6 flex-shrink-0"
+          // style={{ width: 'calc(50% - 8px)' }}
+        >
           {subPhotos.map((photo, index) => (
             <div
               key={photo.id}

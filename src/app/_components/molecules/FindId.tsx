@@ -82,7 +82,7 @@ export default function FindId({
 
           {/* 휴대폰 번호 입력 및 인증번호 전송 */}
           <div>
-            <div className="flex gap-4">
+            <div className="flex w-full justify-between gap-4">
               <div className="flex-1">
                 <Controller
                   name="phone"
@@ -101,23 +101,23 @@ export default function FindId({
                   )}
                 />
               </div>
-
-              <Button
-                type="button"
-                className="w-[120px]"
-                active={!!watchedValues.name && !!watchedValues.phone && !isCodeSent}
-                disabled={!watchedValues.name || !watchedValues.phone}
-                onClick={isCodeSent ? onResendCode : onSendCode}
-              >
-                <BodyDefault>{isCodeSent ? '인증번호 재전송' : '인증번호 받기'}</BodyDefault>
-              </Button>
+              <div className="w-[130px]">
+                <Button
+                  type="button"
+                  active={!!watchedValues.name && !!watchedValues.phone && !isCodeSent}
+                  disabled={!watchedValues.name || !watchedValues.phone}
+                  onClick={isCodeSent ? onResendCode : onSendCode}
+                >
+                  <BodyDefault>{isCodeSent ? '인증번호 재전송' : '인증번호 받기'}</BodyDefault>
+                </Button>
+              </div>
             </div>
           </div>
 
           {/* 인증번호 입력 */}
           {isCodeSent && (
             <div>
-              <div className="flex gap-2">
+              <div className="flex w-full justify-between gap-4">
                 <div className="flex-1 relative">
                   <Controller
                     name="verificationCode"
@@ -143,15 +143,16 @@ export default function FindId({
                   )}
                 </div>
 
-                <Button
-                  type="button"
-                  className="w-[120px]"
-                  active={!!watchedValues.verificationCode && !isVerified}
-                  disabled={!watchedValues.verificationCode}
-                  onClick={onVerifyCode}
-                >
-                  <BodyDefault>인증번호 확인</BodyDefault>
-                </Button>
+                <div className="w-[130px]">
+                  <Button
+                    type="button"
+                    active={!!watchedValues.verificationCode && !isVerified}
+                    disabled={!watchedValues.verificationCode}
+                    onClick={onVerifyCode}
+                  >
+                    <BodyDefault>인증번호 확인</BodyDefault>
+                  </Button>
+                </div>
               </div>
             </div>
           )}
