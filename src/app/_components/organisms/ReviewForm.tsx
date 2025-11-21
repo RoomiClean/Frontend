@@ -11,6 +11,7 @@ import { useFileUpload } from '@/hooks/useFileUpload';
 import CloseIcon from '@/assets/svg/close.svg';
 import RowLogo from '@/assets/svg/RowLogo.svg';
 import { BiSolidCamera } from 'react-icons/bi';
+import { PiWarning } from 'react-icons/pi';
 
 interface CleanerInfo {
   imageUrl: string;
@@ -377,13 +378,10 @@ export default function ReviewForm({ cleanerInfo, onSubmit }: ReviewFormProps) {
       <Modal
         isOpen={isErrorModalOpen}
         onClose={() => setIsErrorModalOpen(false)}
-        width="500px"
-        height="auto"
-        padding="40px"
-        className="flex flex-col items-center gap-6"
+        className="flex flex-col items-center gap-6 p-8"
       >
         <div className="flex flex-col items-center gap-6">
-          <Image src={RowLogo} alt="RumiClean 로고" width={181} height={45} />
+          <PiWarning className="w-20 h-20 text-primary-400" />
           <div className="flex flex-col items-center gap-2">
             <BodyDefault className="text-neutral-1000 text-center whitespace-pre-line">
               아직 리뷰작성이 완료되지 않았어요{'\n'}작성 후 다시 등록하기를 눌러주세요
