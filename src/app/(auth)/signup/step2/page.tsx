@@ -70,6 +70,7 @@ export default function SignUpStep2Page() {
     control,
     formState: { errors },
     trigger,
+    getValues,
   } = useForm<FormData>({
     defaultValues: {
       email: '',
@@ -100,8 +101,25 @@ export default function SignUpStep2Page() {
 
   const password = watch('password');
   const confirmPassword = watch('confirmPassword');
-  const passwordRegister = register('password');
-  const confirmPasswordRegister = register('confirmPassword');
+  const passwordRegister = register('password', {
+    validate: (value: string) => {
+      if (!value) return true; // 빈 값은 required로 처리
+      if (!PASSWORD_REGEX.test(value)) {
+        return '비밀번호 조합이 일치하지 않습니다';
+      }
+      return true;
+    },
+  });
+  const confirmPasswordRegister = register('confirmPassword', {
+    validate: (value: string) => {
+      if (!value) return true; // 빈 값은 required로 처리
+      const currentPassword = getValues('password');
+      if (currentPassword && value !== currentPassword) {
+        return '비밀번호가 일치하지 않습니다';
+      }
+      return true;
+    },
+  });
   const preventHangulInput = (
     event: ChangeEvent<HTMLInputElement>,
     originalHandler?: (event: ChangeEvent<HTMLInputElement>) => void,
@@ -112,26 +130,6 @@ export default function SignUpStep2Page() {
     }
     originalHandler?.(event);
   };
-
-  useEffect(() => {
-    if (!password) {
-      clearErrors('password');
-      setSuccess(prev => ({ ...prev, password: false }));
-      return;
-    }
-
-    if (!PASSWORD_REGEX.test(password)) {
-      setError('password', {
-        type: 'manual',
-        message: '비밀번호 조합이 일치하지 않습니다',
-      });
-      setSuccess(prev => ({ ...prev, password: false }));
-      return;
-    }
-
-    clearErrors('password');
-    setSuccess(prev => ({ ...prev, password: true }));
-  }, [password, clearErrors, setError]);
 
   const [success, setSuccess] = useState<Record<string, boolean>>({});
   const [isEmailChecked, setIsEmailChecked] = useState(false);
@@ -223,20 +221,21 @@ export default function SignUpStep2Page() {
     return () => clearInterval(interval);
   }, [verificationTimer]);
 
+  // success 상태를 errors 기반으로 계산
   useEffect(() => {
-    if (confirmPassword && password) {
-      if (password !== confirmPassword) {
-        setError('confirmPassword', {
-          type: 'manual',
-          message: '비밀번호가 일치하지 않습니다',
-        });
-        setSuccess(prev => ({ ...prev, confirmPassword: false }));
-      } else {
-        clearErrors('confirmPassword');
-        setSuccess(prev => ({ ...prev, confirmPassword: true }));
-      }
+    setSuccess(prev => ({
+      ...prev,
+      password: !!password && !errors.password?.message,
+      confirmPassword: !!confirmPassword && !errors.confirmPassword?.message,
+    }));
+  }, [password, confirmPassword, errors.password?.message, errors.confirmPassword?.message]);
+
+  // password가 변경될 때 confirmPassword 재검증
+  useEffect(() => {
+    if (confirmPassword) {
+      trigger('confirmPassword');
     }
-  }, [password, confirmPassword, setError, clearErrors]);
+  }, [password, trigger]);
 
   const handleInputChange = (field: keyof FormData, value: string) => {
     setValue(field as any, value);
