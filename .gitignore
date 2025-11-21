@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -39,3 +40,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# kubernetes secrets (암호화되지 않은 secret 파일)
+k8s/secret.yaml
+k8s/*.secret.yaml
+!k8s/sealed-secret.yaml
+
+# sealed secrets 공개 키 (보안상 Git에 포함하지 않음)
+pub-cert.pem

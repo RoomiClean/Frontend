@@ -1,8 +1,13 @@
 'use client';
 
 import { use } from 'react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { BodySmall, DisplayH4 } from '@/app/_components/atoms/Typography';
 import CleanerInfoCard from '@/app/_components/molecules/card/CleanerInfoCard';
+import { TitleH4 } from '@/app/_components/atoms/Typography';
+import Button from '@/app/_components/atoms/Button';
+import EmptyIcon from '@/assets/svg/Search.svg';
 import RoomMainTemplate from '@/app/_components/templates/RoomMainTemplate';
 
 interface CleanerData {
@@ -76,39 +81,58 @@ interface CleanerListPageProps {
 
 export default function CleanerListPage({ params }: CleanerListPageProps) {
   const { id } = use(params);
+  const router = useRouter();
+  const hasCleaners = cleanerMockData.length > 0;
 
   const handleAccept = (cleanerId: string) => {
     console.log('요청 ID:', id, '청소자 수락 ID:', cleanerId);
   };
 
   const handleViewReviews = (cleanerId: string) => {
-    console.log('리뷰 보기:', cleanerId);
+    router.push(`/mypage/request/cleaner-list/detail?cleanerId=${cleanerId}`);
   };
 
   return (
     <RoomMainTemplate>
       <div className="mb-6">
-        <DisplayH4 className=" text-neutral-1000 mb-2 md:text-[28px]">청소자 요청 목록</DisplayH4>
-        <BodySmall className="text-neutral-800 mb-8 md:text-[16px]">
-          여러분들의 청소 요청을 수락하신 청소자 분들입니다. <br />
-          청소자분들의 정보를 확인하고 청소를 진행해보세요.
-        </BodySmall>
+        <DisplayH4 className=" text-neutral-1000  md:text-[28px]">청소자 요청 목록</DisplayH4>
+        {hasCleaners && (
+          <BodySmall className="text-neutral-800 mt-2 mb-8 md:text-[16px]">
+            여러분들의 청소 요청을 수락하신 청소자 분들입니다. <br />
+            청소자분들의 정보를 확인하고 청소를 진행해보세요.
+          </BodySmall>
+        )}
       </div>
-      <div className="flex flex-col gap-8 md:gap-4 lg:grid lg:grid-cols-2">
-        {cleanerMockData.map(cleaner => (
-          <CleanerInfoCard
-            key={cleaner.id}
-            imageUrl={cleaner.imageUrl}
-            name={cleaner.name}
-            gender={cleaner.gender}
-            experience={cleaner.experience}
-            rating={cleaner.rating}
-            introduction={cleaner.introduction}
-            onAccept={() => handleAccept(cleaner.id)}
-            onViewReviews={() => handleViewReviews(cleaner.id)}
-          />
-        ))}
-      </div>
+      {hasCleaners ? (
+        <div className="flex flex-col gap-8 md:gap-4 lg:grid lg:grid-cols-2">
+          {cleanerMockData.map(cleaner => (
+            <CleanerInfoCard
+              key={cleaner.id}
+              imageUrl={cleaner.imageUrl}
+              name={cleaner.name}
+              gender={cleaner.gender}
+              experience={cleaner.experience}
+              rating={cleaner.rating}
+              introduction={cleaner.introduction}
+              onAccept={() => handleAccept(cleaner.id)}
+              onViewReviews={() => handleViewReviews(cleaner.id)}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-col mt-20 md:mt-25 items-center justify-center text-center gap-4">
+          <Image src={EmptyIcon} alt="EmptyIcon" />
+          <TitleH4 className="text-neutral-1000">아직 청소를 요청하신 분이 없어요.</TitleH4>
+          <Button
+            variant="primary"
+            className="w-[240px]"
+            active
+            onClick={() => router.push('/mypage/request')}
+          >
+            요청 목록으로 돌아가기
+          </Button>
+        </div>
+      )}
     </RoomMainTemplate>
   );
 }

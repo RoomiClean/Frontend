@@ -12,7 +12,7 @@ export function useAccountVerification(): UseAccountVerificationReturn {
   const [verificationMessage, setVerificationMessage] = useState('');
 
   const verifyAccount = useCallback(
-    async (accountNumber: string, bank?: string): Promise<boolean> => {
+    async (accountNumber: string, _bank?: string): Promise<boolean> => {
       if (!accountNumber) {
         setVerificationMessage('계좌번호를 입력해주세요');
         return false;
@@ -33,7 +33,7 @@ export function useAccountVerification(): UseAccountVerificationReturn {
         setIsVerified(true);
         setVerificationMessage('');
         return true;
-      } catch (error) {
+      } catch {
         setVerificationMessage('계좌 검증에 실패했습니다');
         setIsVerified(false);
         return false;

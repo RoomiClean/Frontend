@@ -2,15 +2,9 @@
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Button from '@/app/_components/atoms/Button';
-import {
-  DisplayDefault,
-  BodyDefault,
-  TitleDefault,
-  DisplayH1,
-} from '@/app/_components/atoms/Typography';
+import { BodyDefault, DisplayH1 } from '@/app/_components/atoms/Typography';
 import { AuthTemplate } from '@/app/_components/templates/AuthTemplate';
 import ColumnLogo from '@/assets/svg/ColumnLogo.svg';
-import StepIndicator from '@/app/_components/molecules/StepIndicator';
 
 export default function SignUpStep3Page() {
   const router = useRouter();
@@ -25,11 +19,8 @@ export default function SignUpStep3Page() {
 
   return (
     <AuthTemplate>
-      <div className="flex flex-col items-center gap-16 w-full max-w-[600px] px-4">
+      <div className="flex flex-col items-center gap-16 w-full max-w-[600px] px-4 my-[100px]">
         <DisplayH1>회원가입</DisplayH1>
-
-        {/* Step 표시 */}
-        <StepIndicator currentStep={3} />
 
         {/* Logo */}
         <div className="flex flex-col items-center gap-4">

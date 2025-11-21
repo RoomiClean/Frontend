@@ -8,7 +8,6 @@ import { Textarea } from '@/app/_components/atoms/Textarea';
 import { Dropdown } from '@/app/_components/atoms/DropDown';
 import Button from '@/app/_components/atoms/Button';
 import {
-  DisplayDefault,
   BodyDefault,
   BodySmall,
   Caption,
@@ -55,7 +54,7 @@ interface FormData {
   businessAgreement: boolean;
 }
 
-export default function SignUpStep2Page() {
+function SignUpStep2Content() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const memberType = searchParams.get('type');
@@ -139,8 +138,6 @@ export default function SignUpStep2Page() {
   };
 
   const [success, setSuccess] = useState<Record<string, boolean>>({});
-  const [isEmailChecked, setIsEmailChecked] = useState(false);
-  const [isPhoneVerified, setIsPhoneVerified] = useState(false);
   const [verificationTimer, setVerificationTimer] = useState(0);
   const [isVerificationRequested, setIsVerificationRequested] = useState(false);
   const [isCustomDomain, setIsCustomDomain] = useState(false);
@@ -245,8 +242,8 @@ export default function SignUpStep2Page() {
   }, [password, trigger]);
 
   const handleInputChange = (field: keyof FormData, value: string) => {
-    setValue(field as any, value);
-    clearErrors(field as any);
+    setValue(field, value);
+    clearErrors(field);
   };
 
   const handleDomainChange = (value: string) => {
@@ -386,14 +383,16 @@ export default function SignUpStep2Page() {
       );
 
       if (!data.businessAgreement) {
-        alert('사업자 정보 제공 동의를 해주세요');
+        if (typeof window !== 'undefined') {
+          alert('사업자 정보 제공 동의를 해주세요');
+        }
         return;
       }
     }
 
     for (const field of fieldsToValidate) {
       if (!data[field]) {
-        setError(field as any, {
+        setError(field, {
           type: 'required',
           message: '필수 항목입니다',
         });
@@ -559,18 +558,236 @@ export default function SignUpStep2Page() {
       : formatTimer(VERIFICATION_DURATION);
 
   return (
-    <div className="min-h-[calc(100dvh-68px)] py-8">
-      <div className="flex flex-col items-center gap-16 w-full max-w-[472px] px-4 mx-auto">
-        <DisplayH1>회원가입</DisplayH1>
+    <div className="flex flex-col items-center gap-16 w-full max-w-[472px] px-4 mx-auto my-8 md:my-[100px]">
+      <DisplayH1>회원가입</DisplayH1>
 
-        {/* Step 표시 */}
-        <StepIndicator currentStep={2} />
+      {/* Step 표시 */}
+      <StepIndicator currentStep={2} />
 
-        <div className="w-full space-y-8">
-          {/* 기본정보 */}
+      <div className="w-full space-y-8">
+        {/* 기본정보 */}
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <TitleH4>기본정보</TitleH4>
+            <div className="flex items-center gap-1">
+              <span className="text-red-500">*</span>
+              <TitleSmall>필수입력사항</TitleSmall>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {/* 아이디 */}
+            <div className="space-y-2">
+              <TitleDefault>
+                아이디 <span className="text-red-500">*</span>
+              </TitleDefault>
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <Input
+                    placeholder="이메일 입력"
+                    {...register('email')}
+                    error={!!errors.email?.message}
+                  />
+                </div>
+                <span className="flex items-center text-neutral-600">@</span>
+                {isCustomDomain ? (
+                  <div className="flex-none [&>div]:!w-[140px]">
+                    <Input placeholder="직접 입력" {...register('emailDomain')} />
+                  </div>
+                ) : (
+                  <div className="flex-none [&>div]:!w-[140px]">
+                    <Dropdown
+                      options={EMAIL_DOMAINS}
+                      value={watch('emailDomain')}
+                      onChange={handleDomainChange}
+                    />
+                  </div>
+                )}
+                <Button
+                  variant="primary"
+                  onClick={validateEmail}
+                  className="!w-[81px] py-3 flex-shrink-0"
+                >
+                  중복확인
+                </Button>
+              </div>
+              {errors.email?.message && (
+                <Caption className="text-red-500">{errors.email.message}</Caption>
+              )}
+              {success.email && (
+                <Caption className="text-green-500">사용가능한 아이디입니다</Caption>
+              )}
+            </div>
+
+            {/* 비밀번호 */}
+            <div className="space-y-2">
+              <TitleDefault>
+                비밀번호 <span className="text-red-500">*</span>
+              </TitleDefault>
+              <Input
+                placeholder="비밀번호를 입력해주세요"
+                type="password"
+                invisible
+                {...register('password')}
+                error={!!errors.password?.message}
+              />
+              <Caption className="text-neutral-500">
+                영문 대문자, 소문자, 숫자, 특수문자(@$!%*?&) 포함, 8~16자
+              </Caption>
+              {errors.password?.message && (
+                <Caption className="text-red-500">{errors.password.message}</Caption>
+              )}
+            </div>
+
+            {/* 비밀번호 확인 */}
+            <div className="space-y-2">
+              <TitleDefault>
+                비밀번호 확인 <span className="text-red-500">*</span>
+              </TitleDefault>
+              <Input
+                placeholder="비밀번호를 다시 입력해주세요"
+                type="password"
+                invisible
+                {...register('confirmPassword')}
+                error={!!errors.confirmPassword?.message}
+              />
+              {errors.confirmPassword?.message && (
+                <Caption className="text-red-500">{errors.confirmPassword.message}</Caption>
+              )}
+              {success.confirmPassword && (
+                <Caption className="text-green-500">비밀번호가 일치합니다</Caption>
+              )}
+            </div>
+
+            {/* 이름 */}
+            <div className="space-y-2">
+              <TitleDefault>
+                이름 <span className="text-red-500">*</span>
+              </TitleDefault>
+              <Input
+                placeholder="이름을 입력해주세요"
+                {...register('name')}
+                error={!!errors.name?.message}
+              />
+              {errors.name?.message && (
+                <Caption className="text-red-500">{errors.name.message}</Caption>
+              )}
+            </div>
+
+            {/* 전화번호 */}
+            <div className="space-y-2">
+              <TitleDefault>
+                전화번호 <span className="text-red-500">*</span>
+              </TitleDefault>
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <Input
+                    placeholder="휴대폰 번호를 입력해주세요 (-제외)"
+                    {...register('phone')}
+                    error={!!errors.phone?.message}
+                    onChange={e => {
+                      const value = e.target.value.replace(/-/g, '');
+                      setValue('phone', value);
+                    }}
+                    onKeyDown={e => {
+                      if (e.key === '-') {
+                        e.preventDefault();
+                      }
+                    }}
+                  />
+                </div>
+                <Button variant="primary" onClick={sendVerificationCode} className="!w-32">
+                  {verificationTimer > 0 ? '인증번호 재전송' : '인증번호 받기'}
+                </Button>
+              </div>
+              {errors.phone?.message && (
+                <Caption className="text-red-500">{errors.phone.message}</Caption>
+              )}
+              {success.phone && (
+                <Caption className="text-green-500">인증번호가 전송되었습니다</Caption>
+              )}
+            </div>
+
+            {/* 인증번호 */}
+            {verificationTimer > 0 && (
+              <div className="space-y-2">
+                <BodySmall className="text-neutral-1000">인증번호</BodySmall>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="4자리 숫자 입력"
+                    {...register('verificationCode')}
+                    error={!!errors.verificationCode?.message}
+                    className="flex-1"
+                  />
+                  <div className="flex items-center px-3 text-red-500 font-mono">
+                    {formatTimer(verificationTimer)}
+                  </div>
+                  <Button variant="primary" onClick={verifyCode} className="w-32">
+                    인증번호 확인
+                  </Button>
+                </div>
+                {errors.verificationCode?.message && (
+                  <Caption className="text-red-500">{errors.verificationCode.message}</Caption>
+                )}
+                {success.verificationCode && (
+                  <Caption className="text-green-500">인증되었습니다</Caption>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* cleaner 타입일 때만 서비스 가능 지역과 자기소개 표시 */}
+        {memberType === 'cleaner' && (
+          <>
+            {/* 서비스 가능 지역 */}
+            <div className="space-y-4">
+              <TitleDefault>서비스 가능 지역</TitleDefault>
+              <div className="flex-1 space-y-2">
+                <Dropdown
+                  options={PROVINCES}
+                  value={watch('province')}
+                  onChange={value => handleInputChange('province', value)}
+                  placeholder="시/도"
+                  error={!!errors.province?.message}
+                />
+                {errors.province?.message && (
+                  <Caption className="text-red-500">{errors.province.message}</Caption>
+                )}
+              </div>
+              <div className="flex-1 space-y-2">
+                <Dropdown
+                  options={DISTRICTS}
+                  value={watch('district')}
+                  onChange={value => handleInputChange('district', value)}
+                  placeholder="시/구/군"
+                  error={!!errors.district?.message}
+                />
+                {errors.district?.message && (
+                  <Caption className="text-red-500">{errors.district.message}</Caption>
+                )}
+              </div>
+            </div>
+
+            {/* 자기소개 */}
+            <div className="space-y-4">
+              <TitleDefault>자기소개</TitleDefault>
+              <Textarea
+                placeholder="본인의 자기소개를 입력해주세요"
+                value={watch('introduction')}
+                onChange={e => handleInputChange('introduction', e.target.value)}
+                maxLength={500}
+                showCharCount
+              />
+            </div>
+          </>
+        )}
+
+        {/* host 타입일 때 사업자 인증 섹션 표시 */}
+        {memberType === 'host' && (
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <TitleH4>기본정보</TitleH4>
+              <TitleH4>사업자 인증</TitleH4>
               <div className="flex items-center gap-1">
                 <span className="text-red-500">*</span>
                 <TitleSmall>필수입력사항</TitleSmall>
@@ -578,53 +795,10 @@ export default function SignUpStep2Page() {
             </div>
 
             <div className="space-y-4">
-              {/* 아이디 */}
+              {/* 상호명 */}
               <div className="space-y-2">
                 <TitleDefault>
-                  아이디 <span className="text-red-500">*</span>
-                </TitleDefault>
-                <div className="flex gap-2">
-                  <div className="flex-1">
-                    <Input
-                      placeholder="이메일 입력"
-                      {...register('email')}
-                      error={!!errors.email?.message}
-                    />
-                  </div>
-                  <span className="flex items-center text-neutral-600">@</span>
-                  {isCustomDomain ? (
-                    <div className="flex-none [&>div]:!w-[140px]">
-                      <Input placeholder="직접 입력" {...register('emailDomain')} />
-                    </div>
-                  ) : (
-                    <div className="flex-none [&>div]:!w-[140px]">
-                      <Dropdown
-                        options={EMAIL_DOMAINS}
-                        value={watch('emailDomain')}
-                        onChange={handleDomainChange}
-                      />
-                    </div>
-                  )}
-                  <Button
-                    variant="primary"
-                    onClick={validateEmail}
-                    className="!w-[81px] py-3 flex-shrink-0"
-                  >
-                    중복확인
-                  </Button>
-                </div>
-                {errors.email?.message && (
-                  <Caption className="text-red-500">{errors.email.message}</Caption>
-                )}
-                {success.email && (
-                  <Caption className="text-green-500">사용가능한 아이디입니다</Caption>
-                )}
-              </div>
-
-              {/* 비밀번호 */}
-              <div className="space-y-2">
-                <TitleDefault>
-                  비밀번호 <span className="text-red-500">*</span>
+                  상호명 <span className="text-red-500">*</span>
                 </TitleDefault>
                 <Input
                   placeholder="비밀번호를 입력해주세요"
@@ -634,21 +808,18 @@ export default function SignUpStep2Page() {
                   onChange={handlePasswordChange}
                   error={!!errors.password?.message}
                 />
-                <Caption className="text-neutral-500">
-                  영문 대문자, 소문자, 숫자, 특수문자(@$!%*?&) 포함, 8~16자
-                </Caption>
-                {errors.password?.message && (
-                  <Caption className="text-red-500">{errors.password.message}</Caption>
+                {errors.companyName?.message && (
+                  <Caption className="text-red-500">{errors.companyName.message}</Caption>
                 )}
                 {success.password && (
                   <Caption className="text-green-500">사용 가능한 비밀번호입니다</Caption>
                 )}
               </div>
 
-              {/* 비밀번호 확인 */}
+              {/* 업종 */}
               <div className="space-y-2">
                 <TitleDefault>
-                  비밀번호 확인 <span className="text-red-500">*</span>
+                  업종 <span className="text-red-500">*</span>
                 </TitleDefault>
                 <Input
                   placeholder="비밀번호를 다시 입력해주세요"
@@ -658,26 +829,23 @@ export default function SignUpStep2Page() {
                   onChange={handleConfirmPasswordChange}
                   error={!!errors.confirmPassword?.message}
                 />
-                {errors.confirmPassword?.message && (
-                  <Caption className="text-red-500">{errors.confirmPassword.message}</Caption>
-                )}
-                {success.confirmPassword && (
-                  <Caption className="text-green-500">비밀번호가 일치합니다</Caption>
+                {errors.businessType?.message && (
+                  <Caption className="text-red-500">{errors.businessType.message}</Caption>
                 )}
               </div>
 
-              {/* 이름 */}
+              {/* 대표자명 */}
               <div className="space-y-2">
                 <TitleDefault>
-                  이름 <span className="text-red-500">*</span>
+                  대표자명 <span className="text-red-500">*</span>
                 </TitleDefault>
                 <Input
-                  placeholder="이름을 입력해주세요"
-                  {...register('name')}
-                  error={!!errors.name?.message}
+                  placeholder="대표자명을 입력해주세요"
+                  {...register('representativeName')}
+                  error={!!errors.representativeName?.message}
                 />
-                {errors.name?.message && (
-                  <Caption className="text-red-500">{errors.name.message}</Caption>
+                {errors.representativeName?.message && (
+                  <Caption className="text-red-500">{errors.representativeName.message}</Caption>
                 )}
               </div>
 
@@ -824,7 +992,7 @@ export default function SignUpStep2Page() {
               {/* 전화번호 */}
               <div className="space-y-2">
                 <TitleDefault>
-                  전화번호 <span className="text-red-500">*</span>
+                  개업일자 <span className="text-red-500">*</span>
                 </TitleDefault>
                 <div className="flex gap-2">
                   <div className="flex-1">
@@ -944,81 +1112,58 @@ export default function SignUpStep2Page() {
                   maxLength={500}
                   showCharCount
                 />
-              </div>
-            </>
-          )}
-
-          {/* host 타입일 때 사업자 인증 섹션 표시 */}
-          {memberType === 'host' && (
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <TitleH4>사업자 인증</TitleH4>
-                <div className="flex items-center gap-1">
-                  <span className="text-red-500">*</span>
-                  <TitleSmall>필수입력사항</TitleSmall>
-                </div>
+                {errors.establishmentDate?.message && (
+                  <Caption className="text-red-500">{errors.establishmentDate.message}</Caption>
+                )}
               </div>
 
-              <div className="space-y-4">
-                {/* 상호명 */}
-                <div className="space-y-2">
-                  <TitleDefault>
-                    상호명 <span className="text-red-500">*</span>
-                  </TitleDefault>
+              {/* 사업자 등록번호 */}
+              <div className="space-y-2">
+                <TitleDefault>
+                  사업자 등록번호 <span className="text-red-500">*</span>
+                </TitleDefault>
+                <div className="flex gap-2 items-center">
                   <Input
-                    placeholder="상호명을 입력해주세요"
-                    {...register('companyName')}
-                    error={!!errors.companyName?.message}
+                    placeholder="000"
+                    {...register('businessNumber1')}
+                    maxLength={3}
+                    className="flex-1"
+                    error={!!errors.businessNumber1?.message}
                   />
-                  {errors.companyName?.message && (
-                    <Caption className="text-red-500">{errors.companyName.message}</Caption>
-                  )}
+                  <span className="text-neutral-600">-</span>
+                  <Input
+                    placeholder="00"
+                    {...register('businessNumber2')}
+                    maxLength={2}
+                    className="flex-1"
+                    error={!!errors.businessNumber1?.message}
+                  />
+                  <span className="text-neutral-600">-</span>
+                  <Input
+                    placeholder="000000"
+                    {...register('businessNumber3')}
+                    maxLength={6}
+                    className="flex-1"
+                    error={!!errors.businessNumber1?.message}
+                  />
                 </div>
+                {errors.businessNumber1?.message && (
+                  <Caption className="text-red-500">입력한 사업자 정보가 유효하지 않습니다</Caption>
+                )}
+              </div>
 
-                {/* 업종 */}
-                <div className="space-y-2">
-                  <TitleDefault>
-                    업종 <span className="text-red-500">*</span>
-                  </TitleDefault>
-                  <Input
-                    placeholder="사업자 등록증에 등록된 종목을 입력해주세요"
-                    {...register('businessType')}
-                    error={!!errors.businessType?.message}
+              {/* 동의 체크박스 */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="business-consent"
+                    {...register('businessAgreement')}
+                    className="w-4 h-4"
                   />
-                  {errors.businessType?.message && (
-                    <Caption className="text-red-500">{errors.businessType.message}</Caption>
-                  )}
-                </div>
-
-                {/* 대표자명 */}
-                <div className="space-y-2">
-                  <TitleDefault>
-                    대표자명 <span className="text-red-500">*</span>
-                  </TitleDefault>
-                  <Input
-                    placeholder="대표자명을 입력해주세요"
-                    {...register('representativeName')}
-                    error={!!errors.representativeName?.message}
-                  />
-                  {errors.representativeName?.message && (
-                    <Caption className="text-red-500">{errors.representativeName.message}</Caption>
-                  )}
-                </div>
-
-                {/* 개업일자 */}
-                <div className="space-y-2">
-                  <TitleDefault>
-                    개업일자 <span className="text-red-500">*</span>
-                  </TitleDefault>
-                  <Input
-                    type="date"
-                    placeholder="개업일자를 선택해주세요"
-                    {...register('establishmentDate')}
-                    error={!!errors.establishmentDate?.message}
-                  />
-                  {errors.establishmentDate?.message && (
-                    <Caption className="text-red-500">{errors.establishmentDate.message}</Caption>
-                  )}
+                  <label htmlFor="business-consent" className="text-sm text-neutral-1000">
+                    상호명, 사업자명, 사업자 등록번호 정보 제공 동의
+                  </label>
                 </div>
 
                 {/* 사업자 등록번호 */}
@@ -1178,6 +1323,27 @@ export default function SignUpStep2Page() {
           </div>
         )}
       </div>
+
+      {/* 다음 단계 버튼 */}
+      <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-[400px]">
+        <Button type="submit" variant="secondary" className="w-full">
+          다음 단계
+        </Button>
+      </form>
     </div>
+  );
+}
+
+export default function SignUpStep2Page() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-[calc(100dvh-68px)] py-8 flex items-center justify-center">
+          로딩 중...
+        </div>
+      }
+    >
+      <SignUpStep2Content />
+    </Suspense>
   );
 }

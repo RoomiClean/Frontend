@@ -3,14 +3,11 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Button from '@/app/_components/atoms/Button';
 import {
-  DisplayDefault,
   BodyDefault,
-  TitleDefault,
   DisplayH1,
 } from '@/app/_components/atoms/Typography';
 import { AuthTemplate } from '@/app/_components/templates/AuthTemplate';
 import ColumnLogo from '@/assets/svg/ColumnLogo.svg';
-import StepIndicator from '@/app/_components/molecules/StepIndicator';
 
 export default function RegisterAccommodationDonePage() {
   const router = useRouter();

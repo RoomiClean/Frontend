@@ -1,13 +1,14 @@
 'use client';
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+
+export const dynamic = 'force-dynamic';
 import { useForm } from 'react-hook-form';
 import Image from 'next/image';
 import { Input } from '@/app/_components/atoms/Input';
 import { Dropdown } from '@/app/_components/atoms/DropDown';
 import Button from '@/app/_components/atoms/Button';
 import {
-  DisplayDefault,
   BodyDefault,
   BodySmall,
   Caption,
@@ -70,7 +71,7 @@ interface FormData {
   hostRequests: string;
 }
 
-export default function SignUpStep3Page() {
+function SignUpStep3Content() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const memberType = searchParams.get('type');
@@ -270,7 +271,6 @@ export default function SignUpStep3Page() {
     }
 
     setSuccess(prev => ({ ...prev, accountNumber: true }));
-    setIsAccountVerified(true);
   };
 
   const onSubmit = async (data: FormData) => {
@@ -393,11 +393,15 @@ export default function SignUpStep3Page() {
         return;
       }
       if (!data.roomCount || !data.bedCount || !data.livingRoomCount || !data.bathroomCount) {
-        alert('숙소 구조를 모두 입력해주세요');
+        if (typeof window !== 'undefined') {
+          alert('숙소 구조를 모두 입력해주세요');
+        }
         return;
       }
       if (!data.area || !data.maxOccupancy) {
-        alert('숙소 면적과 최대 수용 인원을 입력해주세요');
+        if (typeof window !== 'undefined') {
+          alert('숙소 면적과 최대 수용 인원을 입력해주세요');
+        }
         return;
       }
       if (!data.equipmentStorage) {
@@ -938,6 +942,10 @@ export default function SignUpStep3Page() {
                     아래 내용에 모두 동의합니다
                   </label>
                 </div>
+                <Caption className="text-neutral-500">
+                  사진은 최대 20장, 각각 5MB, 전체 100MB를 넘을 수 없습니다. (JPG, PNG, GIF 가능)
+                </Caption>
+              </div>
 
                 <div className="border-t border-neutral-200" />
 
@@ -1182,5 +1190,19 @@ export default function SignUpStep3Page() {
         </div>
       )}
     </>
+  );
+}
+
+export default function SignUpStep3Page() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-[calc(100dvh-68px)] py-8 flex items-center justify-center">
+          로딩 중...
+        </div>
+      }
+    >
+      <SignUpStep3Content />
+    </Suspense>
   );
 }

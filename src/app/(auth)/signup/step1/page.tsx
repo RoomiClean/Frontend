@@ -2,14 +2,9 @@
 import { useRouter } from 'next/navigation';
 import { BiSolidUserPlus, BiSolidBuildings } from 'react-icons/bi';
 import Button from '@/app/_components/atoms/Button';
-import {
-  DisplayH1,
-  TitleDefault,
-  BodyDefault,
-  DisplayH3,
-} from '@/app/_components/atoms/Typography';
+import { DisplayH1, DisplayH3 } from '@/app/_components/atoms/Typography';
 import { AuthTemplate } from '@/app/_components/templates/AuthTemplate';
-import StepIndicator from '@/app/_components/molecules/StepIndicator';
+// import StepIndicator from '@/app/_components/molecules/StepIndicator';
 
 export default function SignUpStep1Page() {
   const router = useRouter();
@@ -20,11 +15,11 @@ export default function SignUpStep1Page() {
 
   return (
     <AuthTemplate>
-      <div className="flex flex-col items-center gap-16 w-full max-w-[800px] px-4">
+      <div className="flex flex-col items-center gap-16 w-full max-w-[800px] px-4 mt-8 md:mt-[100px]">
         <DisplayH1>회원가입</DisplayH1>
 
-        {/* Step 표시 */}
-        <StepIndicator currentStep={1} />
+        {/* Step 표시 - TODO: Suspense boundary 추가 필요 */}
+        {/* <StepIndicator currentStep={1} /> */}
 
         {/* 회원 유형 선택 */}
         <div className="flex w-[688px] h-[386px] border py-8 border-neutral-200 rounded-lg overflow-hidden items-center justify-center">
