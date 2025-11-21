@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: cleanb-front
-        image: hyunwoo12/cleanb-front:72d25b432fa3d276e96dd183a374e8ae23b8de87
+        image: hyunwoo12/cleanb-front:9144f36fcd34cbdfcd522a3421a28d280f590013
         ports:
         - containerPort: 3000
         env:
