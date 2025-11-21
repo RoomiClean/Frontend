@@ -1,4 +1,5 @@
 import apiInstance from '../intance';
+import type { SignupHostRequest, SignupCleanerRequest } from '../types/auth.types';
 
 // 이메일 중복 확인
 export const checkEmail = async (email: string) => {
@@ -26,43 +27,13 @@ export const verifySmsCode = async (phone: string, code: string) => {
 };
 
 // 호스트 회원가입
-export const signupHost = async (data: {
-  email: string;
-  password: string;
-  name: string;
-  phone: string;
-  role: 'ROLE_HOST' | 'ROLE_CLEANER';
-  gender: 'MALE' | 'FEMALE' | 'OTHER';
-  birthdate: string; // YYYY-MM-DD
-  image?: string;
-}) => {
+export const signupHost = async (data: SignupHostRequest) => {
   const response = await apiInstance.post('/api/v1/auth/signup/host', data);
   return response.data;
 };
 
 // 청소자 회원가입
-export const signupCleaner = async (data: {
-  email: string;
-  password: string;
-  name: string;
-  phone: string;
-  role: 'ROLE_HOST' | 'ROLE_CLEANER';
-  gender: 'MALE' | 'FEMALE' | 'OTHER';
-  birthdate: string; // YYYY-MM-DD
-  image?: string;
-  service_city: string;
-  service_district: string;
-  introduction?: string;
-  bank_name: string;
-  account_holder: string;
-  account_number: string;
-  is_privacy_consent_agreement: boolean;
-  is_service_policy_agreement: boolean;
-  is_privacy_policy_agreement: boolean;
-  is_location_policy_agreement: boolean;
-  is_marketing_policy_agreement: boolean;
-  ip_address?: string;
-}) => {
+export const signupCleaner = async (data: SignupCleanerRequest) => {
   const response = await apiInstance.post('/api/v1/auth/signup/cleaner', data);
   return response.data;
 };

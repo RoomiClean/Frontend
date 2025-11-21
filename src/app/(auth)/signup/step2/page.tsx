@@ -415,8 +415,8 @@ export default function SignUpStep2Page() {
       const profilePhoto = profilePhotos[0];
       const presignedUrlResponse = await generatePresignedUrls({
         type: 'SIGNUP',
-        file_count: 1,
-        file_types: [profilePhoto.type],
+        fileCount: 1,
+        fileTypes: [profilePhoto.type],
       });
 
       console.log('Presigned URL 응답:', presignedUrlResponse);
@@ -453,11 +453,11 @@ export default function SignUpStep2Page() {
         const establishmentDate = data.establishmentDate.replace(/-/g, ''); // YYYYMMDD 형식
 
         const businessVerificationResponse = await registerBusinessVerification({
-          business_name: data.companyName,
-          business_number: businessNumber,
-          business_type: data.businessType,
-          ceo_name: data.representativeName,
-          start_date: establishmentDate,
+          businessName: data.companyName,
+          businessNumber: businessNumber,
+          businessType: data.businessType,
+          ceoName: data.representativeName,
+          startDate: establishmentDate,
         });
 
         // 호스트 회원가입은 step3에서 숙소 정보와 함께 처리
@@ -490,8 +490,8 @@ export default function SignUpStep2Page() {
             gender: gender as 'MALE' | 'FEMALE' | 'OTHER',
             birthdate,
             image: fileUrl,
-            service_city: data.province,
-            service_district: data.district,
+            serviceCity: data.province,
+            serviceDistrict: data.district,
             introduction: data.introduction || '',
           }),
         );

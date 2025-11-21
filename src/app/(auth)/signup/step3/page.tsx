@@ -313,15 +313,15 @@ export default function SignUpStep3Page() {
         // 청소자 회원가입 완료
         await signupCleaner({
           ...signupData,
-          bank_name: data.bank,
-          account_holder: data.accountHolder,
-          account_number: data.accountNumber,
-          is_privacy_consent_agreement: privacyCollectionConsent,
-          is_service_policy_agreement: agreements.service,
-          is_privacy_policy_agreement: agreements.privacy,
-          is_location_policy_agreement: agreements.location,
-          is_marketing_policy_agreement: agreements.marketing,
-          ip_address: ipAddress || undefined,
+          bankName: data.bank,
+          accountHolder: data.accountHolder,
+          accountNumber: data.accountNumber,
+          isPrivacyConsentAgreement: privacyCollectionConsent,
+          isServicePolicyAgreement: agreements.service,
+          isPrivacyPolicyAgreement: agreements.privacy,
+          isLocationPolicyAgreement: agreements.location,
+          isMarketingPolicyAgreement: agreements.marketing,
+          ipAddress: ipAddress || undefined,
         });
 
         // sessionStorage 정리
@@ -436,8 +436,8 @@ export default function SignUpStep3Page() {
         for (const photo of accommodationPhotos) {
           const presignedUrlResponse = await generatePresignedUrls({
             type: 'ACCOMMODATION',
-            file_count: 1,
-            file_types: [photo.type],
+            fileCount: 1,
+            fileTypes: [photo.type],
           });
 
           console.log('Presigned URL 응답:', presignedUrlResponse);
@@ -465,28 +465,28 @@ export default function SignUpStep3Page() {
 
         // 숙소 등록
         await createAccommodation({
-          business_verification_id: businessVerificationId,
+          businessVerificationId: businessVerificationId,
           name: data.accommodationName,
           address: data.address,
-          detailed_address: data.detailAddress,
-          access_method: data.accessMethod,
-          accommodation_type: data.accommodationType as
+          detailedAddress: data.detailAddress,
+          accessMethod: data.accessMethod,
+          accommodationType: data.accommodationType as
             | 'ETC'
             | 'APARTMENT'
             | 'VILLA'
             | 'STUDIO'
             | 'HOUSE',
-          area_pyeong: parseFloat(data.area) || undefined,
-          room_count: parseInt(data.roomCount, 10) || undefined,
-          bed_count: parseInt(data.bedCount, 10) || undefined,
-          living_room_count: parseInt(data.livingRoomCount, 10) || undefined,
-          bathroom_count: parseInt(data.bathroomCount, 10) || undefined,
-          max_occupancy: parseInt(data.maxOccupancy, 10) || undefined,
-          supply_storage_location: data.equipmentStorage,
-          trash_location: data.trashDisposal,
-          recycle_location: data.trashDisposal, // 재활용 배출장소는 쓰레기 배출장소와 동일하게 처리
-          cleaning_notes: data.hostRequests || undefined,
-          photo_urls: photoUrls,
+          areaPyeong: parseFloat(data.area) || undefined,
+          roomCount: parseInt(data.roomCount, 10) || undefined,
+          bedCount: parseInt(data.bedCount, 10) || undefined,
+          livingRoomCount: parseInt(data.livingRoomCount, 10) || undefined,
+          bathroomCount: parseInt(data.bathroomCount, 10) || undefined,
+          maxOccupancy: parseInt(data.maxOccupancy, 10) || undefined,
+          supplyStorageLocation: data.equipmentStorage,
+          trashLocation: data.trashDisposal,
+          recycleLocation: data.trashDisposal, // 재활용 배출장소는 쓰레기 배출장소와 동일하게 처리
+          cleaningNotes: data.hostRequests || undefined,
+          photoUrls: photoUrls,
         });
 
         // sessionStorage 정리
