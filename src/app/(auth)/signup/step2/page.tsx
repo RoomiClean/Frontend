@@ -104,15 +104,27 @@ export default function SignUpStep2Page() {
   const passwordRegister = register('password', {
     validate: (value: string) => {
       if (!value) return true; // 빈 값은 required로 처리
+      if (HANGUL_REGEX.test(value)) {
+        return '비밀번호에 한글을 사용할 수 없습니다';
+      }
       if (!PASSWORD_REGEX.test(value)) {
         return '비밀번호 조합이 일치하지 않습니다';
       }
       return true;
     },
   });
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    passwordRegister.onChange(e);
+    trigger('password');
+  };
+
   const confirmPasswordRegister = register('confirmPassword', {
     validate: (value: string) => {
       if (!value) return true; // 빈 값은 required로 처리
+      if (HANGUL_REGEX.test(value)) {
+        return '비밀번호에 한글을 사용할 수 없습니다';
+      }
       const currentPassword = getValues('password');
       if (currentPassword && value !== currentPassword) {
         return '비밀번호가 일치하지 않습니다';
@@ -120,15 +132,10 @@ export default function SignUpStep2Page() {
       return true;
     },
   });
-  const preventHangulInput = (
-    event: ChangeEvent<HTMLInputElement>,
-    originalHandler?: (event: ChangeEvent<HTMLInputElement>) => void,
-  ) => {
-    const sanitizedValue = event.target.value.replace(HANGUL_REGEX, '');
-    if (sanitizedValue !== event.target.value) {
-      event.target.value = sanitizedValue;
-    }
-    originalHandler?.(event);
+
+  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    confirmPasswordRegister.onChange(e);
+    trigger('confirmPassword');
   };
 
   const [success, setSuccess] = useState<Record<string, boolean>>({});
@@ -624,7 +631,7 @@ export default function SignUpStep2Page() {
                   type="password"
                   invisible
                   {...passwordRegister}
-                  onChange={event => preventHangulInput(event, passwordRegister.onChange)}
+                  onChange={handlePasswordChange}
                   error={!!errors.password?.message}
                 />
                 <Caption className="text-neutral-500">
@@ -648,7 +655,7 @@ export default function SignUpStep2Page() {
                   type="password"
                   invisible
                   {...confirmPasswordRegister}
-                  onChange={event => preventHangulInput(event, confirmPasswordRegister.onChange)}
+                  onChange={handleConfirmPasswordChange}
                   error={!!errors.confirmPassword?.message}
                 />
                 {errors.confirmPassword?.message && (
