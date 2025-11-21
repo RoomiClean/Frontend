@@ -2,10 +2,7 @@
 import { useRouter } from 'next/navigation';
 import { BiSolidUserPlus, BiSolidBuildings } from 'react-icons/bi';
 import Button from '@/app/_components/atoms/Button';
-import {
-  DisplayH1,
-  DisplayH3,
-} from '@/app/_components/atoms/Typography';
+import { DisplayH1, DisplayH3 } from '@/app/_components/atoms/Typography';
 import { AuthTemplate } from '@/app/_components/templates/AuthTemplate';
 // import StepIndicator from '@/app/_components/molecules/StepIndicator';
 
@@ -18,7 +15,7 @@ export default function SignUpStep1Page() {
 
   return (
     <AuthTemplate>
-      <div className="flex flex-col items-center gap-16 w-full max-w-[800px] px-4">
+      <div className="flex flex-col items-center gap-16 w-full max-w-[800px] px-4 mt-8 md:mt-[100px]">
         <DisplayH1>회원가입</DisplayH1>
 
         {/* Step 표시 - TODO: Suspense boundary 추가 필요 */}
