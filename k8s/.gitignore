@@ -1,0 +1,7 @@
+# 암호화되지 않은 Secret 파일은 Git에 커밋하지 않습니다
+# secrets 폴더 내의 암호화되지 않은 파일들은 제외
+secrets/*.yaml
+secrets/*.yml
+# sealed-secret으로 끝나는 파일만 Git에 포함
+!secrets/*-sealed-secret.yaml
+!secrets/*-sealed-secret.yml
