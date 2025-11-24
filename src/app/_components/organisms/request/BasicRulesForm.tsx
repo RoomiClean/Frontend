@@ -55,16 +55,9 @@ export const BasicRulesForm = ({
   const requestEndTime = watch('requestEndTime');
   const requestPeriodStart = watch('requestPeriodStart');
   const requestPeriodEnd = watch('requestPeriodEnd');
-  const laundryItems = watch('laundryItems');
 
   // 오늘 날짜인지 확인
   const isToday = () => checkIsToday(requestDate);
-
-  // 세탁물 수량이 하나라도 입력되었는지 확인
-  const hasLaundryItems = () => {
-    if (!laundryItems || typeof laundryItems !== 'object') return false;
-    return Object.values(laundryItems).some(value => value > 0);
-  };
 
   // 세탁물 수량 업데이트
   const updateLaundryQuantity = (itemId: string, quantity: number) => {
@@ -94,7 +87,7 @@ export const BasicRulesForm = ({
           {/* 숙소 선택 */}
           <TitleDefault className="text-neutral-1000">
             {isAutomatic ? '자동 요청 활성화' : '숙소 선택'}
-            <span className="text-red-500">*</span>
+            <span className="text-red-500 ml-1">*</span>
           </TitleDefault>
           <Controller
             name="accommodationId"
@@ -119,7 +112,7 @@ export const BasicRulesForm = ({
         {isAutomatic && (
           <div>
             <div className="mb-3">
-              <TitleSmall className="text-neutral-1000">청소 요청 트리거 시점 *</TitleSmall>
+              <TitleDefault className="text-neutral-1000">청소 요청 트리거 시점</TitleDefault>
             </div>
 
             <Controller
@@ -469,20 +462,22 @@ export const BasicRulesForm = ({
                   className="w-4 h-4 accent-neutral-1000"
                 />
                 <BodyDefault>고정 시간</BodyDefault>
-                <Controller
-                  name="completionTime"
-                  control={control}
-                  render={({ field }) => (
-                    <TimePicker
-                      value={field.value}
-                      onChange={field.onChange}
-                      placeholder="시간을 설정해주세요"
-                      disabled={watch('completionTimeType') !== 'fixed'}
-                      className="w-[161px]"
-                      hideIcon={true}
-                    />
-                  )}
-                />
+                <div className="w-[161px]">
+                  <Controller
+                    name="completionTime"
+                    control={control}
+                    render={({ field }) => (
+                      <TimePicker
+                        value={field.value}
+                        onChange={field.onChange}
+                        placeholder="시간을 설정해주세요"
+                        disabled={watch('completionTimeType') !== 'fixed'}
+                        className="w-[170px]"
+                        hideIcon={true}
+                      />
+                    )}
+                  />
+                </div>
               </label>
             </div>
           </div>
