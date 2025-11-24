@@ -16,6 +16,7 @@ export interface TimePickerProps {
   className?: string;
   minTime?: string;
   maxTime?: string;
+  hideIcon?: boolean;
 }
 
 // 6시부터 23시까지 30분 단위로 시간 옵션 생성
@@ -52,7 +53,10 @@ const generateTimeOptions = (minTime?: string, maxTime?: string) => {
  * - 드롭다운 형태로 시간 선택
  */
 export const TimePicker = forwardRef<HTMLDivElement, TimePickerProps>(
-  ({ className, value, placeholder, disabled, error, onChange, minTime, maxTime }, ref) => {
+  (
+    { className, value, placeholder, disabled, error, onChange, minTime, maxTime, hideIcon },
+    ref,
+  ) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -121,19 +125,27 @@ export const TimePicker = forwardRef<HTMLDivElement, TimePickerProps>(
           disabled={disabled}
           className={`${baseStyles} ${getStateStyles()}`}
         >
-          <Image
-            src={TimeIcon}
-            alt="시간"
-            width={20}
-            height={20}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-10 pointer-events-none"
-          />
+          {!hideIcon && (
+            <Image
+              src={TimeIcon}
+              alt="시간"
+              width={20}
+              height={20}
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-10 pointer-events-none"
+            />
+          )}
           {hasValue ? (
-            <BodySmall className="text-neutral-1000 ml-8">{selectedOption?.label}</BodySmall>
-          ) : (
-            <BodySmall className="text-neutral-500 ml-8">
-              {placeholder || '시간을 선택해주세요'}
+            <BodySmall className={`text-neutral-1000 ${hideIcon ? 'ml-0' : 'ml-8'}`}>
+              {selectedOption?.label}
             </BodySmall>
+          ) : (
+            placeholder && (
+              <BodySmall
+                className={`text-neutral-500 ${hideIcon ? 'ml-0' : 'ml-8'} hidden md:block`}
+              >
+                {placeholder}
+              </BodySmall>
+            )
           )}
           <Image
             src={isOpen ? ArrowUpIcon : ArrowDownIcon}

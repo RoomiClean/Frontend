@@ -96,28 +96,23 @@ export const BasicRulesForm = ({
             {isAutomatic ? '자동 요청 활성화' : '숙소 선택'}
             <span className="text-red-500">*</span>
           </TitleDefault>
-          <div>
-            <Controller
-              name="accommodationId"
-              control={control}
-              rules={{ required: '숙소를 선택해주세요' }}
-              render={({ field }) => (
-                <Dropdown
-                  options={accommodationOptions}
-                  value={field.value}
-                  onChange={value => {
-                    field.onChange(value);
-                    handleAccommodationChange(value);
-                  }}
-                  placeholder="요청하실 숙소를 선택해주세요"
-                  error={!!errors.accommodationId}
-                />
-              )}
-            />
-            {errors.accommodationId && (
-              <Caption className="text-red-500 mt-1">{errors.accommodationId.message}</Caption>
+          <Controller
+            name="accommodationId"
+            control={control}
+            rules={{ required: '숙소를 선택해주세요' }}
+            render={({ field }) => (
+              <Dropdown
+                options={accommodationOptions}
+                value={field.value}
+                onChange={value => {
+                  field.onChange(value);
+                  handleAccommodationChange(value);
+                }}
+                placeholder="요청하실 숙소를 선택해주세요"
+                error={!!errors.accommodationId}
+              />
             )}
-          </div>
+          />
         </div>
 
         {/* 자동 요청 전용: 트리거 시점 */}
@@ -273,24 +268,20 @@ export const BasicRulesForm = ({
             <TitleDefault className="text-neutral-1000">
               요청날짜 선택 <span className="text-red-500">*</span>
             </TitleDefault>
-            <div>
-              <Controller
-                name="requestDate"
-                control={control}
-                rules={{ required: '청소를 진행하실 날짜를 선택해주세요' }}
-                render={({ field }) => (
-                  <DatePicker
-                    value={field.value}
-                    onChange={field.onChange}
-                    placeholder="청소를 진행하실 날짜를 선택해주세요"
-                    error={!!errors.requestDate}
-                  />
-                )}
-              />
-              {errors.requestDate && (
-                <Caption className="text-red-500 mt-1">{errors.requestDate.message}</Caption>
+            <Controller
+              name="requestDate"
+              control={control}
+              rules={{ required: '청소를 진행하실 날짜를 선택해주세요' }}
+              render={({ field }) => (
+                <DatePicker
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="청소를 진행하실 날짜를 선택해주세요"
+                  error={!!errors.requestDate}
+                  alwaysShowPlaceholder={true}
+                />
               )}
-            </div>
+            />
           </div>
         )}
 
@@ -326,6 +317,7 @@ export const BasicRulesForm = ({
                       }}
                       maxDate={requestPeriodEnd || undefined}
                       error={!!errors.requestPeriodStart}
+                      placeholder="청소를 진행하실 날짜를 선택해주세요"
                     />
                   )}
                 />
@@ -356,17 +348,12 @@ export const BasicRulesForm = ({
                       }}
                       minDate={requestPeriodStart || undefined}
                       error={!!errors.requestPeriodEnd}
+                      placeholder="청소를 진행하실 날짜를 선택해주세요"
                     />
                   )}
                 />
               </div>
             </div>
-            {errors.requestPeriodStart && (
-              <Caption className="text-red-500 mt-1">{errors.requestPeriodStart.message}</Caption>
-            )}
-            {errors.requestPeriodEnd && (
-              <Caption className="text-red-500 mt-1">{errors.requestPeriodEnd.message}</Caption>
-            )}
           </div>
         )}
 
@@ -376,95 +363,86 @@ export const BasicRulesForm = ({
             <TitleDefault className="text-neutral-1000">
               요청시간 선택 <span className="text-red-500">*</span>
             </TitleDefault>
-            <div>
-              <div className="flex items-center gap-4">
-                <Controller
-                  name="requestStartTime"
-                  control={control}
-                  rules={{ required: '시간을 입력해주세요' }}
-                  render={({ field }) => {
-                    let minTime: string | undefined;
-                    let maxTime: string | undefined;
+            <div className="flex items-center gap-4">
+              <Controller
+                name="requestStartTime"
+                control={control}
+                rules={{ required: '시간을 입력해주세요' }}
+                render={({ field }) => {
+                  let minTime: string | undefined;
+                  let maxTime: string | undefined;
 
-                    if (isToday()) {
-                      const currentTime = getCurrentTimeRounded();
+                  if (isToday()) {
+                    const currentTime = getCurrentTimeRounded();
+                    minTime = currentTime;
+                  }
+
+                  if (requestEndTime) {
+                    maxTime = subtract30Minutes(requestEndTime);
+                    if (isToday() && minTime && requestEndTime < minTime) {
+                      minTime = undefined;
+                      maxTime = subtract30Minutes(requestEndTime);
+                    }
+                  }
+
+                  return (
+                    <div className="relative flex-1">
+                      <TimePicker
+                        value={field.value}
+                        onChange={value => {
+                          field.onChange(value);
+                          if (requestEndTime && value > requestEndTime) {
+                            setValue('requestEndTime', '');
+                          }
+                        }}
+                        placeholder="청소를 진행하실 시간대를 선택해주세요"
+                        error={!!errors.requestStartTime}
+                        minTime={minTime}
+                        maxTime={maxTime}
+                      />
+                    </div>
+                  );
+                }}
+              />
+              <span className="text-neutral-600">-</span>
+              <Controller
+                name="requestEndTime"
+                control={control}
+                rules={{ required: '시간을 입력해주세요' }}
+                render={({ field }) => {
+                  let minTime: string | undefined;
+
+                  if (requestStartTime) {
+                    minTime = add30Minutes(requestStartTime);
+                  }
+
+                  if (isToday()) {
+                    const currentTime = getCurrentTimeRounded();
+                    if (minTime) {
+                      minTime = minTime > currentTime ? minTime : currentTime;
+                    } else {
                       minTime = currentTime;
                     }
+                  }
 
-                    if (requestEndTime) {
-                      maxTime = subtract30Minutes(requestEndTime);
-                      if (isToday() && minTime && requestEndTime < minTime) {
-                        minTime = undefined;
-                        maxTime = subtract30Minutes(requestEndTime);
-                      }
-                    }
-
-                    return (
-                      <div className="relative flex-1">
-                        <TimePicker
-                          value={field.value}
-                          onChange={value => {
-                            field.onChange(value);
-                            if (requestEndTime && value > requestEndTime) {
-                              setValue('requestEndTime', '');
-                            }
-                          }}
-                          placeholder="시작 시간"
-                          error={!!errors.requestStartTime}
-                          minTime={minTime}
-                          maxTime={maxTime}
-                        />
-                      </div>
-                    );
-                  }}
-                />
-                <span className="text-neutral-600">-</span>
-                <Controller
-                  name="requestEndTime"
-                  control={control}
-                  rules={{ required: '시간을 입력해주세요' }}
-                  render={({ field }) => {
-                    let minTime: string | undefined;
-
-                    if (requestStartTime) {
-                      minTime = add30Minutes(requestStartTime);
-                    }
-
-                    if (isToday()) {
-                      const currentTime = getCurrentTimeRounded();
-                      if (minTime) {
-                        minTime = minTime > currentTime ? minTime : currentTime;
-                      } else {
-                        minTime = currentTime;
-                      }
-                    }
-
-                    return (
-                      <div className="relative flex-1">
-                        <TimePicker
-                          value={field.value}
-                          onChange={value => {
-                            field.onChange(value);
-                            if (requestStartTime && value < requestStartTime) {
-                              setValue('requestStartTime', '');
-                            }
-                          }}
-                          placeholder="종료 시간"
-                          error={!!errors.requestEndTime}
-                          minTime={minTime}
-                        />
-                      </div>
-                    );
-                  }}
-                />
-              </div>
-              {(errors.requestStartTime || errors.requestEndTime) && (
-                <Caption className="text-red-500 mt-1">
-                  {errors.requestStartTime?.message ||
-                    errors.requestEndTime?.message ||
-                    '시간을 입력해주세요'}
-                </Caption>
-              )}
+                  return (
+                    <div className="relative flex-1">
+                      <TimePicker
+                        value={field.value}
+                        onChange={value => {
+                          field.onChange(value);
+                          if (requestStartTime && value < requestStartTime) {
+                            setValue('requestStartTime', '');
+                          }
+                        }}
+                        placeholder="청소를 진행하실 시간대를 선택해주세요"
+                        error={!!errors.requestEndTime}
+                        minTime={minTime}
+                      />
+                    </div>
+                  );
+                }}
+              />
             </div>
           </div>
         )}
@@ -495,13 +473,13 @@ export const BasicRulesForm = ({
                   name="completionTime"
                   control={control}
                   render={({ field }) => (
-                    <Dropdown
+                    <TimePicker
                       value={field.value}
                       onChange={field.onChange}
                       placeholder="시간을 설정해주세요"
                       disabled={watch('completionTimeType') !== 'fixed'}
                       className="w-[161px]"
-                      options={[]}
+                      hideIcon={true}
                     />
                   )}
                 />
@@ -541,11 +519,13 @@ export const BasicRulesForm = ({
             <TitleDefault className="text-neutral-1000">
               세탁물 종류 선택 <span className="text-red-500">*</span>
             </TitleDefault>
-            <div className="flex flex-col gap-[10px] w-[221px]">
+            <div className="flex flex-col gap-[10px] w-full sm:w-[221px]">
               {LAUNDRY_TYPES.map(item => (
-                <div key={item.id} className="flex items-center justify-between">
-                  <BodyDefault className="text-neutral-1000">{item.label}</BodyDefault>
-                  <div className="w-[118px]">
+                <div key={item.id} className="flex items-center justify-between gap-4">
+                  <BodyDefault className="text-neutral-1000 flex-shrink-0">
+                    {item.label}
+                  </BodyDefault>
+                  <div className="w-full sm:w-[118px] flex-shrink-0">
                     <Input
                       type="number"
                       min="0"
@@ -567,9 +547,6 @@ export const BasicRulesForm = ({
                 </div>
               ))}
             </div>
-            {cleaningType === 'basic-laundry' && !hasLaundryItems() && (
-              <Caption className="text-red-500 mt-1">수량을 입력해주세요</Caption>
-            )}
           </div>
         )}
       </div>

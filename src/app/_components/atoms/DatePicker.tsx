@@ -14,6 +14,7 @@ export interface DatePickerProps {
   className?: string;
   minDate?: string;
   maxDate?: string;
+  alwaysShowPlaceholder?: boolean;
 }
 
 /**
@@ -21,7 +22,7 @@ export interface DatePickerProps {
  */
 export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(
   (
-    { className, value, placeholder, disabled, error, onChange, minDate: propMinDate, maxDate },
+    { className, value, placeholder, disabled, error, onChange, minDate: propMinDate, maxDate, alwaysShowPlaceholder },
     ref,
   ) => {
     const [isFocused, setIsFocused] = useState(false);
@@ -116,7 +117,11 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(
           {hasValue ? (
             <BodySmall className="text-neutral-1000 ml-8">{formatDate(value!)}</BodySmall>
           ) : (
-            <BodySmall className="text-neutral-500 ml-8">{placeholder}</BodySmall>
+            placeholder && (
+              <BodySmall className={`text-neutral-500 ml-8 ${alwaysShowPlaceholder ? '' : 'hidden md:block'}`}>
+                {placeholder}
+              </BodySmall>
+            )
           )}
         </div>
 

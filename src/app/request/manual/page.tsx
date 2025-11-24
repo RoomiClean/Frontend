@@ -104,61 +104,93 @@ export default function ManualRequestPage() {
 
   return (
     <RequestTemplate>
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="w-full max-w-[472px] mx-auto flex flex-col"
-      >
-        {/* 제목 */}
-        <div className="space-y-2 mb-16">
-          <DisplayH3 className="text-neutral-1000">수동 청소 요청</DisplayH3>
-          <TitleDefault className="text-neutral-800">
-            아래 정보를 입력하고 청소 요청을 진행해보세요.
-          </TitleDefault>
+      <form onSubmit={handleSubmit(onSubmit)} className="w-full mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8 lg:gap-12">
+          {/* 왼쪽: 폼 영역 */}
+          <div className="w-full flex flex-col">
+            {/* 제목 */}
+            <div className="space-y-2 mb-8 sm:mb-12 lg:mb-16">
+              <DisplayH3 className="text-neutral-1000 text-2xl sm:text-3xl lg:text-4xl">
+                수동 청소 요청
+              </DisplayH3>
+              <TitleDefault className="text-neutral-800 text-sm sm:text-base">
+                아래 정보를 입력하고 청소 요청을 진행해보세요.
+              </TitleDefault>
+            </div>
+
+            {/* 기본 규칙 설정 */}
+            <div className="flex flex-col gap-6">
+              <BasicRulesForm
+                isAutomatic={false}
+                control={control}
+                register={register}
+                watch={watch}
+                setValue={setValue}
+                errors={errors}
+                accommodationOptions={accommodationOptions}
+              />
+
+              {/* 청소자 조건 필터 */}
+              <CleanerFilterForm control={control} register={register} watch={watch} />
+
+              {/* 특이사항 입력 */}
+              <SpecialNotesForm
+                control={control}
+                watch={watch}
+                setValue={setValue}
+                clearErrors={clearErrors}
+                uploadedPhotos={uploadedPhotos}
+                handlePhotoUpload={handlePhotoUpload}
+                removePhoto={removePhoto}
+              />
+            </div>
+
+            {/* 결제 예상 금액 (모바일/태블릿) */}
+            <div className="mt-8 lg:hidden">
+              <PaymentSection isAutomatic={false} />
+            </div>
+
+            {/* 약관 동의 */}
+            <div className="lg:hidden">
+              <AgreementSection register={register} errors={errors} />
+            </div>
+
+            {/* 제출 버튼 */}
+            <div className="lg:hidden">
+              <Button
+                type="submit"
+                variant="primary"
+                active={isFormValid()}
+                disabled={!isFormValid()}
+                className="w-full"
+              >
+                요청하기
+              </Button>
+            </div>
+          </div>
+
+          {/* 오른쪽: 결제 섹션 (데스크톱) */}
+          <div className="hidden lg:flex flex-col">
+            <div className="sticky top-[280px] rounded-[20px] px-3 py-6 shadow-[0_6px_15px_rgba(0,0,0,0.2)]">
+              {/* 결제 예상 금액 */}
+              <PaymentSection isAutomatic={false} />
+
+              {/* 약관 동의 */}
+              <AgreementSection register={register} errors={errors} />
+
+              {/* 제출 버튼 */}
+              <Button
+                type="submit"
+                variant="primary"
+                active={isFormValid()}
+                disabled={!isFormValid()}
+                className="w-full"
+              >
+                요청하기
+              </Button>
+            </div>
+          </div>
         </div>
-
-        {/* 기본 규칙 설정 */}
-        <div className="flex flex-col gap-8">
-          <BasicRulesForm
-            isAutomatic={false}
-            control={control}
-            register={register}
-            watch={watch}
-            setValue={setValue}
-            errors={errors}
-            accommodationOptions={accommodationOptions}
-          />
-
-          {/* 청소자 조건 필터 */}
-          <CleanerFilterForm control={control} register={register} watch={watch} />
-
-          {/* 특이사항 입력 */}
-          <SpecialNotesForm
-            control={control}
-            watch={watch}
-            setValue={setValue}
-            clearErrors={clearErrors}
-            uploadedPhotos={uploadedPhotos}
-            handlePhotoUpload={handlePhotoUpload}
-            removePhoto={removePhoto}
-          />
-        </div>
-
-        {/* 결제 예상 금액 */}
-        <PaymentSection isAutomatic={false} />
-
-        {/* 약관 동의 */}
-        <AgreementSection register={register} errors={errors} />
-
-        {/* 제출 버튼 */}
-        <Button
-          type="submit"
-          variant="primary"
-          active={isFormValid()}
-          disabled={!isFormValid()}
-          className="w-full"
-        >
-          요청하기
-        </Button>
       </form>
     </RequestTemplate>
   );
