@@ -12,13 +12,18 @@ export interface DatePickerProps {
   placeholder?: string;
   disabled?: boolean;
   className?: string;
+  minDate?: string;
+  maxDate?: string;
 }
 
 /**
  * 날짜 선택을 위한 DatePicker 컴포넌트
  */
 export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(
-  ({ className, value, placeholder, disabled, error, onChange }, ref) => {
+  (
+    { className, value, placeholder, disabled, error, onChange, minDate: propMinDate, maxDate },
+    ref,
+  ) => {
     const [isFocused, setIsFocused] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -32,7 +37,7 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(
       return `${year}-${month}-${day}`;
     };
 
-    const minDate = getTodayDate();
+    const minDate = propMinDate || getTodayDate();
 
     const baseStyles =
       'w-full h-[48px] px-4 rounded-[8px] transition-all duration-200 outline-none text-[14px] leading-[140%] flex items-center cursor-pointer';
@@ -111,9 +116,7 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(
           {hasValue ? (
             <BodySmall className="text-neutral-1000 ml-8">{formatDate(value!)}</BodySmall>
           ) : (
-            <BodySmall className="text-neutral-500 ml-8">
-              {placeholder || '날짜를 선택해주세요'}
-            </BodySmall>
+            <BodySmall className="text-neutral-500 ml-8">{placeholder}</BodySmall>
           )}
         </div>
 
@@ -123,6 +126,7 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(
           type="date"
           value={value || ''}
           min={minDate}
+          max={maxDate}
           onChange={handleChange}
           onBlur={handleBlur}
           onClick={handleDivClick}
