@@ -22,7 +22,6 @@ import { useFileUpload } from '@/hooks/useFileUpload';
 import { BiSolidCamera } from 'react-icons/bi';
 import { checkEmail, sendSmsCode, verifySmsCode } from '@/app/_lib/api/auth.api';
 import { generatePresignedUrls, uploadFileToS3 } from '@/app/_lib/api/s3.api';
-import { registerBusinessVerification } from '@/app/_lib/api/business.api';
 
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}$/;
 const HANGUL_REGEX = /[\u1100-\u11FF\u3130-\u318F\uAC00-\uD7A3]/g;
@@ -465,32 +464,35 @@ function SignUpStep2Content() {
         data.gender === 'male' ? 'MALE' : data.gender === 'female' ? 'FEMALE' : 'OTHER';
 
       if (memberType === 'host') {
-        // 사업자 검증
         const businessNumber = `${data.businessNumber1}${data.businessNumber2}${data.businessNumber3}`;
         const establishmentDate = data.establishmentDate.replace(/-/g, ''); // YYYYMMDD 형식
 
-        const businessVerificationResponse = await registerBusinessVerification({
+        const hostSignupData = {
+          email: fullEmail,
+          password: data.password,
+          name: data.name,
+          phone: data.phone,
+          role: 'ROLE_HOST' as const,
+          gender: gender as 'MALE' | 'FEMALE' | 'OTHER',
+          birthdate,
+          image: fileUrl,
+        };
+
+        const businessInfo = {
           businessName: data.companyName,
-          businessNumber: businessNumber,
+          businessNumber,
           businessType: data.businessType,
           ceoName: data.representativeName,
           startDate: establishmentDate,
-        });
+          businessAgreement: !!data.businessAgreement,
+        };
 
-        // 호스트 회원가입은 step3에서 숙소 정보와 함께 처리
-        // 여기서는 기본 정보만 저장
         sessionStorage.setItem(
           'signupData',
           JSON.stringify({
-            email: fullEmail,
-            password: data.password,
-            name: data.name,
-            phone: data.phone,
-            role: 'ROLE_HOST',
-            gender: gender as 'MALE' | 'FEMALE' | 'OTHER',
-            birthdate,
-            image: fileUrl,
-            businessVerificationId: businessVerificationResponse.data.id,
+            memberType: 'host',
+            hostSignupData,
+            businessInfo,
           }),
         );
       } else if (memberType === 'cleaner') {
@@ -499,17 +501,20 @@ function SignUpStep2Content() {
         sessionStorage.setItem(
           'signupData',
           JSON.stringify({
-            email: fullEmail,
-            password: data.password,
-            name: data.name,
-            phone: data.phone,
-            role: 'ROLE_CLEANER',
-            gender: gender as 'MALE' | 'FEMALE' | 'OTHER',
-            birthdate,
-            image: fileUrl,
-            introduction: data.introduction || '',
-            serviceCity: data.province || '',
-            serviceDistrict: data.district || '',
+            memberType: 'cleaner',
+            cleanerSignupData: {
+              email: fullEmail,
+              password: data.password,
+              name: data.name,
+              phone: data.phone,
+              role: 'ROLE_CLEANER' as const,
+              gender: gender as 'MALE' | 'FEMALE' | 'OTHER',
+              birthdate,
+              image: fileUrl,
+              introduction: data.introduction || '',
+              serviceCity: data.province || '',
+              serviceDistrict: data.district || '',
+            },
           }),
         );
       }

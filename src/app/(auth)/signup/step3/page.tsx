@@ -31,6 +31,8 @@ import { BiSolidCamera } from 'react-icons/bi';
 import { signupCleaner, signupHost } from '@/app/_lib/api/auth.api';
 import { generatePresignedUrls, uploadFileToS3 } from '@/app/_lib/api/s3.api';
 import { createAccommodation } from '@/app/_lib/api/accommodation.api';
+import { registerBusinessVerification } from '@/app/_lib/api/business.api';
+import type { SignupHostRequest, SignupCleanerRequest } from '@/app/_lib/types/auth.types';
 import { getClientIpAddress } from '@/utils/ip.utils';
 
 interface DaumPostcodeData {
@@ -69,6 +71,44 @@ interface FormData {
   equipmentStorage: string;
   trashDisposal: string;
   hostRequests: string;
+}
+
+type HostSignupSessionData = Pick<
+  SignupHostRequest,
+  'email' | 'password' | 'name' | 'phone' | 'role' | 'gender' | 'birthdate' | 'image'
+>;
+
+type CleanerSignupSessionData = Pick<
+  SignupCleanerRequest,
+  | 'email'
+  | 'password'
+  | 'name'
+  | 'phone'
+  | 'role'
+  | 'gender'
+  | 'birthdate'
+  | 'image'
+  | 'introduction'
+  | 'serviceCity'
+  | 'serviceDistrict'
+>;
+
+interface BusinessInfoSessionData {
+  businessName: string;
+  businessNumber: string;
+  businessType: string;
+  ceoName: string;
+  startDate: string;
+  businessAgreement: boolean;
+}
+
+interface SignupSessionData {
+  memberType?: 'host' | 'cleaner';
+  hostSignupData?: HostSignupSessionData;
+  cleanerSignupData?: CleanerSignupSessionData;
+  businessInfo?: BusinessInfoSessionData;
+  businessVerificationId?: string;
+  [key: string]: any;
 }
 
 function SignUpStep3Content() {
@@ -114,6 +154,7 @@ function SignUpStep3Content() {
   const [isPostcodeLoaded, setIsPostcodeLoaded] = useState(false);
   const [isAddressSelected, setIsAddressSelected] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { agreements, toggleAgreement, isRequiredMet } = useAgreements({
     required: ['service', 'privacy', 'location'],
   });
@@ -275,39 +316,65 @@ function SignUpStep3Content() {
   };
 
   const onSubmit = async (data: FormData) => {
+    // 중복 제출 방지
+    if (isSubmitting) {
+      return;
+    }
+
     console.log('onSubmit 시작', { memberType, data });
+    setIsSubmitting(true);
+
     if (memberType === 'cleaner') {
       // cleaner 타입의 경우
       if (!isRequiredMet) {
+        setIsSubmitting(false);
         alert('필수 약관에 동의해주세요');
         return;
       }
 
       if (!data.bank || !data.accountHolder || !data.accountNumber) {
+        setIsSubmitting(false);
         alert('은행 정보를 모두 입력해주세요');
         return;
       }
 
       if (!isAccountVerified) {
+        setIsSubmitting(false);
         alert('계좌 인증을 완료해주세요');
         return;
       }
 
       if (!privacyCollectionConsent) {
+        setIsSubmitting(false);
         alert('개인정보 수집 및 이용 동의를 해주세요');
         return;
       }
 
+      // step2에서 저장한 데이터 가져오기
+      const signupDataStr = sessionStorage.getItem('signupData');
+      if (!signupDataStr) {
+        setIsSubmitting(false);
+        alert('회원가입 정보를 찾을 수 없습니다. 처음부터 다시 진행해주세요.');
+        router.push('/signup/step1');
+        return;
+      }
+
       try {
-        // step2에서 저장한 데이터 가져오기
-        const signupDataStr = sessionStorage.getItem('signupData');
-        if (!signupDataStr) {
+        const parsedSignupData: SignupSessionData = JSON.parse(signupDataStr);
+        const sessionCleanerData: CleanerSignupSessionData | null =
+          parsedSignupData.cleanerSignupData ||
+          ((parsedSignupData.role === 'ROLE_CLEANER' ||
+            parsedSignupData.memberType === 'cleaner') &&
+          parsedSignupData.email
+            ? (parsedSignupData as CleanerSignupSessionData)
+            : null);
+
+        if (!sessionCleanerData) {
+          setIsSubmitting(false);
           alert('회원가입 정보를 찾을 수 없습니다. 처음부터 다시 진행해주세요.');
-          router.push('/signup/step1');
+          router.push('/signup/step2?type=cleaner');
           return;
         }
-
-        const signupData = JSON.parse(signupDataStr);
 
         // IP 주소 가져오기
         const ipAddress = await getClientIpAddress();
@@ -317,18 +384,18 @@ function SignUpStep3Content() {
         const bankName = selectedBank ? selectedBank.label : data.bank;
 
         // 청소자 회원가입 완료 - 세션 스토리지 정보와 step3 선택 정보를 합침
-        const cleanerSignupData = {
-          email: signupData.email,
-          password: signupData.password,
-          name: signupData.name,
-          phone: signupData.phone,
-          role: signupData.role,
-          gender: signupData.gender,
-          birthdate: signupData.birthdate,
-          image: signupData.image,
-          serviceCity: signupData.serviceCity || '',
-          serviceDistrict: signupData.serviceDistrict || '',
-          introduction: signupData.introduction || '',
+        const cleanerSignupData: SignupCleanerRequest = {
+          email: sessionCleanerData.email,
+          password: sessionCleanerData.password,
+          name: sessionCleanerData.name,
+          phone: sessionCleanerData.phone,
+          role: sessionCleanerData.role,
+          gender: sessionCleanerData.gender,
+          birthdate: sessionCleanerData.birthdate,
+          image: sessionCleanerData.image,
+          serviceCity: sessionCleanerData.serviceCity || '',
+          serviceDistrict: sessionCleanerData.serviceDistrict || '',
+          introduction: sessionCleanerData.introduction || '',
           bankName: bankName,
           accountHolder: data.accountHolder,
           accountNumber: data.accountNumber,
@@ -350,6 +417,8 @@ function SignUpStep3Content() {
         // 회원가입 완료 페이지로 이동
         router.push('/signup/step4');
       } catch (error: any) {
+        setIsSubmitting(false);
+        console.error('청소자 회원가입 오류 상세:', error);
         console.error('청소자 회원가입 오류 상세:', error);
         console.error('에러 응답:', error?.response);
         console.error('에러 데이터:', error?.response?.data);
@@ -389,47 +458,57 @@ function SignUpStep3Content() {
     } else if (memberType === 'host') {
       // host 타입의 경우
       if (accommodationPhotos.length < 5) {
+        setIsSubmitting(false);
         setPhotoError('숙소 사진을 최소 5장 이상 업로드해주세요.');
         alert('숙소 사진을 최소 5장 이상 업로드해주세요.');
         return;
       }
       if (!data.accommodationName) {
+        setIsSubmitting(false);
         setError('accommodationName', { type: 'required', message: '숙소명을 입력해주세요' });
         return;
       }
       if (!data.zipCode) {
+        setIsSubmitting(false);
         setError('zipCode', { type: 'required', message: '우편번호를 입력해주세요' });
         return;
       }
       if (!data.address) {
+        setIsSubmitting(false);
         setError('address', { type: 'required', message: '주소를 입력해주세요' });
         return;
       }
       if (!data.detailAddress) {
+        setIsSubmitting(false);
         setError('detailAddress', { type: 'required', message: '상세주소를 입력해주세요' });
         return;
       }
       if (!data.accessMethod) {
+        setIsSubmitting(false);
         setError('accessMethod', { type: 'required', message: '출입 방법을 입력해주세요' });
         return;
       }
       if (!data.accommodationType) {
+        setIsSubmitting(false);
         setError('accommodationType', { type: 'required', message: '숙소 유형을 선택해주세요' });
         return;
       }
       if (!data.roomCount || !data.bedCount || !data.livingRoomCount || !data.bathroomCount) {
+        setIsSubmitting(false);
         if (typeof window !== 'undefined') {
           alert('숙소 구조를 모두 입력해주세요');
         }
         return;
       }
       if (!data.area || !data.maxOccupancy) {
+        setIsSubmitting(false);
         if (typeof window !== 'undefined') {
           alert('숙소 면적과 최대 수용 인원을 입력해주세요');
         }
         return;
       }
       if (!data.equipmentStorage) {
+        setIsSubmitting(false);
         setError('equipmentStorage', {
           type: 'required',
           message: '비품 보관장소를 입력해주세요',
@@ -437,28 +516,86 @@ function SignUpStep3Content() {
         return;
       }
       if (!data.trashDisposal) {
+        setIsSubmitting(false);
         setError('trashDisposal', { type: 'required', message: '쓰레기 배출장소를 입력해주세요' });
         return;
       }
       if (!isRequiredMet) {
+        setIsSubmitting(false);
         alert('필수 약관에 동의해주세요');
         return;
       }
 
+      // step2에서 저장한 데이터 가져오기
+      const signupDataStr = sessionStorage.getItem('signupData');
+      if (!signupDataStr) {
+        setIsSubmitting(false);
+        alert('회원가입 정보를 찾을 수 없습니다. 처음부터 다시 진행해주세요.');
+        router.push('/signup/step1');
+        return;
+      }
+
       try {
-        // step2에서 저장한 데이터 가져오기
-        const signupDataStr = sessionStorage.getItem('signupData');
-        if (!signupDataStr) {
+        const parsedSignupData: SignupSessionData = JSON.parse(signupDataStr);
+        const hostSignupBase: HostSignupSessionData | null =
+          parsedSignupData.hostSignupData ||
+          ((parsedSignupData.role === 'ROLE_HOST' || parsedSignupData.memberType === 'host') &&
+          parsedSignupData.email
+            ? (parsedSignupData as HostSignupSessionData)
+            : null);
+
+        if (!hostSignupBase) {
+          setIsSubmitting(false);
           alert('회원가입 정보를 찾을 수 없습니다. 처음부터 다시 진행해주세요.');
-          router.push('/signup/step1');
+          router.push('/signup/step2?type=host');
           return;
         }
 
-        const signupData = JSON.parse(signupDataStr);
-        const { businessVerificationId, ...hostSignupData } = signupData;
+        const ipAddress = await getClientIpAddress();
+        const hostSignupPayload: SignupHostRequest = {
+          ...hostSignupBase,
+          isServicePolicyAgreement: agreements.service,
+          isPrivacyPolicyAgreement: agreements.privacy,
+          isLocationPolicyAgreement: agreements.location,
+          isAccommodationInfoAgreement: true,
+          isRealEstateInfoAgreement:
+            parsedSignupData.businessInfo?.businessAgreement ??
+            (typeof parsedSignupData.businessAgreement === 'boolean'
+              ? parsedSignupData.businessAgreement
+              : true),
+          isMarketingPolicyAgreement: agreements.marketing,
+          isPrivacyThirdPartyAgreement: false,
+          ipAddress: ipAddress || undefined,
+        };
 
-        // 호스트 회원가입
-        await signupHost(hostSignupData);
+        // 호스트 회원가입 (사업자 인증은 회원가입 후에 처리)
+        await signupHost(hostSignupPayload);
+
+        // 사업자 인증을 회원가입 후에 처리 (인증된 상태에서 호출)
+        let businessVerificationId = parsedSignupData.businessVerificationId;
+        if (!businessVerificationId) {
+          const businessInfo = parsedSignupData.businessInfo;
+          if (!businessInfo) {
+            setIsSubmitting(false);
+            alert('사업자 정보를 찾을 수 없습니다. 처음부터 다시 진행해주세요.');
+            router.push('/signup/step2?type=host');
+            return;
+          }
+
+          const businessVerificationResponse = await registerBusinessVerification({
+            businessName: businessInfo.businessName,
+            businessNumber: businessInfo.businessNumber,
+            businessType: businessInfo.businessType,
+            ceoName: businessInfo.ceoName,
+            startDate: businessInfo.startDate,
+          });
+          businessVerificationId = businessVerificationResponse?.data?.id;
+        }
+
+        if (!businessVerificationId) {
+          setIsSubmitting(false);
+          throw new Error('사업자 인증 결과를 확인할 수 없습니다.');
+        }
 
         // 숙소 사진 업로드
         const photoUrls: string[] = [];
@@ -523,6 +660,7 @@ function SignUpStep3Content() {
 
         router.push('/signup/step4');
       } catch (error: any) {
+        setIsSubmitting(false);
         console.error('숙소 등록 오류 상세:', error);
         console.error('에러 응답:', error?.response);
         console.error('에러 데이터:', error?.response?.data);
@@ -1059,11 +1197,12 @@ function SignUpStep3Content() {
         <form
           onSubmit={handleSubmit(onSubmit, errors => {
             console.log('Form validation 실패:', errors);
+            setIsSubmitting(false);
           })}
-          className="w-full max-w-[400px]"
+          className="w-full max-w-[400px] mx-auto mt-16"
         >
-          <Button type="submit" variant="secondary" className="w-full">
-            회원가입 완료
+          <Button type="submit" variant="secondary" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? '처리 중...' : '회원가입 완료'}
           </Button>
         </form>
       </div>

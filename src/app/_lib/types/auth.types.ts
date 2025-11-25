@@ -9,6 +9,14 @@ export interface SignupHostRequest {
   gender: 'MALE' | 'FEMALE' | 'OTHER';
   birthdate: string; // YYYY-MM-DD
   image?: string;
+  isServicePolicyAgreement: boolean;
+  isPrivacyPolicyAgreement: boolean;
+  isLocationPolicyAgreement: boolean;
+  isAccommodationInfoAgreement: boolean;
+  isRealEstateInfoAgreement: boolean;
+  isMarketingPolicyAgreement: boolean;
+  isPrivacyThirdPartyAgreement: boolean;
+  ipAddress?: string;
 }
 
 export interface SignupCleanerRequest {
