@@ -206,14 +206,14 @@ function SignUpStep3Content() {
     onBlur: zipCodeOnBlur,
     ...zipCodeRest
   } = register('zipCode', {
-    required: '우편번호를 입력해주세요',
+    required: memberType === 'host' ? '우편번호를 입력해주세요' : false,
   });
   const {
     ref: addressRef,
     onBlur: addressOnBlur,
     ...addressRest
   } = register('address', {
-    required: '주소를 입력해주세요',
+    required: memberType === 'host' ? '주소를 입력해주세요' : false,
   });
   const zipCodeValue = watch('zipCode');
   const addressValue = watch('address');
@@ -271,9 +271,11 @@ function SignUpStep3Content() {
     }
 
     setSuccess(prev => ({ ...prev, accountNumber: true }));
+    setIsAccountVerified(true);
   };
 
   const onSubmit = async (data: FormData) => {
+    console.log('onSubmit 시작', { memberType, data });
     if (memberType === 'cleaner') {
       // cleaner 타입의 경우
       if (!isRequiredMet) {
@@ -310,10 +312,24 @@ function SignUpStep3Content() {
         // IP 주소 가져오기
         const ipAddress = await getClientIpAddress();
 
-        // 청소자 회원가입 완료
-        await signupCleaner({
-          ...signupData,
-          bankName: data.bank,
+        // 은행 value를 한글명(label)으로 변환
+        const selectedBank = BANKS.find(bank => bank.value === data.bank);
+        const bankName = selectedBank ? selectedBank.label : data.bank;
+
+        // 청소자 회원가입 완료 - 세션 스토리지 정보와 step3 선택 정보를 합침
+        const cleanerSignupData = {
+          email: signupData.email,
+          password: signupData.password,
+          name: signupData.name,
+          phone: signupData.phone,
+          role: signupData.role,
+          gender: signupData.gender,
+          birthdate: signupData.birthdate,
+          image: signupData.image,
+          serviceCity: signupData.serviceCity || '',
+          serviceDistrict: signupData.serviceDistrict || '',
+          introduction: signupData.introduction || '',
+          bankName: bankName,
           accountHolder: data.accountHolder,
           accountNumber: data.accountNumber,
           isPrivacyConsentAgreement: privacyCollectionConsent,
@@ -322,11 +338,16 @@ function SignUpStep3Content() {
           isLocationPolicyAgreement: agreements.location,
           isMarketingPolicyAgreement: agreements.marketing,
           ipAddress: ipAddress || undefined,
-        });
+        };
+
+        console.log('청소자 회원가입 요청 데이터:', cleanerSignupData);
+        const response = await signupCleaner(cleanerSignupData);
+        console.log('청소자 회원가입 성공:', response);
 
         // sessionStorage 정리
         sessionStorage.removeItem('signupData');
 
+        // 회원가입 완료 페이지로 이동
         router.push('/signup/step4');
       } catch (error: any) {
         console.error('청소자 회원가입 오류 상세:', error);
@@ -374,6 +395,10 @@ function SignUpStep3Content() {
       }
       if (!data.accommodationName) {
         setError('accommodationName', { type: 'required', message: '숙소명을 입력해주세요' });
+        return;
+      }
+      if (!data.zipCode) {
+        setError('zipCode', { type: 'required', message: '우편번호를 입력해주세요' });
         return;
       }
       if (!data.address) {
@@ -544,12 +569,19 @@ function SignUpStep3Content() {
           <DisplayH1>회원가입</DisplayH1>
 
           {/* Step 표시 */}
-          <StepIndicator currentStep={3} />
+          <StepIndicator currentStep={2} />
 
           <div className="w-full space-y-8">
             {/* cleaner 타입일 때 은행 정보 */}
             {memberType === 'cleaner' && (
               <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <TitleH4>전산정보</TitleH4>
+                  <div className="flex items-center gap-1">
+                    <span className="text-red-500">*</span>
+                    <TitleSmall>필수입력사항</TitleSmall>
+                  </div>
+                </div>
                 <TitleDefault>은행 정보</TitleDefault>
                 <div className="space-y-4">
                   <div className="space-y-2">
@@ -710,7 +742,7 @@ function SignUpStep3Content() {
                     <Input
                       placeholder="상세주소 입력"
                       {...register('detailAddress', {
-                        required: '상세주소를 입력해주세요',
+                        required: memberType === 'host' ? '상세주소를 입력해주세요' : false,
                       })}
                       error={!!errors.detailAddress?.message}
                       value={detailAddressValue ?? ''}
@@ -942,9 +974,6 @@ function SignUpStep3Content() {
                     아래 내용에 모두 동의합니다
                   </label>
                 </div>
-                <Caption className="text-neutral-500">
-                  사진은 최대 20장, 각각 5MB, 전체 100MB를 넘을 수 없습니다. (JPG, PNG, GIF 가능)
-                </Caption>
               </div>
 
               <div className="border-t border-neutral-200" />
@@ -1027,8 +1056,13 @@ function SignUpStep3Content() {
         </div>
 
         {/* 다음 단계 버튼 */}
-        <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-[400px]">
-          <Button type="submit" variant="primary" className="w-full">
+        <form
+          onSubmit={handleSubmit(onSubmit, errors => {
+            console.log('Form validation 실패:', errors);
+          })}
+          className="w-full max-w-[400px]"
+        >
+          <Button type="submit" variant="secondary" className="w-full">
             회원가입 완료
           </Button>
         </form>

@@ -335,7 +335,9 @@ function SignUpStep2Content() {
       setIsPhoneVerified(true);
       setVerificationTimer(0);
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || '인증번호가 일치하지 않습니다';
+      let errorMessage = error?.response?.data?.message || '인증번호가 일치하지 않습니다';
+      // [CODE] 형태의 에러 코드 제거
+      errorMessage = errorMessage.replace(/^\[.*?\]\s*/, '');
       setError('verificationCode', {
         type: 'manual',
         message: errorMessage,
@@ -345,20 +347,25 @@ function SignUpStep2Content() {
   };
 
   const onSubmit = async (data: FormData) => {
+    console.log('onSubmit 시작', { memberType, data });
     const isEmailValid = await validateEmail();
+    console.log('이메일 검증 결과:', isEmailValid);
     if (!isEmailValid) return;
 
     if (!isEmailChecked) {
+      console.log('이메일 중복 확인 안됨');
       alert('이메일 중복 확인을 해주세요');
       return;
     }
 
     if (!isPhoneVerified) {
+      console.log('전화번호 인증 안됨');
       alert('전화번호 인증을 완료해주세요');
       return;
     }
 
     if (!PASSWORD_REGEX.test(data.password)) {
+      console.log('비밀번호 검증 실패');
       setError('password', {
         type: 'manual',
         message: '비밀번호 조합이 일치하지 않습니다',
@@ -374,9 +381,7 @@ function SignUpStep2Content() {
       'birthDay',
     ];
 
-    if (memberType === 'cleaner') {
-      fieldsToValidate.push('province', 'district');
-    } else if (memberType === 'host') {
+    if (memberType === 'host') {
       fieldsToValidate.push(
         'companyName',
         'businessType',
@@ -394,6 +399,7 @@ function SignUpStep2Content() {
 
     for (const field of fieldsToValidate) {
       if (!data[field]) {
+        console.log('필수 필드 누락:', field);
         setError(field, {
           type: 'required',
           message: '필수 항목입니다',
@@ -404,6 +410,7 @@ function SignUpStep2Content() {
 
     if (memberType === 'host') {
       if (!data.businessNumber1 || !data.businessNumber2 || !data.businessNumber3) {
+        console.log('사업자 등록번호 누락');
         setError('businessNumber1', {
           type: 'manual',
           message: '사업자 등록번호를 입력해주세요',
@@ -413,9 +420,12 @@ function SignUpStep2Content() {
     }
 
     if (profilePhotos.length === 0) {
+      console.log('프로필 사진 누락');
       setProfilePhotoError('프로필 사진을 등록해주세요');
       return;
     }
+
+    console.log('모든 검증 통과, 프로필 사진 업로드 시작');
 
     try {
       // 프로필 사진 업로드
@@ -497,13 +507,14 @@ function SignUpStep2Content() {
             gender: gender as 'MALE' | 'FEMALE' | 'OTHER',
             birthdate,
             image: fileUrl,
-            serviceCity: data.province,
-            serviceDistrict: data.district,
             introduction: data.introduction || '',
+            serviceCity: data.province || '',
+            serviceDistrict: data.district || '',
           }),
         );
       }
 
+      console.log('세션 스토리지 저장 완료, 다음 단계로 이동');
       router.push('/signup/step3?type=' + memberType);
     } catch (error: any) {
       console.error('회원가입 오류 상세:', error);
@@ -674,6 +685,144 @@ function SignUpStep2Content() {
               {errors.name?.message && (
                 <Caption className="text-red-500">{errors.name.message}</Caption>
               )}
+            </div>
+
+            {/* 성별 */}
+            <div className="space-y-2">
+              <TitleDefault>
+                성별 <span className="text-red-500">*</span>
+              </TitleDefault>
+              <div className="flex gap-6">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    value="male"
+                    {...register('gender', { required: '성별을 선택해주세요' })}
+                    checked={genderValue === 'male'}
+                    className="w-4 h-4"
+                  />
+                  <BodySmall className="text-neutral-1000">남</BodySmall>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    value="female"
+                    {...register('gender', { required: '성별을 선택해주세요' })}
+                    checked={genderValue === 'female'}
+                    className="w-4 h-4"
+                  />
+                  <BodySmall className="text-neutral-1000">여</BodySmall>
+                </label>
+              </div>
+              {errors.gender?.message && (
+                <Caption className="text-red-500">{errors.gender.message}</Caption>
+              )}
+            </div>
+
+            {/* 생년월일 */}
+            <div className="space-y-2">
+              <TitleDefault>
+                생년월일 <span className="text-red-500">*</span>
+              </TitleDefault>
+              <div className="grid grid-cols-3 gap-2">
+                <Controller
+                  name="birthYear"
+                  control={control}
+                  rules={{ required: '생년월일을 선택해주세요' }}
+                  render={({ field }) => (
+                    <Dropdown
+                      options={yearOptions}
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="년"
+                      error={!!errors.birthYear?.message}
+                    />
+                  )}
+                />
+                <Controller
+                  name="birthMonth"
+                  control={control}
+                  rules={{ required: '생년월일을 선택해주세요' }}
+                  render={({ field }) => (
+                    <Dropdown
+                      options={monthOptions}
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="월"
+                      error={!!errors.birthMonth?.message}
+                    />
+                  )}
+                />
+                <Controller
+                  name="birthDay"
+                  control={control}
+                  rules={{ required: '생년월일을 선택해주세요' }}
+                  render={({ field }) => (
+                    <Dropdown
+                      options={dayOptions}
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="일"
+                      error={!!errors.birthDay?.message}
+                    />
+                  )}
+                />
+              </div>
+              {birthDateErrorMessage && (
+                <Caption className="text-red-500">{birthDateErrorMessage}</Caption>
+              )}
+            </div>
+
+            {/* 프로필 사진 업로드 */}
+            <div className="space-y-2">
+              <TitleDefault>
+                프로필 사진 업로드 <span className="text-red-500">*</span>
+              </TitleDefault>
+              <div className="flex flex-wrap gap-4">
+                {profilePhotos[0] && profilePhotoPreview ? (
+                  <div className="relative w-28 h-28">
+                    <Image
+                      src={profilePhotoPreview}
+                      alt="프로필 사진"
+                      fill
+                      sizes="112px"
+                      className="rounded-lg object-cover border border-neutral-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        removeProfilePhoto(0);
+                        setProfilePhotoError(null);
+                      }}
+                      className="absolute top-1 right-1 w-6 h-6 bg-neutral-900 text-white rounded-full flex items-center justify-center text-sm"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ) : (
+                  <label className="w-28 h-28 border-2 border-neutral-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-neutral-1000 gap-2">
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png"
+                      onChange={event => {
+                        clearProfilePhoto();
+                        handleProfilePhotoUpload(event);
+                        setProfilePhotoError(null);
+                        event.target.value = '';
+                      }}
+                      className="hidden"
+                    />
+                    <span className="text-2xl">
+                      <BiSolidCamera className="w-3 h-3" />
+                    </span>
+                    <TitleDefault className="text-neutral-600">사진첨부</TitleDefault>
+                  </label>
+                )}
+              </div>
+              <Caption className="text-neutral-500">
+                사진은 최대 1장, 5MB를 넘을 수 없습니다. (JPG, PNG 가능)
+              </Caption>
+              {profilePhotoError && <Caption className="text-red-500">{profilePhotoError}</Caption>}
             </div>
 
             {/* 전화번호 */}
@@ -933,56 +1082,15 @@ function SignUpStep2Content() {
             </div>
           </div>
         )}
-
-        {/* cleaner 타입일 때만 서비스 가능 지역과 자기소개 표시 */}
-        {memberType === 'cleaner' && (
-          <>
-            {/* 서비스 가능 지역 */}
-            <div className="space-y-4">
-              <TitleDefault>서비스 가능 지역</TitleDefault>
-              <div className="flex-1 space-y-2">
-                <Dropdown
-                  options={PROVINCES}
-                  value={watch('province')}
-                  onChange={value => handleInputChange('province', value)}
-                  placeholder="시/도"
-                  error={!!errors.province?.message}
-                />
-                {errors.province?.message && (
-                  <Caption className="text-red-500">{errors.province.message}</Caption>
-                )}
-              </div>
-              <div className="flex-1 space-y-2">
-                <Dropdown
-                  options={DISTRICTS}
-                  value={watch('district')}
-                  onChange={value => handleInputChange('district', value)}
-                  placeholder="시/구/군"
-                  error={!!errors.district?.message}
-                />
-                {errors.district?.message && (
-                  <Caption className="text-red-500">{errors.district.message}</Caption>
-                )}
-              </div>
-            </div>
-
-            {/* 자기소개 */}
-            <div className="space-y-4">
-              <TitleDefault>자기소개</TitleDefault>
-              <Textarea
-                placeholder="본인의 자기소개를 입력해주세요"
-                value={watch('introduction')}
-                onChange={e => handleInputChange('introduction', e.target.value)}
-                maxLength={500}
-                showCharCount
-              />
-            </div>
-          </>
-        )}
       </div>
 
       {/* 다음 단계 버튼 */}
-      <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-[400px]">
+      <form
+        onSubmit={handleSubmit(onSubmit, errors => {
+          console.log('Form validation 실패:', errors);
+        })}
+        className="w-full max-w-[400px]"
+      >
         <Button type="submit" variant="secondary" className="w-full">
           다음 단계
         </Button>
