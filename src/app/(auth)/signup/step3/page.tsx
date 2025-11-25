@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
@@ -947,94 +947,93 @@ function SignUpStep3Content() {
                 </Caption>
               </div>
 
-                <div className="border-t border-neutral-200" />
+              <div className="border-t border-neutral-200" />
 
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        id="service-agreement"
-                        checked={agreements.service}
-                        onChange={e => toggleAgreement('service', e.target.checked)}
-                        className="w-4 h-4"
-                      />
-                      <label htmlFor="service-agreement" className="text-sm text-neutral-1000">
-                        서비스 이용 약관(필수)
-                      </label>
-                    </div>
-                    <button type="button" onClick={() => setOpenAgreement('service')}>
-                      <BodySmall className="text-neutral-600">보기</BodySmall>
-                    </button>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="service-agreement"
+                      checked={agreements.service}
+                      onChange={e => toggleAgreement('service', e.target.checked)}
+                      className="w-4 h-4"
+                    />
+                    <label htmlFor="service-agreement" className="text-sm text-neutral-1000">
+                      서비스 이용 약관(필수)
+                    </label>
                   </div>
+                  <button type="button" onClick={() => setOpenAgreement('service')}>
+                    <BodySmall className="text-neutral-600">보기</BodySmall>
+                  </button>
+                </div>
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        id="privacy-agreement"
-                        checked={agreements.privacy}
-                        onChange={e => toggleAgreement('privacy', e.target.checked)}
-                        className="w-4 h-4"
-                      />
-                      <label htmlFor="privacy-agreement" className="text-sm text-neutral-1000">
-                        개인정보 처리방침(필수)
-                      </label>
-                    </div>
-                    <button type="button" onClick={() => setOpenAgreement('privacy')}>
-                      <BodySmall className="text-neutral-600">보기</BodySmall>
-                    </button>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="privacy-agreement"
+                      checked={agreements.privacy}
+                      onChange={e => toggleAgreement('privacy', e.target.checked)}
+                      className="w-4 h-4"
+                    />
+                    <label htmlFor="privacy-agreement" className="text-sm text-neutral-1000">
+                      개인정보 처리방침(필수)
+                    </label>
                   </div>
+                  <button type="button" onClick={() => setOpenAgreement('privacy')}>
+                    <BodySmall className="text-neutral-600">보기</BodySmall>
+                  </button>
+                </div>
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        id="location-agreement"
-                        checked={agreements.location}
-                        onChange={e => toggleAgreement('location', e.target.checked)}
-                        className="w-4 h-4"
-                      />
-                      <label htmlFor="location-agreement" className="text-sm text-neutral-1000">
-                        위치정보 이용약관(필수)
-                      </label>
-                    </div>
-                    <button type="button" onClick={() => setOpenAgreement('location')}>
-                      <BodySmall className="text-neutral-600">보기</BodySmall>
-                    </button>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="location-agreement"
+                      checked={agreements.location}
+                      onChange={e => toggleAgreement('location', e.target.checked)}
+                      className="w-4 h-4"
+                    />
+                    <label htmlFor="location-agreement" className="text-sm text-neutral-1000">
+                      위치정보 이용약관(필수)
+                    </label>
                   </div>
+                  <button type="button" onClick={() => setOpenAgreement('location')}>
+                    <BodySmall className="text-neutral-600">보기</BodySmall>
+                  </button>
+                </div>
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        id="marketing-agreement"
-                        checked={agreements.marketing}
-                        onChange={e => toggleAgreement('marketing', e.target.checked)}
-                        className="w-4 h-4"
-                      />
-                      <label htmlFor="marketing-agreement" className="text-sm text-neutral-1000">
-                        마케팅 정보 수신(선택)
-                      </label>
-                    </div>
-                    <button type="button" onClick={() => setOpenAgreement('marketing')}>
-                      <BodySmall className="text-neutral-600">보기</BodySmall>
-                    </button>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="marketing-agreement"
+                      checked={agreements.marketing}
+                      onChange={e => toggleAgreement('marketing', e.target.checked)}
+                      className="w-4 h-4"
+                    />
+                    <label htmlFor="marketing-agreement" className="text-sm text-neutral-1000">
+                      마케팅 정보 수신(선택)
+                    </label>
                   </div>
+                  <button type="button" onClick={() => setOpenAgreement('marketing')}>
+                    <BodySmall className="text-neutral-600">보기</BodySmall>
+                  </button>
                 </div>
               </div>
             </div>
           </div>
-
-          {/* 다음 단계 버튼 */}
-          <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-[400px]">
-            <Button type="submit" variant="primary" className="w-full">
-              회원가입 완료
-            </Button>
-          </form>
         </div>
+
+        {/* 다음 단계 버튼 */}
+        <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-[400px]">
+          <Button type="submit" variant="primary" className="w-full">
+            회원가입 완료
+          </Button>
+        </form>
       </div>
-      {openAgreement && (
+      {openAgreement !== null && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/50 px-4 py-8 backdrop-blur-sm"
           onClick={() => setOpenAgreement(null)}
@@ -1164,7 +1163,15 @@ function SignUpStep3Content() {
                   }}
                 />
                 <span className="leading-tight">
-                  {openAgreement ? agreementTitleMap[openAgreement] : ''} 에 동의합니다.
+                  {openAgreement &&
+                  (openAgreement === 'service' ||
+                    openAgreement === 'privacy' ||
+                    openAgreement === 'location' ||
+                    openAgreement === 'marketing' ||
+                    openAgreement === 'privacyConsentBox')
+                    ? agreementTitleMap[openAgreement as keyof typeof agreementTitleMap]
+                    : ''}{' '}
+                  에 동의합니다.
                 </span>
               </label>
               <button

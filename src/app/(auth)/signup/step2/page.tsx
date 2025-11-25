@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useMemo, ChangeEvent } from 'react';
+import { useState, useEffect, useMemo, ChangeEvent, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import Image from 'next/image';
@@ -138,6 +138,8 @@ function SignUpStep2Content() {
   };
 
   const [success, setSuccess] = useState<Record<string, boolean>>({});
+  const [isEmailChecked, setIsEmailChecked] = useState(false);
+  const [isPhoneVerified, setIsPhoneVerified] = useState(false);
   const [verificationTimer, setVerificationTimer] = useState(0);
   const [isVerificationRequested, setIsVerificationRequested] = useState(false);
   const [isCustomDomain, setIsCustomDomain] = useState(false);
@@ -709,31 +711,42 @@ function SignUpStep2Content() {
             </div>
 
             {/* 인증번호 */}
-            {verificationTimer > 0 && (
-              <div className="space-y-2">
-                <BodySmall className="text-neutral-1000">인증번호</BodySmall>
-                <div className="flex gap-2">
+            <div className="space-y-2">
+              <BodySmall className="text-neutral-1000">인증번호</BodySmall>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
                   <Input
-                    placeholder="4자리 숫자 입력"
+                    placeholder="6자리 숫자 입력"
+                    onlyNumber
+                    inputMode="numeric"
+                    maxLength={6}
                     {...register('verificationCode')}
                     error={!!errors.verificationCode?.message}
-                    className="flex-1"
+                    disabled={isVerificationInputDisabled}
+                    style={{ paddingRight: verificationTimer > 0 ? '64px' : undefined }}
                   />
-                  <div className="flex items-center px-3 text-red-500 font-mono">
-                    {formatTimer(verificationTimer)}
-                  </div>
-                  <Button variant="primary" onClick={verifyCode} className="w-32">
-                    인증번호 확인
-                  </Button>
+                  {verificationTimer > 0 && (
+                    <span className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-red-500 font-mono text-sm">
+                      {formatTimer(verificationTimer)}
+                    </span>
+                  )}
                 </div>
-                {errors.verificationCode?.message && (
-                  <Caption className="text-red-500">{errors.verificationCode.message}</Caption>
-                )}
-                {success.verificationCode && (
-                  <Caption className="text-green-500">인증되었습니다</Caption>
-                )}
+                <Button
+                  variant="primary"
+                  onClick={verifyCode}
+                  disabled={!isVerificationActive}
+                  className="!w-32"
+                >
+                  인증번호 확인
+                </Button>
               </div>
-            )}
+              {errors.verificationCode?.message && (
+                <Caption className="text-red-500">{errors.verificationCode.message}</Caption>
+              )}
+              {success.verificationCode && (
+                <Caption className="text-green-500">인증되었습니다</Caption>
+              )}
+            </div>
           </div>
         </div>
 
@@ -801,18 +814,12 @@ function SignUpStep2Content() {
                   상호명 <span className="text-red-500">*</span>
                 </TitleDefault>
                 <Input
-                  placeholder="비밀번호를 입력해주세요"
-                  type="password"
-                  invisible
-                  {...passwordRegister}
-                  onChange={handlePasswordChange}
-                  error={!!errors.password?.message}
+                  placeholder="상호명을 입력해주세요"
+                  {...register('companyName')}
+                  error={!!errors.companyName?.message}
                 />
                 {errors.companyName?.message && (
                   <Caption className="text-red-500">{errors.companyName.message}</Caption>
-                )}
-                {success.password && (
-                  <Caption className="text-green-500">사용 가능한 비밀번호입니다</Caption>
                 )}
               </div>
 
@@ -822,12 +829,9 @@ function SignUpStep2Content() {
                   업종 <span className="text-red-500">*</span>
                 </TitleDefault>
                 <Input
-                  placeholder="비밀번호를 다시 입력해주세요"
-                  type="password"
-                  invisible
-                  {...confirmPasswordRegister}
-                  onChange={handleConfirmPasswordChange}
-                  error={!!errors.confirmPassword?.message}
+                  placeholder="사업자 등록증에 등록된 종목을 입력해주세요"
+                  {...register('businessType')}
+                  error={!!errors.businessType?.message}
                 />
                 {errors.businessType?.message && (
                   <Caption className="text-red-500">{errors.businessType.message}</Caption>
@@ -849,268 +853,16 @@ function SignUpStep2Content() {
                 )}
               </div>
 
-              {/* 성별 */}
-              <div className="space-y-2">
-                <TitleDefault>
-                  성별 <span className="text-red-500">*</span>
-                </TitleDefault>
-                <div className="flex gap-6">
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      value="male"
-                      {...register('gender', { required: '성별을 선택해주세요' })}
-                      checked={genderValue === 'male'}
-                      className="w-4 h-4"
-                    />
-                    <BodySmall className="text-neutral-1000">남</BodySmall>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      value="female"
-                      {...register('gender', { required: '성별을 선택해주세요' })}
-                      checked={genderValue === 'female'}
-                      className="w-4 h-4"
-                    />
-                    <BodySmall className="text-neutral-1000">여</BodySmall>
-                  </label>
-                </div>
-                {errors.gender?.message && (
-                  <Caption className="text-red-500">{errors.gender.message}</Caption>
-                )}
-              </div>
-
-              {/* 생년월일 */}
-              <div className="space-y-2">
-                <TitleDefault>
-                  생년월일 <span className="text-red-500">*</span>
-                </TitleDefault>
-                <div className="grid grid-cols-3 gap-2">
-                  <Controller
-                    name="birthYear"
-                    control={control}
-                    rules={{ required: '생년월일을 선택해주세요' }}
-                    render={({ field }) => (
-                      <Dropdown
-                        options={yearOptions}
-                        value={field.value}
-                        onChange={field.onChange}
-                        placeholder="년"
-                        error={!!errors.birthYear?.message}
-                      />
-                    )}
-                  />
-                  <Controller
-                    name="birthMonth"
-                    control={control}
-                    rules={{ required: '생년월일을 선택해주세요' }}
-                    render={({ field }) => (
-                      <Dropdown
-                        options={monthOptions}
-                        value={field.value}
-                        onChange={field.onChange}
-                        placeholder="월"
-                        error={!!errors.birthMonth?.message}
-                      />
-                    )}
-                  />
-                  <Controller
-                    name="birthDay"
-                    control={control}
-                    rules={{ required: '생년월일을 선택해주세요' }}
-                    render={({ field }) => (
-                      <Dropdown
-                        options={dayOptions}
-                        value={field.value}
-                        onChange={field.onChange}
-                        placeholder="일"
-                        error={!!errors.birthDay?.message}
-                      />
-                    )}
-                  />
-                </div>
-                {birthDateErrorMessage && (
-                  <Caption className="text-red-500">{birthDateErrorMessage}</Caption>
-                )}
-              </div>
-
-              {/* 프로필 사진 업로드 */}
-              <div className="space-y-2">
-                <TitleDefault>
-                  프로필 사진 업로드 <span className="text-red-500">*</span>
-                </TitleDefault>
-                <div className="flex flex-wrap gap-4">
-                  {profilePhotos[0] && profilePhotoPreview ? (
-                    <div className="relative w-28 h-28">
-                      <Image
-                        src={profilePhotoPreview}
-                        alt="프로필 사진"
-                        fill
-                        sizes="112px"
-                        className="rounded-lg object-cover border border-neutral-200"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          removeProfilePhoto(0);
-                          setProfilePhotoError(null);
-                        }}
-                        className="absolute top-1 right-1 w-6 h-6 bg-neutral-900 text-white rounded-full flex items-center justify-center text-sm"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  ) : (
-                    <label className="w-28 h-28 border-2 border-neutral-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-neutral-1000 gap-2">
-                      <input
-                        type="file"
-                        accept="image/jpeg,image/png"
-                        onChange={event => {
-                          clearProfilePhoto();
-                          handleProfilePhotoUpload(event);
-                          setProfilePhotoError(null);
-                          event.target.value = '';
-                        }}
-                        className="hidden"
-                      />
-                      <span className="text-2xl">
-                        <BiSolidCamera className="w-3 h-3" />
-                      </span>
-                      <TitleDefault className="text-neutral-600">사진첨부</TitleDefault>
-                    </label>
-                  )}
-                </div>
-                <Caption className="text-neutral-500">
-                  사진은 최대 1장, 5MB를 넘을 수 없습니다. (JPG, PNG 가능)
-                </Caption>
-                {profilePhotoError && (
-                  <Caption className="text-red-500">{profilePhotoError}</Caption>
-                )}
-              </div>
-
-              {/* 전화번호 */}
+              {/* 개업일자 */}
               <div className="space-y-2">
                 <TitleDefault>
                   개업일자 <span className="text-red-500">*</span>
                 </TitleDefault>
-                <div className="flex gap-2">
-                  <div className="flex-1">
-                    <Input
-                      placeholder="휴대폰 번호를 입력해주세요 (-제외)"
-                      type="tel"
-                      onlyNumber
-                      inputMode="numeric"
-                      maxLength={11}
-                      {...register('phone')}
-                      error={!!errors.phone?.message}
-                      onChange={e => {
-                        const value = e.target.value.replace(/-/g, '');
-                        setValue('phone', value);
-                        clearErrors('phone');
-                        setSuccess(prev => ({ ...prev, phone: false }));
-                      }}
-                    />
-                  </div>
-                  <Button
-                    variant="primary"
-                    onClick={sendVerificationCode}
-                    className="!w-32 !h-12 flex items-center justify-center"
-                  >
-                    {verificationTimer > 0 ? '인증번호 재전송' : '인증번호 받기'}
-                  </Button>
-                </div>
-                {errors.phone?.message && (
-                  <Caption className="text-red-500">{errors.phone.message}</Caption>
-                )}
-                {success.phone && (
-                  <Caption className="text-green-500">인증번호가 전송되었습니다</Caption>
-                )}
-              </div>
-
-              {/* 인증번호 */}
-              <div className="space-y-2">
-                <BodySmall className="text-neutral-1000">인증번호</BodySmall>
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <Input
-                      placeholder="6자리 숫자 입력"
-                      onlyNumber
-                      inputMode="numeric"
-                      maxLength={6}
-                      {...register('verificationCode')}
-                      error={!!errors.verificationCode?.message}
-                      disabled={isVerificationInputDisabled}
-                      style={{ paddingRight: '64px' }}
-                    />
-                    <span
-                      className={`pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-sm font-mono ${
-                        isVerificationActive ? 'text-red-500' : 'text-neutral-400'
-                      }`}
-                    >
-                      {verificationTimerLabel}
-                    </span>
-                  </div>
-                  <Button
-                    variant="primary"
-                    onClick={verifyCode}
-                    disabled={!isVerificationActive}
-                    className="!w-32 !h-12 flex items-center justify-center"
-                  >
-                    인증번호 확인
-                  </Button>
-                </div>
-                {errors.verificationCode?.message && (
-                  <Caption className="text-red-500">{errors.verificationCode.message}</Caption>
-                )}
-                {success.verificationCode && (
-                  <Caption className="text-green-500">인증되었습니다</Caption>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* cleaner 타입일 때만 서비스 가능 지역과 자기소개 표시 */}
-          {memberType === 'cleaner' && (
-            <>
-              {/* 서비스 가능 지역 */}
-              <div className="space-y-4">
-                <TitleDefault>서비스 가능 지역</TitleDefault>
-                <div className="flex-1 space-y-2">
-                  <Dropdown
-                    options={PROVINCES}
-                    value={watch('province')}
-                    onChange={value => handleInputChange('province', value)}
-                    placeholder="시/도"
-                    error={!!errors.province?.message}
-                  />
-                  {errors.province?.message && (
-                    <Caption className="text-red-500">{errors.province.message}</Caption>
-                  )}
-                </div>
-                <div className="flex-1 space-y-2">
-                  <Dropdown
-                    options={DISTRICTS}
-                    value={watch('district')}
-                    onChange={value => handleInputChange('district', value)}
-                    placeholder="시/구/군"
-                    error={!!errors.district?.message}
-                  />
-                  {errors.district?.message && (
-                    <Caption className="text-red-500">{errors.district.message}</Caption>
-                  )}
-                </div>
-              </div>
-
-              {/* 자기소개 */}
-              <div className="space-y-4">
-                <TitleDefault>자기소개</TitleDefault>
-                <Textarea
-                  placeholder="본인의 자기소개를 입력해주세요"
-                  value={watch('introduction')}
-                  onChange={e => handleInputChange('introduction', e.target.value)}
-                  maxLength={500}
-                  showCharCount
+                <Input
+                  type="date"
+                  placeholder="개업일자를 선택해주세요"
+                  {...register('establishmentDate')}
+                  error={!!errors.establishmentDate?.message}
                 />
                 {errors.establishmentDate?.message && (
                   <Caption className="text-red-500">{errors.establishmentDate.message}</Caption>
@@ -1125,25 +877,34 @@ function SignUpStep2Content() {
                 <div className="flex gap-2 items-center">
                   <Input
                     placeholder="000"
+                    type="tel"
+                    onlyNumber
                     {...register('businessNumber1')}
                     maxLength={3}
                     className="flex-1"
+                    inputMode="numeric"
                     error={!!errors.businessNumber1?.message}
                   />
                   <span className="text-neutral-600">-</span>
                   <Input
                     placeholder="00"
+                    type="tel"
+                    onlyNumber
                     {...register('businessNumber2')}
                     maxLength={2}
                     className="flex-1"
+                    inputMode="numeric"
                     error={!!errors.businessNumber1?.message}
                   />
                   <span className="text-neutral-600">-</span>
                   <Input
                     placeholder="000000"
+                    type="tel"
+                    onlyNumber
                     {...register('businessNumber3')}
                     maxLength={6}
                     className="flex-1"
+                    inputMode="numeric"
                     error={!!errors.businessNumber1?.message}
                   />
                 </div>
@@ -1165,162 +926,58 @@ function SignUpStep2Content() {
                     상호명, 사업자명, 사업자 등록번호 정보 제공 동의
                   </label>
                 </div>
-
-                {/* 사업자 등록번호 */}
-                <div className="space-y-2">
-                  <TitleDefault>
-                    사업자 등록번호 <span className="text-red-500">*</span>
-                  </TitleDefault>
-                  <div className="flex gap-2 items-center">
-                    <Input
-                      placeholder="000"
-                      type="tel"
-                      onlyNumber
-                      {...register('businessNumber1')}
-                      maxLength={3}
-                      className="flex-1"
-                      inputMode="numeric"
-                      error={!!errors.businessNumber1?.message}
-                    />
-                    <span className="text-neutral-600">-</span>
-                    <Input
-                      placeholder="00"
-                      type="tel"
-                      onlyNumber
-                      {...register('businessNumber2')}
-                      maxLength={2}
-                      className="flex-1"
-                      inputMode="numeric"
-                      error={!!errors.businessNumber1?.message}
-                    />
-                    <span className="text-neutral-600">-</span>
-                    <Input
-                      placeholder="000000"
-                      type="tel"
-                      onlyNumber
-                      {...register('businessNumber3')}
-                      maxLength={6}
-                      className="flex-1"
-                      inputMode="numeric"
-                      error={!!errors.businessNumber1?.message}
-                    />
-                  </div>
-                  {errors.businessNumber1?.message && (
-                    <Caption className="text-red-500">
-                      입력한 사업자 정보가 유효하지 않습니다
-                    </Caption>
-                  )}
-                </div>
-
-                {/* 동의 체크박스 */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="business-consent"
-                      {...register('businessAgreement')}
-                      className="w-4 h-4"
-                    />
-                    <label htmlFor="business-consent" className="text-sm text-neutral-1000">
-                      상호명, 사업자명, 사업자 등록번호 정보 제공 동의
-                    </label>
-                  </div>
-                  <button type="button" onClick={() => setOpenBusinessConsentModal(true)}>
-                    <BodySmall className="text-neutral-600">보기</BodySmall>
-                  </button>
-                </div>
-                {/* 인라인 상세 박스 제거: 모달로 대체 */}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* 다음 단계 버튼 */}
-        <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-[400px]">
-          <Button type="submit" variant="secondary" className="w-full">
-            다음 단계
-          </Button>
-        </form>
-        {openBusinessConsentModal && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/50 px-4 py-8 backdrop-blur-sm"
-            onClick={() => setOpenBusinessConsentModal(false)}
-          >
-            <div
-              role="dialog"
-              aria-modal="true"
-              className="relative w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-[0_20px_60px_rgba(15,23,42,0.18)]"
-              onClick={event => event.stopPropagation()}
-            >
-              <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4">
-                <div>
-                  <TitleDefault className="text-neutral-1000">사업자 정보 제공 동의</TitleDefault>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setOpenBusinessConsentModal(false)}
-                  aria-label="닫기"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-xl text-neutral-500 transition hover:bg-neutral-200 hover:text-neutral-700"
-                >
-                  ×
-                </button>
-              </div>
-
-              <div className="max-h-[65vh] overflow-y-auto px-6 py-6">
-                <div className="border border-neutral-200 rounded-lg p-4 bg-neutral-50">
-                  <BodyDefault className="font-medium mb-3">사업자 정보 제공 동의</BodyDefault>
-                  <div className="space-y-2 text-sm text-neutral-600">
-                    <p>아래와 같은 목적으로 사업자 정보를 수집 및 이용합니다.</p>
-                    <p>
-                      <strong>수집 항목:</strong> 상호명, 업종, 대표자명, 개업일자, 사업자 등록번호
-                    </p>
-                    <p>
-                      <strong>수집 목적:</strong> 사업자 인증 및 서비스 이용
-                    </p>
-                    <p>
-                      <strong>보유 기간:</strong> 정보 삭제 요청 또는 회원 탈퇴 시 파기
-                    </p>
-                    <p className="text-red-500">
-                      동의를 거부할 수 있으나, 동의 거부 시 사업자 인증 처리가 어렵습니다.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-3 border-t border-neutral-200 bg-white px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-                <label className="flex items-center gap-2 text-sm text-neutral-800">
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4"
-                    checked={!!businessAgreementValue}
-                    onChange={event =>
-                      setValue('businessAgreement', event.target.checked, {
-                        shouldDirty: true,
-                        shouldValidate: true,
-                      })
-                    }
-                  />
-                  <span className="leading-tight">사업자 정보 제공에 동의합니다.</span>
-                </label>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setValue('businessAgreement', !businessAgreementValue, {
-                      shouldDirty: true,
-                      shouldValidate: true,
-                    })
-                  }
-                  className={`rounded-lg px-6 py-2 text-sm font-semibold transition ${
-                    businessAgreementValue
-                      ? 'border border-neutral-300 text-neutral-700 hover:border-neutral-500'
-                      : 'bg-neutral-900 text-white hover:bg-neutral-800'
-                  }`}
-                >
-                  {businessAgreementValue ? '동의안함' : '동의하기'}
+                <button type="button" onClick={() => setOpenBusinessConsentModal(true)}>
+                  <BodySmall className="text-neutral-600">보기</BodySmall>
                 </button>
               </div>
             </div>
           </div>
+        )}
+
+        {/* cleaner 타입일 때만 서비스 가능 지역과 자기소개 표시 */}
+        {memberType === 'cleaner' && (
+          <>
+            {/* 서비스 가능 지역 */}
+            <div className="space-y-4">
+              <TitleDefault>서비스 가능 지역</TitleDefault>
+              <div className="flex-1 space-y-2">
+                <Dropdown
+                  options={PROVINCES}
+                  value={watch('province')}
+                  onChange={value => handleInputChange('province', value)}
+                  placeholder="시/도"
+                  error={!!errors.province?.message}
+                />
+                {errors.province?.message && (
+                  <Caption className="text-red-500">{errors.province.message}</Caption>
+                )}
+              </div>
+              <div className="flex-1 space-y-2">
+                <Dropdown
+                  options={DISTRICTS}
+                  value={watch('district')}
+                  onChange={value => handleInputChange('district', value)}
+                  placeholder="시/구/군"
+                  error={!!errors.district?.message}
+                />
+                {errors.district?.message && (
+                  <Caption className="text-red-500">{errors.district.message}</Caption>
+                )}
+              </div>
+            </div>
+
+            {/* 자기소개 */}
+            <div className="space-y-4">
+              <TitleDefault>자기소개</TitleDefault>
+              <Textarea
+                placeholder="본인의 자기소개를 입력해주세요"
+                value={watch('introduction')}
+                onChange={e => handleInputChange('introduction', e.target.value)}
+                maxLength={500}
+                showCharCount
+              />
+            </div>
+          </>
         )}
       </div>
 
@@ -1330,6 +987,87 @@ function SignUpStep2Content() {
           다음 단계
         </Button>
       </form>
+      {openBusinessConsentModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/50 px-4 py-8 backdrop-blur-sm"
+          onClick={() => setOpenBusinessConsentModal(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="relative w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-[0_20px_60px_rgba(15,23,42,0.18)]"
+            onClick={event => event.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4">
+              <div>
+                <TitleDefault className="text-neutral-1000">사업자 정보 제공 동의</TitleDefault>
+              </div>
+              <button
+                type="button"
+                onClick={() => setOpenBusinessConsentModal(false)}
+                aria-label="닫기"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-xl text-neutral-500 transition hover:bg-neutral-200 hover:text-neutral-700"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="max-h-[65vh] overflow-y-auto px-6 py-6">
+              <div className="border border-neutral-200 rounded-lg p-4 bg-neutral-50">
+                <BodyDefault className="font-medium mb-3">사업자 정보 제공 동의</BodyDefault>
+                <div className="space-y-2 text-sm text-neutral-600">
+                  <p>아래와 같은 목적으로 사업자 정보를 수집 및 이용합니다.</p>
+                  <p>
+                    <strong>수집 항목:</strong> 상호명, 업종, 대표자명, 개업일자, 사업자 등록번호
+                  </p>
+                  <p>
+                    <strong>수집 목적:</strong> 사업자 인증 및 서비스 이용
+                  </p>
+                  <p>
+                    <strong>보유 기간:</strong> 정보 삭제 요청 또는 회원 탈퇴 시 파기
+                  </p>
+                  <p className="text-red-500">
+                    동의를 거부할 수 있으나, 동의 거부 시 사업자 인증 처리가 어렵습니다.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 border-t border-neutral-200 bg-white px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+              <label className="flex items-center gap-2 text-sm text-neutral-800">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4"
+                  checked={!!businessAgreementValue}
+                  onChange={event =>
+                    setValue('businessAgreement', event.target.checked, {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    })
+                  }
+                />
+                <span className="leading-tight">사업자 정보 제공에 동의합니다.</span>
+              </label>
+              <button
+                type="button"
+                onClick={() =>
+                  setValue('businessAgreement', !businessAgreementValue, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
+                }
+                className={`rounded-lg px-6 py-2 text-sm font-semibold transition ${
+                  businessAgreementValue
+                    ? 'border border-neutral-300 text-neutral-700 hover:border-neutral-500'
+                    : 'bg-neutral-900 text-white hover:bg-neutral-800'
+                }`}
+              >
+                {businessAgreementValue ? '동의안함' : '동의하기'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
