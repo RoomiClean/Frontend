@@ -23,7 +23,7 @@ export default function RoomMainPage() {
       checkOutText: '10월 26일 오전 11시',
     },
   ];
-  // const items =[];
+  // const items = [];
 
   return (
     <RoomMainTemplate>

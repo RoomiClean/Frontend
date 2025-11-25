@@ -11,13 +11,12 @@ interface SidebarSection {
   items: SidebarSubItem[];
 }
 
-// TODO: href 수정 필요!
 const sidebarSections: SidebarSection[] = [
   {
     title: '숙소 관리',
     items: [
-      { label: '소유 숙소 목록', href: '/room' },
-      { label: '숙소 신규 등록', href: '/room1' },
+      { label: '소유 숙소 목록', href: '/mypage' },
+      { label: '숙소 신규 등록', href: '/mypage/accommodation/register' },
     ],
   },
   {

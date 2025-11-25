@@ -285,7 +285,7 @@ export default function RegisterAccommodationStep2Page() {
     console.log('Submitted data:', { ...data, accommodationPhotos, agreements });
 
     // 완료 페이지로 이동 또는 목록으로 이동
-    router.push('/accommodation/register/done');
+    router.push('/mypage/accommodation/register/done');
   };
 
   return (

@@ -3,6 +3,7 @@ import Button from '../atoms/Button';
 import { BodyDefault, DisplayH2, DisplayH3 } from '../atoms/Typography';
 import EmptyIcon from '../../../assets/svg/EmptyAccommodation.svg';
 import AccommodationCard from '../molecules/card/AccommodationCard';
+import Link from 'next/link';
 
 interface AccommodationItem {
   id: string;
@@ -15,13 +16,9 @@ interface AccommodationItem {
 
 interface AccommodationListSectionProps {
   items: AccommodationItem[];
-  onClickAdd?: () => void;
 }
 
-export default function AccommodationListSection({
-  items,
-  onClickAdd,
-}: AccommodationListSectionProps) {
+export default function AccommodationListSection({ items }: AccommodationListSectionProps) {
   const isEmpty = items.length === 0;
 
   return (
@@ -31,11 +28,9 @@ export default function AccommodationListSection({
           소유 에어비앤비 목록
         </DisplayH3>
         {!isEmpty && (
-          <div className="min-w-[120px] h-[46px] lg:hidden">
-            <Button onClick={onClickAdd} className="h-[46px]">
-              숙소 추가하기
-            </Button>
-          </div>
+          <Link href={`/mypage/accommodation/register`}>
+            <Button className="min-w-[120px] lg:hidden h-[46px]">숙소 추가하기</Button>
+          </Link>
         )}
       </div>
 
@@ -50,8 +45,10 @@ export default function AccommodationListSection({
               아래 버튼을 눌러 숙소를 추가해주세요
             </BodyDefault>
           </div>
-          <div className="w-full md:w-[400px] h-[46px]">
-            <Button onClick={onClickAdd}>숙소 추가하기</Button>
+          <div className="w-full md:w-[400px]">
+            <Link href={`/mypage/accommodation/register`}>
+              <Button className="h-[46px]">숙소 추가하기</Button>
+            </Link>
           </div>
         </div>
       ) : (
@@ -63,11 +60,9 @@ export default function AccommodationListSection({
           </div>
 
           <div className="hidden lg:flex justify-center">
-            <div className="w-[440px] h-[46px]">
-              <Button onClick={onClickAdd} className="h-[46px]">
-                숙소 추가하기
-              </Button>
-            </div>
+            <Link href={`/mypage/accommodation/register`} className="w-[440px]">
+              <Button className="h-[46px]">숙소 추가하기</Button>
+            </Link>
           </div>
         </>
       )}

@@ -74,7 +74,7 @@ export default function ImageGallary({ photos }: ImageGallaryProps) {
         {/* 서브 이미지 그리드 */}
         <div
           className="grid grid-cols-2 gap-4 md:gap-6 flex-shrink-0"
-          // style={{ width: 'calc(50% - 8px)' }}
+          style={{ width: 'calc(50% - 8px)' }}
         >
           {subPhotos.map((photo, index) => (
             <div

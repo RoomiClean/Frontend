@@ -100,7 +100,7 @@ export default function RegisterAccommodationPage() {
     console.log('Submitted data:', data);
 
     // 다음 단계로 이동
-    router.push('/accommodation/register/step2');
+    router.push('/mypage/accommodation/register/step2');
   };
 
   return (
