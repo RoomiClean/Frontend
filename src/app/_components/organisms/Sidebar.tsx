@@ -30,7 +30,7 @@ const sidebarSections: SidebarSection[] = [
     title: '작업 진행 관리',
     items: [
       { label: '작업 요청 목록', href: '/mypage/request' },
-      { label: '검수 대기 목록', href: '/room5' },
+      { label: '검수 대기 목록', href: '/mypage/inspection' },
     ],
   },
   {

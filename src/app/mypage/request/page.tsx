@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
 import { Calendar } from '@/app/_components/molecules/Calendar';
 import CleaningRequestListSection, {
   CleaningRequestData,
@@ -8,12 +7,10 @@ import CleaningRequestListSection, {
 import RoomMainTemplate from '@/app/_components/templates/RoomMainTemplate';
 import BottomSheet from '@/app/_components/atoms/BottomSheet';
 import { usePreventMobileScroll } from '@/hooks/usePreventMobileScroll';
+import { useCalendarHeights } from '@/hooks/useCalendarHeights';
 
 export default function CleaningRequestManagePage() {
-  const calendarRef = useRef<HTMLDivElement>(null);
-  const [previewHeight, setPreviewHeight] = useState<number>(300);
-  const [maxHeight, setMaxHeight] = useState<number>(600);
-  const [isMounted, setIsMounted] = useState(false);
+  const { calendarRef, previewHeight, maxHeight, isMounted } = useCalendarHeights();
 
   const cleaningMockData: CleaningRequestData = {
     ongoing: {
@@ -125,41 +122,6 @@ export default function CleaningRequestManagePage() {
     '경희대 앞 에어비앤비 청소 완료',
   ];
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  useEffect(() => {
-    const calculateHeights = () => {
-      if (calendarRef.current) {
-        const calendarRect = calendarRef.current.getBoundingClientRect();
-        const calendarBottom = calendarRect.bottom;
-        const calendarTop = calendarRect.top;
-        const windowHeight = window.innerHeight;
-
-        // 캘린더 하단에서 24px 떨어진 위치까지의 초기 높이
-        const preview = windowHeight - calendarBottom - 24;
-        setPreviewHeight(preview > 0 ? preview : 100);
-
-        // 완전히 올렸을 때: 캘린더 상단까지의 높이
-        const max = windowHeight - calendarTop;
-        setMaxHeight(max > 0 ? max : windowHeight * 0.9);
-      }
-    };
-
-    calculateHeights();
-
-    window.addEventListener('resize', calculateHeights);
-
-    const timer = setTimeout(calculateHeights, 100);
-
-    return () => {
-      window.removeEventListener('resize', calculateHeights);
-      clearTimeout(timer);
-    };
-  }, []);
-
-  // 모바일, 태블릿에서 배경 스크롤 및 당겨서 새로고침하는 거 방지
   usePreventMobileScroll(1024);
 
   return (
