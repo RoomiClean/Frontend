@@ -55,6 +55,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 
     const baseStyles =
       'w-full px-4 py-[14px] rounded-lg transition-all duration-200 outline-none text-[14px] leading-[140%] placeholder:text-[14px] placeholder:leading-[140%]';
+    
+    const numberInputStyles = type === 'number' 
+      ? '[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+      : '';
 
     const hasValue = value && String(value).trim().length > 0;
 
@@ -129,7 +133,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           disabled={disabled}
           placeholder={isFocused ? '' : placeholder}
           type={inputType}
-          className={`${baseStyles} ${getStateStyles()} ${className}`}
+          className={`${baseStyles} ${getStateStyles()} ${numberInputStyles} ${className}`}
           onFocus={handleFocus}
           onBlur={handleBlur}
           onChange={handleChange}

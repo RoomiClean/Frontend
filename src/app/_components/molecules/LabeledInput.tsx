@@ -21,7 +21,7 @@ interface LabeledInputProps extends InputProps {
 export const LabeledInput = React.forwardRef<HTMLInputElement, LabeledInputProps>(
   ({ label, required, className, ...props }, ref) => {
     return (
-      <div className="flex flex-col gap-[12px] w-full">
+      <div className="flex flex-col gap-[16px] w-full">
         <Label>
           {label} {required && <span className="text-red-100">*</span>}
         </Label>
