@@ -28,12 +28,18 @@ import {
 import { useAgreements } from '@/hooks/useAgreements';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { BiSolidCamera } from 'react-icons/bi';
-import { signupCleaner, signupHost } from '@/app/_lib/api/auth.api';
-import { generatePresignedUrls, uploadFileToS3 } from '@/app/_lib/api/s3.api';
-import { createAccommodation } from '@/app/_lib/api/accommodation.api';
-import { registerBusinessVerification } from '@/app/_lib/api/business.api';
+import {
+  useSignupCleaner,
+  useSignupHost,
+  useRegisterBusinessVerification,
+  useCreateAccommodation,
+  useGeneratePresignedUrls,
+} from '@/app/_lib/queries';
+import { uploadFileToS3 } from '@/app/_lib/api/s3.api';
 import type { SignupHostRequest, SignupCleanerRequest } from '@/app/_lib/types/auth.types';
 import { getClientIpAddress } from '@/utils/ip.utils';
+import { AxiosError } from 'axios';
+import { ApiErrorResponse } from '@/app/_lib/api-response.types';
 
 interface DaumPostcodeData {
   zonecode: string;
@@ -108,13 +114,30 @@ interface SignupSessionData {
   cleanerSignupData?: CleanerSignupSessionData;
   businessInfo?: BusinessInfoSessionData;
   businessVerificationId?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 function SignUpStep3Content() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const memberType = searchParams.get('type');
+  const { mutateAsync: signupCleanerMutate, isPending: isSignupCleanerPending } =
+    useSignupCleaner();
+  const { mutateAsync: signupHostMutate, isPending: isSignupHostPending } = useSignupHost();
+  const { mutateAsync: registerBusinessVerificationMutate, isPending: isRegisterBusinessPending } =
+    useRegisterBusinessVerification();
+  const { mutateAsync: createAccommodationMutate, isPending: isCreateAccommodationPending } =
+    useCreateAccommodation();
+  const { mutateAsync: generatePresignedUrlsMutate, isPending: isGeneratePresignedUrlsPending } =
+    useGeneratePresignedUrls();
+
+  // 전체 로딩 상태
+  const isSubmitting =
+    isSignupCleanerPending ||
+    isSignupHostPending ||
+    isRegisterBusinessPending ||
+    isCreateAccommodationPending ||
+    isGeneratePresignedUrlsPending;
 
   const {
     register,
@@ -154,7 +177,6 @@ function SignUpStep3Content() {
   const [isPostcodeLoaded, setIsPostcodeLoaded] = useState(false);
   const [isAddressSelected, setIsAddressSelected] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { agreements, toggleAgreement, isRequiredMet } = useAgreements({
     required: ['service', 'privacy', 'location'],
   });
@@ -277,8 +299,8 @@ function SignUpStep3Content() {
   });
 
   const handleInputChange = (field: keyof FormData, value: string) => {
-    setValue(field as any, value);
-    clearErrors(field as any);
+    setValue(field, value);
+    clearErrors(field);
   };
 
   const findZipCode = () => {
@@ -322,30 +344,25 @@ function SignUpStep3Content() {
     }
 
     console.log('onSubmit 시작', { memberType, data });
-    setIsSubmitting(true);
 
     if (memberType === 'cleaner') {
       // cleaner 타입의 경우
       if (!isRequiredMet) {
-        setIsSubmitting(false);
         alert('필수 약관에 동의해주세요');
         return;
       }
 
       if (!data.bank || !data.accountHolder || !data.accountNumber) {
-        setIsSubmitting(false);
         alert('은행 정보를 모두 입력해주세요');
         return;
       }
 
       if (!isAccountVerified) {
-        setIsSubmitting(false);
         alert('계좌 인증을 완료해주세요');
         return;
       }
 
       if (!privacyCollectionConsent) {
-        setIsSubmitting(false);
         alert('개인정보 수집 및 이용 동의를 해주세요');
         return;
       }
@@ -353,7 +370,6 @@ function SignUpStep3Content() {
       // step2에서 저장한 데이터 가져오기
       const signupDataStr = sessionStorage.getItem('signupData');
       if (!signupDataStr) {
-        setIsSubmitting(false);
         alert('회원가입 정보를 찾을 수 없습니다. 처음부터 다시 진행해주세요.');
         router.push('/signup/step1');
         return;
@@ -370,7 +386,6 @@ function SignUpStep3Content() {
             : null);
 
         if (!sessionCleanerData) {
-          setIsSubmitting(false);
           alert('회원가입 정보를 찾을 수 없습니다. 처음부터 다시 진행해주세요.');
           router.push('/signup/step2?type=cleaner');
           return;
@@ -408,7 +423,7 @@ function SignUpStep3Content() {
         };
 
         console.log('청소자 회원가입 요청 데이터:', cleanerSignupData);
-        const response = await signupCleaner(cleanerSignupData);
+        const response = await signupCleanerMutate(cleanerSignupData);
         console.log('청소자 회원가입 성공:', response);
 
         // sessionStorage 정리
@@ -416,41 +431,38 @@ function SignUpStep3Content() {
 
         // 회원가입 완료 페이지로 이동
         router.push('/signup/step4');
-      } catch (error: any) {
-        setIsSubmitting(false);
-        console.error('청소자 회원가입 오류 상세:', error);
-        console.error('청소자 회원가입 오류 상세:', error);
-        console.error('에러 응답:', error?.response);
-        console.error('에러 데이터:', error?.response?.data);
-        console.error('에러 상태 코드:', error?.response?.status);
-        console.error('에러 요청 URL:', error?.config?.url);
+      } catch (error) {
+        const axiosError = error as AxiosError<ApiErrorResponse>;
+        console.error('청소자 회원가입 오류 상세:', axiosError);
+        console.error('에러 응답:', axiosError?.response);
+        console.error('에러 데이터:', axiosError?.response?.data);
+        console.error('에러 상태 코드:', axiosError?.response?.status);
+        console.error('에러 요청 URL:', axiosError?.config?.url);
 
         let errorMessage = '회원가입 처리 중 오류가 발생했습니다';
 
         // 403 Forbidden 에러 처리
-        if (error?.response?.status === 403) {
+        if (axiosError?.response?.status === 403) {
           errorMessage =
             '접근 권한이 없습니다. (403 Forbidden)\n\n이미 로그인되어 있거나, 인증이 필요한 요청입니다.';
-        } else if (error?.response?.status === 401) {
+        } else if (axiosError?.response?.status === 401) {
           errorMessage = '인증이 필요합니다. (401 Unauthorized)';
-        } else if (error?.response?.status === 400) {
+        } else if (axiosError?.response?.status === 400) {
           errorMessage = '잘못된 요청입니다. 입력 정보를 확인해주세요. (400 Bad Request)';
-        } else if (error?.response?.status === 500) {
+        } else if (axiosError?.response?.status === 500) {
           errorMessage =
             '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요. (500 Internal Server Error)';
         }
 
-        if (error?.response?.data) {
+        if (axiosError?.response?.data) {
           // API 응답이 있는 경우
-          if (error.response.data.message) {
-            errorMessage = `${errorMessage}\n\n상세: ${error.response.data.message}`;
-          } else if (error.response.data.error) {
-            errorMessage = `${errorMessage}\n\n상세: ${error.response.data.error}`;
-          } else if (typeof error.response.data === 'string') {
-            errorMessage = `${errorMessage}\n\n상세: ${error.response.data}`;
+          if (axiosError.response.data.message) {
+            errorMessage = `${errorMessage}\n\n상세: ${axiosError.response.data.message}`;
+          } else if (typeof axiosError.response.data === 'string') {
+            errorMessage = `${errorMessage}\n\n상세: ${axiosError.response.data}`;
           }
-        } else if (error?.message) {
-          errorMessage = `${errorMessage}\n\n상세: ${error.message}`;
+        } else if (axiosError?.message) {
+          errorMessage = `${errorMessage}\n\n상세: ${axiosError.message}`;
         }
 
         alert(errorMessage);
@@ -458,57 +470,47 @@ function SignUpStep3Content() {
     } else if (memberType === 'host') {
       // host 타입의 경우
       if (accommodationPhotos.length < 5) {
-        setIsSubmitting(false);
         setPhotoError('숙소 사진을 최소 5장 이상 업로드해주세요.');
         alert('숙소 사진을 최소 5장 이상 업로드해주세요.');
         return;
       }
       if (!data.accommodationName) {
-        setIsSubmitting(false);
         setError('accommodationName', { type: 'required', message: '숙소명을 입력해주세요' });
         return;
       }
       if (!data.zipCode) {
-        setIsSubmitting(false);
         setError('zipCode', { type: 'required', message: '우편번호를 입력해주세요' });
         return;
       }
       if (!data.address) {
-        setIsSubmitting(false);
         setError('address', { type: 'required', message: '주소를 입력해주세요' });
         return;
       }
       if (!data.detailAddress) {
-        setIsSubmitting(false);
         setError('detailAddress', { type: 'required', message: '상세주소를 입력해주세요' });
         return;
       }
       if (!data.accessMethod) {
-        setIsSubmitting(false);
         setError('accessMethod', { type: 'required', message: '출입 방법을 입력해주세요' });
         return;
       }
       if (!data.accommodationType) {
-        setIsSubmitting(false);
         setError('accommodationType', { type: 'required', message: '숙소 유형을 선택해주세요' });
         return;
       }
       if (!data.roomCount || !data.bedCount || !data.livingRoomCount || !data.bathroomCount) {
-        setIsSubmitting(false);
         if (typeof window !== 'undefined') {
           alert('숙소 구조를 모두 입력해주세요');
         }
         return;
       }
       if (!data.area || !data.maxOccupancy) {
-        setIsSubmitting(false);
         if (typeof window !== 'undefined') {
           alert('숙소 면적과 최대 수용 인원을 입력해주세요');
         }
         return;
       }
       if (!data.equipmentStorage) {
-        setIsSubmitting(false);
         setError('equipmentStorage', {
           type: 'required',
           message: '비품 보관장소를 입력해주세요',
@@ -516,12 +518,10 @@ function SignUpStep3Content() {
         return;
       }
       if (!data.trashDisposal) {
-        setIsSubmitting(false);
         setError('trashDisposal', { type: 'required', message: '쓰레기 배출장소를 입력해주세요' });
         return;
       }
       if (!isRequiredMet) {
-        setIsSubmitting(false);
         alert('필수 약관에 동의해주세요');
         return;
       }
@@ -529,7 +529,6 @@ function SignUpStep3Content() {
       // step2에서 저장한 데이터 가져오기
       const signupDataStr = sessionStorage.getItem('signupData');
       if (!signupDataStr) {
-        setIsSubmitting(false);
         alert('회원가입 정보를 찾을 수 없습니다. 처음부터 다시 진행해주세요.');
         router.push('/signup/step1');
         return;
@@ -545,7 +544,6 @@ function SignUpStep3Content() {
             : null);
 
         if (!hostSignupBase) {
-          setIsSubmitting(false);
           alert('회원가입 정보를 찾을 수 없습니다. 처음부터 다시 진행해주세요.');
           router.push('/signup/step2?type=host');
           return;
@@ -569,38 +567,40 @@ function SignUpStep3Content() {
         };
 
         // 호스트 회원가입 (사업자 인증은 회원가입 후에 처리)
-        await signupHost(hostSignupPayload);
+        await signupHostMutate(hostSignupPayload);
 
         // 사업자 인증을 회원가입 후에 처리 (인증된 상태에서 호출)
         let businessVerificationId = parsedSignupData.businessVerificationId;
         if (!businessVerificationId) {
           const businessInfo = parsedSignupData.businessInfo;
           if (!businessInfo) {
-            setIsSubmitting(false);
             alert('사업자 정보를 찾을 수 없습니다. 처음부터 다시 진행해주세요.');
             router.push('/signup/step2?type=host');
             return;
           }
 
-          const businessVerificationResponse = await registerBusinessVerification({
+          const businessVerificationResponse = await registerBusinessVerificationMutate({
             businessName: businessInfo.businessName,
             businessNumber: businessInfo.businessNumber,
             businessType: businessInfo.businessType,
             ceoName: businessInfo.ceoName,
             startDate: businessInfo.startDate,
           });
-          businessVerificationId = businessVerificationResponse?.data?.id;
+          if (!businessVerificationResponse.success) {
+            throw new Error(businessVerificationResponse.message || '사업자 인증에 실패했습니다');
+          }
+          const { id } = businessVerificationResponse.data as { id?: string };
+          businessVerificationId = id;
         }
 
         if (!businessVerificationId) {
-          setIsSubmitting(false);
           throw new Error('사업자 인증 결과를 확인할 수 없습니다.');
         }
 
         // 숙소 사진 업로드
         const photoUrls: string[] = [];
         for (const photo of accommodationPhotos) {
-          const presignedUrlResponse = await generatePresignedUrls({
+          const presignedUrlResponse = await generatePresignedUrlsMutate({
             type: 'ACCOMMODATION',
             fileCount: 1,
             fileTypes: [photo.type],
@@ -610,7 +610,12 @@ function SignUpStep3Content() {
 
           // API 응답 구조: { statusCode, success, message, data: { urls: [...] }, timestamp }
           // camelcaseKeys 변환 후: { statusCode, success, message, data: { urls: [{ uploadUrl, fileUrl, contentType }] } }
-          const urls = presignedUrlResponse?.data?.urls;
+          if (!presignedUrlResponse.success) {
+            throw new Error(presignedUrlResponse.message || 'Presigned URL 생성에 실패했습니다');
+          }
+          const { urls } = presignedUrlResponse.data as {
+            urls?: Array<{ uploadUrl: string; fileUrl: string; contentType: string }>;
+          };
           if (!urls || !urls[0]) {
             console.error('Presigned URL 응답 구조:', presignedUrlResponse);
             throw new Error('Presigned URL 생성에 실패했습니다');
@@ -630,7 +635,7 @@ function SignUpStep3Content() {
         }
 
         // 숙소 등록
-        await createAccommodation({
+        await createAccommodationMutate({
           businessVerificationId: businessVerificationId,
           name: data.accommodationName,
           address: data.address,
@@ -659,40 +664,38 @@ function SignUpStep3Content() {
         sessionStorage.removeItem('signupData');
 
         router.push('/signup/step4');
-      } catch (error: any) {
-        setIsSubmitting(false);
-        console.error('숙소 등록 오류 상세:', error);
-        console.error('에러 응답:', error?.response);
-        console.error('에러 데이터:', error?.response?.data);
-        console.error('에러 상태 코드:', error?.response?.status);
-        console.error('에러 요청 URL:', error?.config?.url);
+      } catch (error) {
+        const axiosError = error as AxiosError<ApiErrorResponse>;
+        console.error('숙소 등록 오류 상세:', axiosError);
+        console.error('에러 응답:', axiosError?.response);
+        console.error('에러 데이터:', axiosError?.response?.data);
+        console.error('에러 상태 코드:', axiosError?.response?.status);
+        console.error('에러 요청 URL:', axiosError?.config?.url);
 
         let errorMessage = '숙소 등록 처리 중 오류가 발생했습니다';
 
         // 403 Forbidden 에러 처리
-        if (error?.response?.status === 403) {
+        if (axiosError?.response?.status === 403) {
           errorMessage =
             '접근 권한이 없습니다. (403 Forbidden)\n\n이미 로그인되어 있거나, 인증이 필요한 요청입니다.';
-        } else if (error?.response?.status === 401) {
+        } else if (axiosError?.response?.status === 401) {
           errorMessage = '인증이 필요합니다. (401 Unauthorized)';
-        } else if (error?.response?.status === 400) {
+        } else if (axiosError?.response?.status === 400) {
           errorMessage = '잘못된 요청입니다. 입력 정보를 확인해주세요. (400 Bad Request)';
-        } else if (error?.response?.status === 500) {
+        } else if (axiosError?.response?.status === 500) {
           errorMessage =
             '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요. (500 Internal Server Error)';
         }
 
-        if (error?.response?.data) {
+        if (axiosError?.response?.data) {
           // API 응답이 있는 경우
-          if (error.response.data.message) {
-            errorMessage = `${errorMessage}\n\n상세: ${error.response.data.message}`;
-          } else if (error.response.data.error) {
-            errorMessage = `${errorMessage}\n\n상세: ${error.response.data.error}`;
-          } else if (typeof error.response.data === 'string') {
-            errorMessage = `${errorMessage}\n\n상세: ${error.response.data}`;
+          if (axiosError.response.data.message) {
+            errorMessage = `${errorMessage}\n\n상세: ${axiosError.response.data.message}`;
+          } else if (typeof axiosError.response.data === 'string') {
+            errorMessage = `${errorMessage}\n\n상세: ${axiosError.response.data}`;
           }
-        } else if (error?.message) {
-          errorMessage = `${errorMessage}\n\n상세: ${error.message}`;
+        } else if (axiosError?.message) {
+          errorMessage = `${errorMessage}\n\n상세: ${axiosError.message}`;
         }
 
         alert(errorMessage);
@@ -1197,7 +1200,6 @@ function SignUpStep3Content() {
         <form
           onSubmit={handleSubmit(onSubmit, errors => {
             console.log('Form validation 실패:', errors);
-            setIsSubmitting(false);
           })}
           className="w-full max-w-[400px] mx-auto mt-16"
         >
@@ -1291,15 +1293,20 @@ function SignUpStep3Content() {
                       );
                     }
                     if (block.variant === 'list') {
-                      const anyBlock = block as any;
+                      const listBlock = block as {
+                        id: string;
+                        variant: 'list';
+                        text: string;
+                        prefix?: string;
+                      };
                       return (
                         <div
                           key={block.id}
                           className="flex items-start gap-2 text-sm text-neutral-700"
                         >
-                          {anyBlock.prefix ? (
+                          {listBlock.prefix ? (
                             <span className="mt-0.5 font-semibold text-neutral-500">
-                              {anyBlock.prefix}
+                              {listBlock.prefix}
                             </span>
                           ) : null}
                           <span className="leading-relaxed">{block.text}</span>

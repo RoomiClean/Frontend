@@ -16,7 +16,7 @@ export default function SignUpStep1Page() {
 
   return (
     <AuthTemplate>
-      <div className="flex flex-col items-center gap-16 w-full max-w-[800px] px-4 mt-8 md:mt-[100px]">
+      <div className="flex flex-col items-center gap-16 w-full px-4 mt-8 md:mt-[100px]">
         <DisplayH1>회원가입</DisplayH1>
 
         <Suspense fallback={<div className="h-6" />}>

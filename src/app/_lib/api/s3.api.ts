@@ -3,9 +3,12 @@ import camelcaseKeys from 'camelcase-keys';
 import snakecaseKeys from 'snakecase-keys';
 import { API_BASE_URL, API_TIMEOUT, API_HEADERS } from '@/constants/develop.constants';
 import type { GeneratePresignedUrlsRequest } from '../types/s3.types';
+import type { ApiResponse } from '../api-response.types';
 
 // Presigned URL 생성 (인증 불필요)
-export const generatePresignedUrls = async (data: GeneratePresignedUrlsRequest) => {
+export const generatePresignedUrls = async (
+  data: GeneratePresignedUrlsRequest,
+): Promise<ApiResponse> => {
   // 인증 없이 요청하기 위해 별도의 axios 인스턴스 사용
   // 요청 데이터를 snake_case로 변환
   const response = await axios.post(

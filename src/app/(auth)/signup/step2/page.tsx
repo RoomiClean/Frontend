@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useMemo, ChangeEvent, Suspense } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import Image from 'next/image';
@@ -20,8 +20,15 @@ import StepIndicator from '@/app/_components/molecules/StepIndicator';
 import { EMAIL_DOMAINS, PROVINCES, DISTRICTS } from '@/constants/business.constants';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { BiSolidCamera } from 'react-icons/bi';
-import { checkEmail, sendSmsCode, verifySmsCode } from '@/app/_lib/api/auth.api';
-import { generatePresignedUrls, uploadFileToS3 } from '@/app/_lib/api/s3.api';
+import {
+  useCheckEmail,
+  useSendSmsCode,
+  useVerifySmsCode,
+  useGeneratePresignedUrls,
+} from '@/app/_lib/queries';
+import { uploadFileToS3 } from '@/app/_lib/api/s3.api';
+import { AxiosError } from 'axios';
+import { ApiErrorResponse } from '@/app/_lib/api-response.types';
 
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}$/;
 const HANGUL_REGEX = /[\u1100-\u11FF\u3130-\u318F\uAC00-\uD7A3]/g;
@@ -57,6 +64,10 @@ function SignUpStep2Content() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const memberType = searchParams.get('type');
+  const { mutateAsync: checkEmailMutate } = useCheckEmail();
+  const { mutateAsync: sendSmsCodeMutate } = useSendSmsCode();
+  const { mutateAsync: verifySmsCodeMutate } = useVerifySmsCode();
+  const { mutateAsync: generatePresignedUrlsMutate } = useGeneratePresignedUrls();
 
   const {
     register,
@@ -142,7 +153,6 @@ function SignUpStep2Content() {
   const [verificationTimer, setVerificationTimer] = useState(0);
   const [isVerificationRequested, setIsVerificationRequested] = useState(false);
   const [isCustomDomain, setIsCustomDomain] = useState(false);
-  const [showBusinessDetail, setShowBusinessDetail] = useState(false);
   const [openBusinessConsentModal, setOpenBusinessConsentModal] = useState(false);
   const [profilePhotoError, setProfilePhotoError] = useState<string | null>(null);
   const businessAgreementValue = watch('businessAgreement');
@@ -240,7 +250,19 @@ function SignUpStep2Content() {
     if (confirmPassword) {
       trigger('confirmPassword');
     }
-  }, [password, trigger]);
+  }, [confirmPassword, password, trigger]);
+
+  // 이메일 또는 도메인이 변경되면 중복확인 상태 초기화
+  const emailValue = watch('email');
+  const emailDomainValue = watch('emailDomain');
+
+  useEffect(() => {
+    if (isEmailChecked) {
+      setIsEmailChecked(false);
+      setSuccess(prev => ({ ...prev, email: false }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [emailValue, emailDomainValue]);
 
   const handleInputChange = (field: keyof FormData, value: string) => {
     setValue(field, value);
@@ -255,6 +277,9 @@ function SignUpStep2Content() {
       setIsCustomDomain(false);
       setValue('emailDomain', value);
     }
+    // 도메인 변경 시 중복확인 상태 초기화
+    setIsEmailChecked(false);
+    setSuccess(prev => ({ ...prev, email: false }));
   };
 
   const validateEmail = async () => {
@@ -276,13 +301,17 @@ function SignUpStep2Content() {
     }
 
     try {
-      await checkEmail(fullEmail);
+      await checkEmailMutate(fullEmail);
       clearErrors('email');
       setSuccess(prev => ({ ...prev, email: true }));
       setIsEmailChecked(true);
       return true;
-    } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || '이메일 중복 확인에 실패했습니다';
+    } catch (error) {
+      const axiosError = error as AxiosError<ApiErrorResponse>;
+      const errorMessage =
+        axiosError?.response?.data?.message ||
+        axiosError?.message ||
+        '이메일 중복 확인에 실패했습니다';
       setError('email', { type: 'manual', message: errorMessage });
       setSuccess(prev => ({ ...prev, email: false }));
       setIsEmailChecked(false);
@@ -306,13 +335,17 @@ function SignUpStep2Content() {
     }
 
     try {
-      await sendSmsCode(phone);
+      await sendSmsCodeMutate(phone);
       setVerificationTimer(VERIFICATION_DURATION); // 3 minutes
       setIsVerificationRequested(true);
       clearErrors('phone');
       setSuccess(prev => ({ ...prev, phone: true }));
-    } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || '인증번호 전송에 실패했습니다';
+    } catch (error) {
+      const axiosError = error as AxiosError<ApiErrorResponse>;
+      const errorMessage =
+        axiosError?.response?.data?.message ||
+        axiosError?.message ||
+        '인증번호 전송에 실패했습니다';
       setError('phone', { type: 'manual', message: errorMessage });
       setSuccess(prev => ({ ...prev, phone: false }));
     }
@@ -328,13 +361,17 @@ function SignUpStep2Content() {
     }
 
     try {
-      await verifySmsCode(phone, verificationCode);
+      await verifySmsCodeMutate({ phone, code: verificationCode });
       clearErrors('verificationCode');
       setSuccess(prev => ({ ...prev, verificationCode: true }));
       setIsPhoneVerified(true);
       setVerificationTimer(0);
-    } catch (error: any) {
-      let errorMessage = error?.response?.data?.message || '인증번호가 일치하지 않습니다';
+    } catch (error) {
+      const axiosError = error as AxiosError<ApiErrorResponse>;
+      let errorMessage =
+        axiosError?.response?.data?.message ||
+        axiosError?.message ||
+        '인증번호가 일치하지 않습니다';
       // [CODE] 형태의 에러 코드 제거
       errorMessage = errorMessage.replace(/^\[.*?\]\s*/, '');
       setError('verificationCode', {
@@ -429,7 +466,7 @@ function SignUpStep2Content() {
     try {
       // 프로필 사진 업로드
       const profilePhoto = profilePhotos[0];
-      const presignedUrlResponse = await generatePresignedUrls({
+      const presignedUrlResponse = await generatePresignedUrlsMutate({
         type: 'SIGNUP',
         fileCount: 1,
         fileTypes: [profilePhoto.type],
@@ -437,15 +474,17 @@ function SignUpStep2Content() {
 
       console.log('Presigned URL 응답:', presignedUrlResponse);
 
-      // API 응답 구조: { statusCode, success, message, data: { urls: [...] }, timestamp }
-      // camelcaseKeys 변환 후: { statusCode, success, message, data: { urls: [{ uploadUrl, fileUrl, contentType }] } }
-      const urls = presignedUrlResponse?.data?.urls;
+      if (!presignedUrlResponse.success) {
+        throw new Error(presignedUrlResponse.message || 'Presigned URL 생성에 실패했습니다');
+      }
+      const { urls } = presignedUrlResponse.data as {
+        urls?: Array<{ uploadUrl: string; fileUrl: string; contentType: string }>;
+      };
       if (!urls || !urls[0]) {
         console.error('Presigned URL 응답 구조:', presignedUrlResponse);
         throw new Error('Presigned URL 생성에 실패했습니다');
       }
 
-      // camelcaseKeys 변환으로 upload_url → uploadUrl, file_url → fileUrl, content_type → contentType
       const { uploadUrl, fileUrl, contentType } = urls[0];
       console.log('추출된 URL 정보:', { uploadUrl, fileUrl, contentType });
 
@@ -521,39 +560,37 @@ function SignUpStep2Content() {
 
       console.log('세션 스토리지 저장 완료, 다음 단계로 이동');
       router.push('/signup/step3?type=' + memberType);
-    } catch (error: any) {
-      console.error('회원가입 오류 상세:', error);
-      console.error('에러 응답:', error?.response);
-      console.error('에러 데이터:', error?.response?.data);
-      console.error('에러 상태 코드:', error?.response?.status);
-      console.error('에러 요청 URL:', error?.config?.url);
+    } catch (error) {
+      const axiosError = error as AxiosError<ApiErrorResponse>;
+      console.error('회원가입 오류 상세:', axiosError);
+      console.error('에러 응답:', axiosError?.response);
+      console.error('에러 데이터:', axiosError?.response?.data);
+      console.error('에러 상태 코드:', axiosError?.response?.status);
+      console.error('에러 요청 URL:', axiosError?.config?.url);
 
       let errorMessage = '회원가입 처리 중 오류가 발생했습니다';
 
       // 403 Forbidden 에러 처리
-      if (error?.response?.status === 403) {
+      if (axiosError?.response?.status === 403) {
         errorMessage =
           '접근 권한이 없습니다. (403 Forbidden)\n\n이미 로그인되어 있거나, 인증이 필요한 요청입니다.';
-      } else if (error?.response?.status === 401) {
+      } else if (axiosError?.response?.status === 401) {
         errorMessage = '인증이 필요합니다. (401 Unauthorized)';
-      } else if (error?.response?.status === 400) {
+      } else if (axiosError?.response?.status === 400) {
         errorMessage = '잘못된 요청입니다. 입력 정보를 확인해주세요. (400 Bad Request)';
-      } else if (error?.response?.status === 500) {
-        errorMessage =
-          '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요. (500 Internal Server Error)';
+      } else if (axiosError?.response?.status === 500) {
+        errorMessage = '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요. (500 Internal Error)';
       }
 
-      if (error?.response?.data) {
+      if (axiosError?.response?.data) {
         // API 응답이 있는 경우
-        if (error.response.data.message) {
-          errorMessage = `${errorMessage}\n\n상세: ${error.response.data.message}`;
-        } else if (error.response.data.error) {
-          errorMessage = `${errorMessage}\n\n상세: ${error.response.data.error}`;
-        } else if (typeof error.response.data === 'string') {
-          errorMessage = `${errorMessage}\n\n상세: ${error.response.data}`;
+        if (axiosError.response.data.message) {
+          errorMessage = `${errorMessage}\n\n상세: ${axiosError.response.data.message}`;
+        } else if (typeof axiosError.response.data === 'string') {
+          errorMessage = `${errorMessage}\n\n상세: ${axiosError.response.data}`;
         }
-      } else if (error?.message) {
-        errorMessage = `${errorMessage}\n\n상세: ${error.message}`;
+      } else if (axiosError?.message) {
+        errorMessage = `${errorMessage}\n\n상세: ${axiosError.message}`;
       }
 
       alert(errorMessage);
@@ -624,9 +661,10 @@ function SignUpStep2Content() {
                 <Button
                   variant="primary"
                   onClick={validateEmail}
+                  disabled={isEmailChecked}
                   className="!w-[81px] py-3 flex-shrink-0"
                 >
-                  중복확인
+                  {isEmailChecked ? '사용가능' : '중복확인'}
                 </Button>
               </div>
               {errors.email?.message && (
