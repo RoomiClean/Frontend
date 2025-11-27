@@ -194,25 +194,34 @@ export default function RegisterAccommodationPage() {
                 <div className="flex gap-2 items-center">
                   <Input
                     placeholder="000"
+                    type="tel"
+                    onlyNumber
                     {...register('businessNumber1')}
                     maxLength={3}
                     className="flex-1"
+                    inputMode="numeric"
                     error={!!errors.businessNumber1?.message}
                   />
                   <span className="text-neutral-600">-</span>
                   <Input
                     placeholder="00"
+                    type="tel"
+                    onlyNumber
                     {...register('businessNumber2')}
                     maxLength={2}
                     className="flex-1"
+                    inputMode="numeric"
                     error={!!errors.businessNumber1?.message}
                   />
                   <span className="text-neutral-600">-</span>
                   <Input
                     placeholder="000000"
+                    type="tel"
+                    onlyNumber
                     {...register('businessNumber3')}
                     maxLength={6}
                     className="flex-1"
+                    inputMode="numeric"
                     error={!!errors.businessNumber1?.message}
                   />
                 </div>

@@ -22,8 +22,8 @@ const sidebarSections: SidebarSection[] = [
   {
     title: '청소 요청',
     items: [
-      { label: '수동 청소 요청', href: '/room2' },
-      { label: '자동 청소 요청', href: '/room3' },
+      { label: '수동 청소 요청', href: '/request/manual' },
+      { label: '자동 청소 요청', href: '/request/automatic' },
     ],
   },
   {
