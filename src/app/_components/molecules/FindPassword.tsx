@@ -80,74 +80,79 @@ export default function FindPassword({
           {errors.id && <BodySmall className="text-red-100 mt-1">{errors.id.message}</BodySmall>}
 
           {/* 휴대폰 번호 입력 및 인증번호 전송 */}
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <Controller
-                name="phone"
-                control={control}
-                rules={{ required: '휴대폰 번호를 입력해주세요' }}
-                render={({ field }) => (
-                  <LineInput
-                    placeholder="휴대폰 번호를 입력해주세요 (-제외)"
-                    value={field.value ?? ''}
-                    onChange={e => {
-                      const onlyNumbers = e.target.value.replace(/[^0-9]/g, '');
-                      field.onChange(onlyNumbers);
-                    }}
-                    inputMode="numeric"
-                  />
-                )}
-              />
-            </div>
-
-            <Button
-              type="button"
-              className="w-[120px]"
-              active={!!watchedValues.id && !!watchedValues.phone && !isCodeSent}
-              disabled={!watchedValues.id || !watchedValues.phone}
-              onClick={isCodeSent ? onResendCode : onSendCode}
-            >
-              <BodyDefault>{isCodeSent ? '인증번호 재전송' : '인증번호 받기'}</BodyDefault>
-            </Button>
-          </div>
-
-          {/* 인증번호 입력 */}
-          {isCodeSent && (
-            <div className="flex gap-2">
-              <div className="flex-1 relative">
+          <div>
+            <div className="flex w-full justify-between gap-4">
+              <div className="flex-1">
                 <Controller
-                  name="verificationCode"
+                  name="phone"
                   control={control}
-                  rules={{ required: '4자리 숫자입력' }}
+                  rules={{ required: '휴대폰 번호를 입력해주세요' }}
                   render={({ field }) => (
                     <LineInput
-                      placeholder="4자리 숫자입력"
+                      placeholder="휴대폰 번호를 입력해주세요 (-제외)"
                       value={field.value ?? ''}
                       onChange={e => {
                         const onlyNumbers = e.target.value.replace(/[^0-9]/g, '');
                         field.onChange(onlyNumbers);
                       }}
                       inputMode="numeric"
-                      maxLength={4}
                     />
                   )}
                 />
-                {timeLeft > 0 && (
-                  <BodySmall className="absolute top-1/2 right-2 -translate-y-1/2 text-red-100">
-                    {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
-                  </BodySmall>
-                )}
               </div>
-              {/* TODO: 인증 성공시 disabled 처리 필요*/}
-              <Button
-                type="button"
-                className="w-[120px]"
-                active={!!watchedValues.verificationCode && !isVerified}
-                disabled={!watchedValues.verificationCode}
-                onClick={onVerifyCode}
-              >
-                <BodyDefault>인증번호 확인</BodyDefault>
-              </Button>
+              <div className="w-[130px]">
+                <Button
+                  type="button"
+                  active={!!watchedValues.id && !!watchedValues.phone && !isCodeSent}
+                  disabled={!watchedValues.id || !watchedValues.phone}
+                  onClick={isCodeSent ? onResendCode : onSendCode}
+                >
+                  <BodyDefault>{isCodeSent ? '인증번호 재전송' : '인증번호 받기'}</BodyDefault>
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* 인증번호 입력 */}
+          {isCodeSent && (
+            <div>
+              <div className="flex w-full justify-between gap-4">
+                <div className="flex-1 relative">
+                  <Controller
+                    name="verificationCode"
+                    control={control}
+                    rules={{ required: '4자리 숫자입력' }}
+                    render={({ field }) => (
+                      <LineInput
+                        placeholder="4자리 숫자입력"
+                        value={field.value ?? ''}
+                        onChange={e => {
+                          const onlyNumbers = e.target.value.replace(/[^0-9]/g, '');
+                          field.onChange(onlyNumbers);
+                        }}
+                        inputMode="numeric"
+                        maxLength={4}
+                      />
+                    )}
+                  />
+                  {timeLeft > 0 && (
+                    <BodySmall className="absolute top-1/2 right-2 -translate-y-1/2 text-red-100">
+                      {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+                    </BodySmall>
+                  )}
+                </div>
+                {/* TODO: 인증 성공시 disabled 처리 필요*/}
+                <div className="w-[130px]">
+                  <Button
+                    type="button"
+                    active={!!watchedValues.verificationCode && !isVerified}
+                    disabled={!watchedValues.verificationCode}
+                    onClick={onVerifyCode}
+                  >
+                    <BodyDefault>인증번호 확인</BodyDefault>
+                  </Button>
+                </div>
+              </div>
             </div>
           )}
         </form>

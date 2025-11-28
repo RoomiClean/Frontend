@@ -15,10 +15,25 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" suppressHydrationWarning>
+      <head>
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1.0, 
+    user-scalable=0"
+        />
+      </head>
       <body>
         <Providers>
           <Header />
-          <main className="min-h-[calc(100dvh-68px)]">{children}</main>
+          <main
+            className="min-h-[calc(100vh-68px)]"
+            style={{
+              overscrollBehavior: 'none',
+              WebkitOverflowScrolling: 'touch',
+            }}
+          >
+            {children}
+          </main>
           <Footer />
         </Providers>
       </body>

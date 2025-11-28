@@ -16,6 +16,8 @@ spec:
     repoURL: https://github.com/RoomiClean/Frontend.git
     targetRevision: dev
     path: k8s
+    directory:
+      recurse: true
 
   # 배포 대상 클러스터
   destination:

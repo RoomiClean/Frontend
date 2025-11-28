@@ -22,7 +22,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Build Next.js
         run: npm run build
@@ -54,5 +54,5 @@ jobs:
           git config --global user.email "actions@github.com"
           git add k8s/deployment.yaml
           git diff --quiet && git diff --staged --quiet || git commit -m "Update image to ${{ github.sha }} [skip ci]"
-          git pull --rebase origin dev
+          git pull --rebase --autostash origin dev
           git push

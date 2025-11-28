@@ -25,6 +25,7 @@ import { ACCOMMODATION_TYPES } from '@/constants/business.constants';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { useAgreements } from '@/hooks/useAgreements';
 import { useAccountVerification } from '@/hooks/useAccountVerification';
+import { BiSolidCamera } from 'react-icons/bi';
 
 interface DaumPostcodeData {
   zonecode: string;
@@ -238,12 +239,18 @@ export default function RegisterAccommodationStep2Page() {
     maxFiles: 20,
     maxSize: 5 * 1024 * 1024,
     allowedTypes: ['image/jpeg', 'image/png', 'image/gif'],
-    onError: alert,
+    onError: (message: string) => {
+      if (typeof window !== 'undefined') {
+        alert(message);
+      }
+    },
   });
 
   const findZipCode = () => {
     if (!isPostcodeLoaded || !window.daum?.Postcode) {
-      alert('우편번호 서비스를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+      if (typeof window !== 'undefined') {
+        alert('우편번호 서비스를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+      }
       return;
     }
 
@@ -262,12 +269,16 @@ export default function RegisterAccommodationStep2Page() {
   const onSubmit = (data: FormData) => {
     if (accommodationPhotos.length < 5) {
       setPhotoError('숙소 사진을 최소 5장 이상 업로드해주세요.');
-      alert('숙소 사진을 최소 5장 이상 업로드해주세요.');
+      if (typeof window !== 'undefined') {
+        alert('숙소 사진을 최소 5장 이상 업로드해주세요.');
+      }
       return;
     }
 
     if (!isRequiredMet) {
-      alert('필수 약관에 동의해주세요');
+      if (typeof window !== 'undefined') {
+        alert('필수 약관에 동의해주세요');
+      }
       return;
     }
 
@@ -331,6 +342,7 @@ export default function RegisterAccommodationStep2Page() {
                         }
                       }}
                       value={zipCodeValue}
+                      inputMode="numeric"
                       error={!!errors.zipCode?.message}
                       className="flex-1"
                       readOnly={isAddressSelected}
@@ -438,6 +450,7 @@ export default function RegisterAccommodationStep2Page() {
                           },
                         })}
                         type="number"
+                        inputMode="numeric"
                         value={roomCountValue ?? ''}
                       />
                       {errors.roomCount?.message && (
@@ -458,6 +471,7 @@ export default function RegisterAccommodationStep2Page() {
                           },
                         })}
                         type="number"
+                        inputMode="numeric"
                         value={bedCountValue ?? ''}
                       />
                       {errors.bedCount?.message && (
@@ -478,6 +492,7 @@ export default function RegisterAccommodationStep2Page() {
                           },
                         })}
                         type="number"
+                        inputMode="numeric"
                         value={livingRoomCountValue ?? ''}
                       />
                       {errors.livingRoomCount?.message && (
@@ -498,6 +513,7 @@ export default function RegisterAccommodationStep2Page() {
                           },
                         })}
                         type="number"
+                        inputMode="numeric"
                         value={bathroomCountValue ?? ''}
                       />
                       {errors.bathroomCount?.message && (
@@ -527,6 +543,7 @@ export default function RegisterAccommodationStep2Page() {
                           },
                         })}
                         type="number"
+                        inputMode="decimal"
                         error={!!errors.area?.message}
                         value={areaValue ?? ''}
                       />
@@ -550,6 +567,7 @@ export default function RegisterAccommodationStep2Page() {
                           },
                         })}
                         type="number"
+                        inputMode="numeric"
                         error={!!errors.maxOccupancy?.message}
                         value={maxOccupancyValue ?? ''}
                       />
@@ -569,7 +587,7 @@ export default function RegisterAccommodationStep2Page() {
                   <div className="flex flex-nowrap gap-2 overflow-x-auto overflow-y-hidden pb-2">
                     {accommodationPhotos.length < 20 && (
                       <div className="flex-shrink-0">
-                        <label className="w-28 h-28 border-2 border-dashed border-neutral-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-neutral-1000">
+                        <label className="w-28 h-28 border-2 border-neutral-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-neutral-1000">
                           <input
                             type="file"
                             multiple
@@ -581,10 +599,10 @@ export default function RegisterAccommodationStep2Page() {
                             className="hidden"
                           />
                           <div className="flex flex-col items-center gap-2">
-                            <span className="text-2xl">📷</span>
-                            <span className="text-xs text-neutral-600 whitespace-nowrap">
-                              사진첨부
+                            <span className="text-2xl">
+                              <BiSolidCamera className="w-3 h-3" />
                             </span>
+                            <TitleDefault className="text-neutral-600">사진첨부</TitleDefault>
                           </div>
                         </label>
                       </div>

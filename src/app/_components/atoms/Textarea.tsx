@@ -1,6 +1,7 @@
 'use client';
 
 import { forwardRef, useState, TextareaHTMLAttributes } from 'react';
+import { BodySmall } from './Typography';
 
 export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   /** 에러 상태 여부 */
@@ -94,7 +95,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
       if (maxLength && currentLength > maxLength * 0.8) {
         return 'text-orange-500';
       }
-      return 'text-neutral-500';
+      return 'text-neutral-1000';
     };
 
     return (
@@ -113,9 +114,9 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         />
 
         {showCharCount && (
-          <div className={`text-right text-[12px] mt-1 ${getCharCountColor()}`}>
+          <BodySmall className={`text-right text-[12px] mt-1 ${getCharCountColor()}`}>
             {maxLength ? `${currentLength}/${maxLength}` : `${currentLength}자`}
-          </div>
+          </BodySmall>
         )}
       </div>
     );
