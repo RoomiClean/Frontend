@@ -83,9 +83,9 @@ export default function InspectionDetailSection({
                 />
               </div>
               <div className="flex-1 w-full flex flex-col">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 lg:gap-0 mb-4">
                   <DisplayH4 className="text-neutral-1000">{accommodationName}</DisplayH4>
-                  <div className="flex items-center flex-shrink-0">
+                  <div className="flex items-center flex-shrink-0 lg:ml-auto">
                     <TitleSmall className="text-neutral-600">청소 완료 후 </TitleSmall>
                     <TitleSmall className="text-red-200 ml-1">{elapsedTime}</TitleSmall>
                     <TitleSmall className="text-neutral-600 ml-1">경과</TitleSmall>
