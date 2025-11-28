@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { DisplayDefault, DisplayH3, TitleH4 } from '../atoms/Typography';
 import CleaningRequestCard from '../molecules/card/CleaningRequestCard';
@@ -44,6 +45,7 @@ interface InspectionWaitingListSectionProps {
 }
 
 export default function InspectionWaitingListSection({ data }: InspectionWaitingListSectionProps) {
+  const router = useRouter();
   const [tab, setTab] = useState<InspectionTab>('request');
 
   // 탭에 따른 데이터 필터링
@@ -99,7 +101,7 @@ export default function InspectionWaitingListSection({ data }: InspectionWaiting
                 tab === 'request' && item.elapsedTime ? item.elapsedTime.formatted : undefined
               }
               onInspect={() => {
-                console.log('청소 상태 검수:', item.inspectionId);
+                router.push(`/mypage/inspection/detail/${item.inspectionId}`);
               }}
             />
           ))
