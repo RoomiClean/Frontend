@@ -213,11 +213,9 @@ export default function ReviewForm({ cleanerInfo, onSubmit }: ReviewFormProps) {
                     {cleanerInfo.rating}/5.0
                   </BodyDefault>
                 </div>
-                <div className="flex justify-center">
-                  <BodyDefault className="text-neutral-600 whitespace-nowrap">
-                    자기소개:{' '}
-                  </BodyDefault>
-                  <BodyDefault className="text-neutral-800 ml-1">
+                <div className="text-center">
+                  <BodyDefault className="text-neutral-600 inline">자기소개: </BodyDefault>
+                  <BodyDefault className="text-neutral-800 inline break-words">
                     {cleanerInfo.introduction}
                   </BodyDefault>
                 </div>
@@ -225,6 +223,9 @@ export default function ReviewForm({ cleanerInfo, onSubmit }: ReviewFormProps) {
             </div>
           </div>
         </div>
+
+        {/* 구분선 */}
+        <div className="w-full border-t border-neutral-300"></div>
 
         {/* 만족도 평가 */}
         <div className="flex flex-col gap-6 w-full">
@@ -319,6 +320,9 @@ export default function ReviewForm({ cleanerInfo, onSubmit }: ReviewFormProps) {
             />
           </div>
         </div>
+
+        {/* 구분선 */}
+        <div className="w-full border-t border-neutral-300"></div>
 
         {/* 텍스트 리뷰 */}
         <div className="flex flex-col gap-4 w-full">
