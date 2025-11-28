@@ -66,11 +66,6 @@ export default function InspectionDetailSection({
       {/* 헤더 */}
       <div className="mb-6">
         <DisplayH3 className="text-neutral-1000 mb-2">청소 상태 검수</DisplayH3>
-        <div className="flex items-center">
-          <TitleSmall className="text-neutral-600">청소 완료 후 </TitleSmall>
-          <TitleSmall className="text-red-200 ml-1">{elapsedTime}</TitleSmall>
-          <TitleSmall className="text-neutral-600 ml-1">경과</TitleSmall>
-        </div>
       </div>
 
       <div className="rounded-[16px] bg-neutral-100 py-8 px-6 box-sizing: border-box border border-neutral-200 shadow-[0_3px_10px_0_rgba(0_0_0/0.2)] overflow-visible">
@@ -78,19 +73,25 @@ export default function InspectionDetailSection({
           {/* 청소 요청 상세 정보 */}
           <div className="space-y-6">
             <div className="flex flex-col md:flex-row gap-6">
-              <div className="w-[219px] h-[219px] md:w-[112px] md:h-[112px] rounded-[16px] overflow-hidden bg-neutral-200 flex-shrink-0 self-center md:self-auto">
+              <div className="w-[136px] h-[136px] rounded-[16px] overflow-hidden bg-neutral-200 flex-shrink-0 self-center md:self-auto">
                 <Image
                   src={accommodationImageUrl}
                   alt={accommodationName}
-                  width={219}
-                  height={219}
+                  width={136}
+                  height={136}
                   className="w-full h-full object-cover"
                 />
               </div>
-
-              <div className="flex-1 w-full">
-                <DisplayH4 className="text-neutral-1000">{accommodationName}</DisplayH4>
-                <div className="mt-4 flex flex-col gap-1">
+              <div className="flex-1 w-full flex flex-col">
+                <div className="flex items-center justify-between mb-4">
+                  <DisplayH4 className="text-neutral-1000">{accommodationName}</DisplayH4>
+                  <div className="flex items-center flex-shrink-0">
+                    <TitleSmall className="text-neutral-600">청소 완료 후 </TitleSmall>
+                    <TitleSmall className="text-red-200 ml-1">{elapsedTime}</TitleSmall>
+                    <TitleSmall className="text-neutral-600 ml-1">경과</TitleSmall>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1">
                   <div className="flex">
                     <BodySmall className="text-neutral-600">요청 일시: </BodySmall>
                     <BodySmall className="text-neutral-800 ml-1">
@@ -245,13 +246,13 @@ export default function InspectionDetailSection({
           {/* 액션 버튼 */}
           <div className="pt-4 flex flex-col md:flex-row gap-4 md:justify-end">
             <div className="w-full md:w-[151px]">
-              <Button onClick={onRequestRework} variant="secondary" className="h-[46px] w-full">
-                재작업 요청하기
+              <Button onClick={onApprove} active className="h-[46px] w-full">
+                승인하기
               </Button>
             </div>
             <div className="w-full md:w-[151px]">
-              <Button onClick={onApprove} active className="h-[46px] w-full">
-                승인하기
+              <Button onClick={onRequestRework} variant="secondary" className="h-[46px] w-full">
+                재작업 요청하기
               </Button>
             </div>
           </div>
