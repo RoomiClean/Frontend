@@ -25,7 +25,7 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     const baseStyles =
-      'w-full px-4 py-[14px] rounded-lg transition-all duration-200 outline-none text-[14px] leading-[140%] cursor-pointer flex items-center justify-between';
+      'w-full px-4 py-[14px] rounded-[10px] transition-all duration-200 outline-none text-[14px] leading-[140%] cursor-pointer flex items-center justify-between box-border';
 
     const selectedOption = options.find(opt => opt.value === value);
     const hasValue = !!selectedOption;
@@ -98,7 +98,7 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
 
         {/* 드롭다운 메뉴 */}
         {isOpen && !disabled && (
-          <div className="absolute left-0 right-0 bg-neutral-100 rounded-[8px] shadow-[0_6px_15px_rgba(0,0,0,0.2)] overflow-hidden z-50">
+          <div className="absolute left-0 right-0 bg-neutral-100 rounded-[8px] shadow-[0_6px_15px_rgba(0,0,0,0.2)] overflow-hidden z-50 max-h-[200px] overflow-y-auto">
             {options.map(option => (
               <button
                 key={option.value}

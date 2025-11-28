@@ -24,7 +24,6 @@ import {
 import { ACCOMMODATION_TYPES } from '@/constants/business.constants';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { useAgreements } from '@/hooks/useAgreements';
-import { useAccountVerification } from '@/hooks/useAccountVerification';
 
 interface DaumPostcodeData {
   zonecode: string;
@@ -238,12 +237,18 @@ export default function EditAccommodationPage() {
     maxFiles: 20,
     maxSize: 5 * 1024 * 1024,
     allowedTypes: ['image/jpeg', 'image/png', 'image/gif'],
-    onError: alert,
+    onError: (message: string) => {
+      if (typeof window !== 'undefined') {
+        alert(message);
+      }
+    },
   });
 
   const findZipCode = () => {
     if (!isPostcodeLoaded || !window.daum?.Postcode) {
-      alert('우편번호 서비스를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+      if (typeof window !== 'undefined') {
+        alert('우편번호 서비스를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+      }
       return;
     }
 
@@ -262,12 +267,16 @@ export default function EditAccommodationPage() {
   const onSubmit = (data: FormData) => {
     if (accommodationPhotos.length < 5) {
       setPhotoError('숙소 사진을 최소 5장 이상 업로드해주세요.');
-      alert('숙소 사진을 최소 5장 이상 업로드해주세요.');
+      if (typeof window !== 'undefined') {
+        alert('숙소 사진을 최소 5장 이상 업로드해주세요.');
+      }
       return;
     }
 
     if (!isRequiredMet) {
-      alert('필수 약관에 동의해주세요');
+      if (typeof window !== 'undefined') {
+        alert('필수 약관에 동의해주세요');
+      }
       return;
     }
 
@@ -331,6 +340,7 @@ export default function EditAccommodationPage() {
                         }
                       }}
                       value={zipCodeValue}
+                      inputMode="numeric"
                       error={!!errors.zipCode?.message}
                       className="flex-1"
                       readOnly={isAddressSelected}
@@ -438,6 +448,7 @@ export default function EditAccommodationPage() {
                           },
                         })}
                         type="number"
+                        inputMode="numeric"
                         value={roomCountValue ?? ''}
                       />
                       {errors.roomCount?.message && (
@@ -458,6 +469,7 @@ export default function EditAccommodationPage() {
                           },
                         })}
                         type="number"
+                        inputMode="numeric"
                         value={bedCountValue ?? ''}
                       />
                       {errors.bedCount?.message && (
@@ -478,6 +490,7 @@ export default function EditAccommodationPage() {
                           },
                         })}
                         type="number"
+                        inputMode="numeric"
                         value={livingRoomCountValue ?? ''}
                       />
                       {errors.livingRoomCount?.message && (
@@ -498,6 +511,7 @@ export default function EditAccommodationPage() {
                           },
                         })}
                         type="number"
+                        inputMode="numeric"
                         value={bathroomCountValue ?? ''}
                       />
                       {errors.bathroomCount?.message && (
@@ -527,6 +541,7 @@ export default function EditAccommodationPage() {
                           },
                         })}
                         type="number"
+                        inputMode="decimal"
                         error={!!errors.area?.message}
                         value={areaValue ?? ''}
                       />
@@ -550,6 +565,7 @@ export default function EditAccommodationPage() {
                           },
                         })}
                         type="number"
+                        inputMode="numeric"
                         error={!!errors.maxOccupancy?.message}
                         value={maxOccupancyValue ?? ''}
                       />

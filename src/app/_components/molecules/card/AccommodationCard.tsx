@@ -47,7 +47,7 @@ export default function AccommodationCard({
             <div className="flex items-start justify-between mb-1">
               <DisplayH4 className="text-neutral-1000">{title}</DisplayH4>
               <Link
-                href={`/room/detail/${id}`}
+                href={`/mypage/detail/${id}`}
                 onClick={onClickDetail}
                 className="text-neutral-500 hover:text-neutral-800 flex items-center"
               >

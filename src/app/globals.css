@@ -31,6 +31,13 @@ body {
     'Segoe UI Emoji',
     'Segoe UI Symbol',
     'Noto Color Emoji';
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+html {
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 @font-face {

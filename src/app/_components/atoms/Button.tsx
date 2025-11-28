@@ -44,10 +44,10 @@ export default function Button({
     variant === 'primary'
       ? active
         ? 'bg-primary-400 text-neutral-100 border border-primary-400'
-        : 'bg-neutral-100 text-primary-400 border border-primary-400 hover:shadow-[0_6px_15px_rgba(0,0,0,0.2)]'
+        : 'bg-neutral-100 text-primary-400 border border-primary-400 hover:shadow-[0_6px_15px_rgba(0,0,0,0.2)] disabled:hover:shadow-none'
       : active
         ? 'bg-neutral-100 text-primary-400 border border-primary-400'
-        : 'bg-neutral-100 text-neutral-1000 border border-neutral-1000 hover:shadow-[0_6px_15px_rgba(0,0,0,0.2)]';
+        : 'bg-neutral-100 text-neutral-1000 border border-neutral-1000 hover:shadow-[0_6px_15px_rgba(0,0,0,0.2)] disabled:hover:shadow-none';
 
   return (
     <button

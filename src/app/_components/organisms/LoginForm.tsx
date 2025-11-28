@@ -18,10 +18,10 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
   const isLoginEnabled = id.trim() !== '' && password.trim() !== '';
 
   return (
-    <div className="flex flex-col items-center gap-16 w-[392px] px-4">
+    <div className="flex flex-col items-center gap-16 w-[392px] px-4 mt-10 md:mt-[100px]">
       <Image src={ColumnLogo} alt="ColumnLogo" />
 
-      <div className="flex flex-col gap-4 w-full">
+      <div className="flex flex-col gap-6 w-full">
         <LabeledInput
           label="아이디"
           placeholder="아이디를 입력해주세요"
