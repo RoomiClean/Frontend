@@ -1,8 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { DisplayH3, BodySmall, BodyDefault, TitleH4, TitleDefault } from '../atoms/Typography';
+import {
+  DisplayH3,
+  BodySmall,
+  BodyDefault,
+  TitleH4,
+  TitleDefault,
+  DisplayH4,
+} from '../atoms/Typography';
 import StarRating from '../atoms/StarRating';
 import { Textarea } from '../atoms/Textarea';
 import Button from '../atoms/Button';
@@ -52,6 +59,24 @@ export default function ReviewForm({ cleanerInfo, onSubmit }: ReviewFormProps) {
   const [reviewText, setReviewText] = useState('');
   const [error, setError] = useState('');
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  // 화면 크기 감지 (데스크탑: 768px 이상)
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsDesktop(window.matchMedia('(min-width: 768px)').matches);
+    };
+
+    // 초기 설정
+    checkScreenSize();
+
+    // 리사이즈 이벤트 리스너 추가
+    window.addEventListener('resize', checkScreenSize);
+
+    return () => {
+      window.removeEventListener('resize', checkScreenSize);
+    };
+  }, []);
 
   const { files, uploadFile, removeFile } = useFileUpload({
     maxFiles: 3,
@@ -378,22 +403,23 @@ export default function ReviewForm({ cleanerInfo, onSubmit }: ReviewFormProps) {
       <Modal
         isOpen={isErrorModalOpen}
         onClose={() => setIsErrorModalOpen(false)}
-        className="flex flex-col items-center gap-6 p-8"
+        className="p-2"
+        padding={isDesktop ? '30px' : '16px'}
+        showCloseButton={false}
       >
-        <div className="flex flex-col items-center gap-6">
+        <div className={`flex flex-col items-center ${isDesktop ? 'gap-5' : 'gap-2'}`}>
           <PiWarning className="w-20 h-20 text-primary-400" />
-          <div className="flex flex-col items-center gap-2">
-            <BodyDefault className="text-neutral-1000 text-center whitespace-pre-line">
-              아직 리뷰작성이 완료되지 않았어요{'\n'}작성 후 다시 등록하기를 눌러주세요
-            </BodyDefault>
-          </div>
+          <DisplayH4>리뷰 등록 실패</DisplayH4>
+          <BodyDefault className="text-neutral-1000 text-center whitespace-pre-line">
+            아직 리뷰작성이 완료되지 않았어요{'\n'}작성 후 다시 등록하기를 눌러주세요
+          </BodyDefault>
           <Button
             onClick={() => setIsErrorModalOpen(false)}
             variant="primary"
             active
             className="w-full md:w-[151px] h-[46px]"
           >
-            확인
+            닫기
           </Button>
         </div>
       </Modal>

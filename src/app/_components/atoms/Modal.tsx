@@ -12,6 +12,8 @@ interface ModalProps {
   height?: string;
   padding?: string;
   className?: string;
+  /** 닫기 버튼 표시 여부 */
+  showCloseButton?: boolean;
 }
 
 /**
@@ -21,6 +23,7 @@ interface ModalProps {
  * - 바깥 클릭 또는 X 버튼 클릭시 닫힙니다.
  * - width, height, padding을 커스터마이징할 수 있습니다.
  * - ESC 키를 눌러도 닫힙니다.
+ * - showCloseButton으로 닫기 버튼 표시 여부를 제어할 수 있습니다.
  *
  * @example
  * ```tsx
@@ -32,6 +35,7 @@ interface ModalProps {
  *   width="600px"
  *   height="400px"
  *   padding="40px"
+ *   showCloseButton={true}
  * >
  *   <h2>모달 제목</h2>
  *   <p>모달 내용</p>
@@ -46,6 +50,7 @@ export default function Modal({
   height = 'auto',
   padding = '32px',
   className = '',
+  showCloseButton = true,
 }: ModalProps) {
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -101,10 +106,12 @@ export default function Modal({
         className={`relative bg-neutral-100 border border-neutral-300 rounded-[20px] w-full ${className}`}
         style={{ width, height, padding }}
       >
-        <button onClick={onClose} className="absolute top-4 right-4" aria-label="모달 닫기">
-          <Image src={CloseIcon} alt="닫기" />
-        </button>
-        <div className="w-full h-full">{children}</div>
+        {showCloseButton && (
+          <button onClick={onClose} className="absolute top-4 right-4" aria-label="모달 닫기">
+            <Image src={CloseIcon} alt="닫기" />
+          </button>
+        )}
+        <div className="w-full h-full flex flex-col items-center justify-center">{children}</div>
       </div>
     </div>
   );
