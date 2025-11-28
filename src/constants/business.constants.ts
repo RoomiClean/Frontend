@@ -110,3 +110,11 @@ export const ICAL_SYNC_PERIOD_OPTIONS: DropdownOption[] = [
   { label: '12시간', value: '12' },
   { label: '24시간', value: '24' },
 ];
+
+/**
+ * 청소 유형 매핑
+ */
+export const CLEANING_TYPE_LABELS: { [key: string]: string } = {
+  BASIC: '청소만(기본 옵션)',
+  WITH_LAUNDRY: '기본 청소 + 세탁',
+};

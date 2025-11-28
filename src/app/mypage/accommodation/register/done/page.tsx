@@ -2,10 +2,7 @@
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Button from '@/app/_components/atoms/Button';
-import {
-  BodyDefault,
-  DisplayH1,
-} from '@/app/_components/atoms/Typography';
+import { BodyDefault, DisplayH1 } from '@/app/_components/atoms/Typography';
 import { AuthTemplate } from '@/app/_components/templates/AuthTemplate';
 import ColumnLogo from '@/assets/svg/ColumnLogo.svg';
 
@@ -17,7 +14,7 @@ export default function RegisterAccommodationDonePage() {
   };
   //TODO: 숙소 관리 페이지로 이동
   const handleLogin = () => {
-    router.push('/');
+    router.push('/mypage');
   };
 
   return (

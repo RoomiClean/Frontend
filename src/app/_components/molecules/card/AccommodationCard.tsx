@@ -12,7 +12,6 @@ interface AccommodationCardProps {
   checkInText: string;
   checkOutText: string;
   onRequestClean?: () => void;
-  onClickDetail?: () => void;
 }
 
 /**
@@ -28,7 +27,6 @@ export default function AccommodationCard({
   checkInText,
   checkOutText,
   onRequestClean,
-  onClickDetail,
 }: AccommodationCardProps) {
   return (
     <div className="rounded-[16px] bg-neutral-100 md:py-6 py-4 px-4 hover:border hover:border-neutral-200 hover:shadow-[0_6px_15px_0_rgba(0_0_0/0.2)] transition-all">
@@ -47,8 +45,7 @@ export default function AccommodationCard({
             <div className="flex items-start justify-between mb-1">
               <DisplayH4 className="text-neutral-1000">{title}</DisplayH4>
               <Link
-                href={`/mypage/detail/${id}`}
-                onClick={onClickDetail}
+                href={`/mypage/accommodation/detail/${id}`}
                 className="text-neutral-500 hover:text-neutral-800 flex items-center"
               >
                 <BodySmall className="text-neutral-500">상세보기</BodySmall>

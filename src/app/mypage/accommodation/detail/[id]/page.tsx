@@ -4,13 +4,12 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import RoomMainTemplate from '@/app/_components/templates/RoomMainTemplate';
-import Button from '@/app/_components/atoms/Button';
 import { DisplayH3, BodyDefault, DisplayDefault } from '@/app/_components/atoms/Typography';
 import ImageGallary from '@/app/_components/molecules/ImageGallary';
 import AccommodationInfo from '@/app/_components/molecules/AccommodationInfo';
 import { Calendar, CalendarMarkerNotes } from '@/app/_components/molecules/Calendar';
 import ICalModal from '@/app/_components/molecules/ICalModal';
-import EditIcon from '@/assets/svg/Pencil.svg';
+import DeleteIcon from '@/assets/svg/Delete.svg';
 
 const mockRoomData = {
   id: '1',
@@ -54,7 +53,7 @@ export default function RoomDetailPage() {
   const router = useRouter();
   const id = params?.id as string;
 
-  const handleEdit = () => router.push(`/room/edit/${id}`);
+  const handleEdit = () => router.push(`/mypage/accommodation/edit/${id}`);
 
   const lastCleaningSchedule = mockRoomData.lastCleanedAt
     ? { date: new Date(mockRoomData.lastCleanedAt) }
@@ -123,27 +122,14 @@ export default function RoomDetailPage() {
   return (
     <RoomMainTemplate showSidebar={false}>
       {/* 헤더 */}
-      <div className="mb-8">
-        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-          <div className="flex-1">
-            <DisplayH3 className="text-neutral-1000 mb-1 md:text-[28px] lg:text-[32px]">
-              {mockRoomData.name}
-            </DisplayH3>
-            <BodyDefault className="text-neutral-800">
-              {mockRoomData.address} {mockRoomData.detailedAddress}
-            </BodyDefault>
-          </div>
-
-          <div className="hidden w-full md:w-auto md:flex-shrink-0">
-            <Button
-              onClick={handleEdit}
-              variant="primary"
-              className="h-[46px] flex items-center justify-center gap-2 px-6"
-            >
-              <DisplayDefault className="text-primary-300">정보 수정하기</DisplayDefault>
-              <Image src={EditIcon} alt="수정" />
-            </Button>
-          </div>
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-8">
+        <div className="flex-1">
+          <DisplayH3 className="text-neutral-1000 mb-1 md:text-[28px] lg:text-[32px]">
+            {mockRoomData.name}
+          </DisplayH3>
+          <BodyDefault className="text-neutral-800">
+            {mockRoomData.address} {mockRoomData.detailedAddress}
+          </BodyDefault>
         </div>
       </div>
 
@@ -156,7 +142,12 @@ export default function RoomDetailPage() {
       <div className="flex flex-col lg:flex-row gap-6 md:gap-8 lg:items-start">
         {/* 숙소 정보 컬럼 */}
         <div className="w-full lg:w-1/2 flex flex-col gap-6">
-          <DisplayH3 className="text-neutral-1000">숙소 정보</DisplayH3>
+          <div className="flex items-center justify-between">
+            <DisplayH3 className="text-neutral-1000">숙소 정보</DisplayH3>
+            <button onClick={handleEdit}>
+              <BodyDefault className="text-primary-400">정보 수정하기 →</BodyDefault>
+            </button>
+          </div>
           <div ref={infoRef}>
             <AccommodationInfo
               accommodationType={mockRoomData.accommodationType}
@@ -175,8 +166,8 @@ export default function RoomDetailPage() {
         </div>
 
         {/* 캘린더 컬럼 */}
-        <div className="w-full lg:w-1/2 flex flex-col gap-6">
-          <div className="flex items-center justify-between">
+        <div className="w-full lg:w-1/2 flex flex-col">
+          <div className="flex items-center justify-between mb-6">
             <DisplayH3 className="text-neutral-1000">일정 정보</DisplayH3>
             <button onClick={() => setIsICalModalOpen(true)}>
               <BodyDefault className="text-primary-400">
@@ -202,16 +193,13 @@ export default function RoomDetailPage() {
           <CalendarMarkerNotes />
         </div>
       </div>
-      <div className="w-full md:hidden">
-        <Button
-          onClick={handleEdit}
-          variant="primary"
-          className="h-[46px] flex items-center justify-center gap-2 px-6"
-        >
-          <DisplayDefault className="text-primary-300">정보 수정하기</DisplayDefault>
-          <Image src={EditIcon} alt="수정" />
-        </Button>
-      </div>
+      <button
+        onClick={handleEdit}
+        className="w-full md:w-[160px] md:ml-auto h-[45px] flex items-center justify-center gap-2 border border-neutral-500 rounded-[12px]"
+      >
+        <DisplayDefault className="text-neutral-500">숙소 삭제하기</DisplayDefault>
+        <Image src={DeleteIcon} alt="삭제" />
+      </button>
 
       <ICalModal
         isOpen={isICalModalOpen}

@@ -90,3 +90,18 @@ export const add30Minutes = (time: string): string | undefined => {
   return `${String(newHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
 };
 
+/**
+ * ISO 날짜 문자열을 표시 형식으로 변환
+ * @param isoString - ISO 8601 형식의 날짜 문자열 (예: 2025-11-03T18:00:00.000Z)
+ * @returns 표시 형식의 날짜 문자열 (예: 2025/11/3 18:00)
+ */
+export const formatDateTime = (isoString: string): string => {
+  const date = new Date(isoString);
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  return `${year}/${month}/${day} ${hours}:${minutes}`;
+};
+

@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import Button from '../../atoms/Button';
-import { BodySmall, DisplayDefault, TitleLarge } from '../../atoms/Typography';
+import { BodySmall, DisplayDefault, TitleLarge, TitleSmall } from '../../atoms/Typography';
 import ArrowRightIcon from '@/assets/svg/DetailArrow.svg';
 import { getStatusLabelConfig } from '@/utils/cleaningRequest.utils';
 
@@ -19,6 +19,9 @@ interface CleaningRequestCardProps {
   showStatusLabel?: boolean;
   isPastRequest?: boolean;
   onWriteReview?: () => void;
+  isInspectionMode?: boolean;
+  elapsedTime?: string;
+  onInspect?: () => void;
 }
 
 /**
@@ -43,6 +46,9 @@ export default function CleaningRequestCard({
   showStatusLabel = false,
   isPastRequest = false,
   onWriteReview,
+  isInspectionMode = false,
+  elapsedTime,
+  onInspect,
 }: CleaningRequestCardProps) {
   const getStatusLabel = () => {
     const config = getStatusLabelConfig(requestStatus, isPastRequest);
@@ -76,11 +82,25 @@ export default function CleaningRequestCard({
             />
           </div>
           <div className="flex-1 w-full">
-            <div className="flex items-center justify-between gap-2">
+            <div
+              className={`flex gap-2 ${
+                isInspectionMode && elapsedTime
+                  ? 'flex-col md:flex-row md:items-center md:justify-between'
+                  : 'items-center justify-between'
+              }`}
+            >
               <DisplayDefault className="text-neutral-1000 md:text-[20px] truncate flex-1">
                 {title}
               </DisplayDefault>
-              {isPastRequest ? (
+              {isInspectionMode && elapsedTime ? (
+                <div className="flex items-center whitespace-nowrap flex-shrink-0">
+                  <TitleSmall className="text-neutral-600 md:text-[16px]">청소 완료 후 </TitleSmall>
+                  <TitleSmall className="text-red-200 ml-1 md:text-[16px]">
+                    {elapsedTime}
+                  </TitleSmall>
+                  <TitleSmall className="text-neutral-600 ml-1 md:text-[16px]">경과</TitleSmall>
+                </div>
+              ) : isPastRequest ? (
                 getStatusLabel()
               ) : showStatusLabel ? (
                 getStatusLabel()
@@ -139,6 +159,13 @@ export default function CleaningRequestCard({
                   <div className="w-full md:w-[200px] lg:w-full min-[1363px]:w-[200px] self-end">
                     <Button onClick={onWriteReview} active className="h-[46px] w-full">
                       리뷰 작성하기
+                    </Button>
+                  </div>
+                )}
+                {isInspectionMode && (
+                  <div className="w-full md:w-[200px] lg:w-full min-[1363px]:w-[200px] self-end">
+                    <Button onClick={onInspect} active className="h-[46px] w-full">
+                      청소 상태 검수
                     </Button>
                   </div>
                 )}
