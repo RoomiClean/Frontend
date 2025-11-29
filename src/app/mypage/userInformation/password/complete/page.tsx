@@ -26,9 +26,7 @@ export default function PasswordChangeCompletePage() {
         {/* 완료 메시지 */}
         <div className="flex flex-col items-center gap-6 w-full max-w-[600px]">
           {/* 체크마크 아이콘 */}
-          <div className="w-24 h-24 rounded-full bg-primary-100 flex items-center justify-center">
-            <AiOutlineCheckCircle className="h-20 w-20 text-primary-400" />
-          </div>
+          <AiOutlineCheckCircle className="h-20 w-20 text-primary-400" />
 
           {/* 완료 텍스트 */}
           <DisplayH4 className="text-neutral-1000">비밀번호 변경 완료</DisplayH4>
