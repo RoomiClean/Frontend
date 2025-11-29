@@ -662,7 +662,7 @@ function SignUpStep2Content() {
                   variant="primary"
                   onClick={validateEmail}
                   disabled={isEmailChecked}
-                  className="!w-[81px] py-3 flex-shrink-0"
+                  className="!w-24 !h-12 flex-shrink-0"
                 >
                   {isEmailChecked ? '사용가능' : '중복확인'}
                 </Button>
@@ -890,7 +890,11 @@ function SignUpStep2Content() {
                     }}
                   />
                 </div>
-                <Button variant="primary" onClick={sendVerificationCode} className="!w-32">
+                <Button
+                  variant="primary"
+                  onClick={sendVerificationCode}
+                  className="!w-32 !h-12 flex-shrink-0"
+                >
                   {verificationTimer > 0 ? '인증번호 재전송' : '인증번호 받기'}
                 </Button>
               </div>
@@ -927,7 +931,7 @@ function SignUpStep2Content() {
                   variant="primary"
                   onClick={verifyCode}
                   disabled={!isVerificationActive}
-                  className="!w-32"
+                  className="!w-32 !h-12 flex-shrink-0"
                 >
                   인증번호 확인
                 </Button>
