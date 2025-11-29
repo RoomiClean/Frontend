@@ -163,7 +163,7 @@ export default function ProfileEditPage() {
   const handleSubmit = () => {
     // TODO: API 호출로 프로필 업데이트
     console.log('프로필 저장:', formData);
-    router.push('/mypage/userInformation');
+    router.push('/mypage/userInformation/edit/complete');
   };
 
   const isFormValid = formData.name.trim() !== '' && formData.phone.trim() !== '';
