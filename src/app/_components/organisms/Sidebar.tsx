@@ -37,7 +37,7 @@ const sidebarSections: SidebarSection[] = [
     title: '프로필 및 설정',
     items: [
       { label: '내 정보 관리', href: '/mypage/userInformation' },
-      { label: '알림 설정', href: '/room8' },
+      { label: '알림 설정', href: '/mypage/notification' },
       { label: '리뷰 관리', href: '/mypage/review' },
     ],
   },
