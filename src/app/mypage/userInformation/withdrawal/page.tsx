@@ -33,7 +33,8 @@ export default function WithdrawalPage() {
       return;
     }
 
-    if (!confirm('정말 탈퇴하시겠습니까? 탈퇴 후에는 복구할 수 없습니다.')) {
+    const confirmed = window.confirm('정말 탈퇴하시겠습니까? 탈퇴 후에는 복구할 수 없습니다.');
+    if (!confirmed) {
       return;
     }
 
@@ -42,13 +43,11 @@ export default function WithdrawalPage() {
       // TODO: 회원 탈퇴 API 연동
       // await withdrawMember();
 
-      // 임시: API 연동 전까지는 alert로 처리
-      alert('회원 탈퇴가 완료되었습니다.');
-      router.push('/');
+      // 임시: API 연동 전까지는 완료 페이지로 이동
+      router.replace('/mypage/userInformation/withdrawal/complete');
     } catch (error) {
       console.error('회원 탈퇴 실패:', error);
       alert('회원 탈퇴 중 오류가 발생했습니다. 다시 시도해주세요.');
-    } finally {
       setIsSubmitting(false);
     }
   };
