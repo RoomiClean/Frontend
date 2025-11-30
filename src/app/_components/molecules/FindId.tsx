@@ -1,5 +1,5 @@
 'use client';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, Control, UseFormHandleSubmit, FieldErrors } from 'react-hook-form';
 import { LineInput } from '@/app/_components/atoms/LineInput';
 import Button from '@/app/_components/atoms/Button';
 import { BodyDefault, BodySmall, DisplayDefault } from '../atoms/Typography';
@@ -7,15 +7,19 @@ import { FindInfoFormData } from '@/hooks/useFindInfo';
 import Link from 'next/link';
 
 interface FindIdProps {
+  control: Control<FindInfoFormData>;
+  handleSubmit: UseFormHandleSubmit<FindInfoFormData>;
+  errors: FieldErrors<FindInfoFormData>;
+  watchedValues: Partial<FindInfoFormData>;
   isCodeSent: boolean;
   isVerified: boolean;
   timeLeft: number;
   foundId: string;
   idStep: 'input' | 'result';
-  onSendCode: () => void;
-  onResendCode: () => void;
-  onVerifyCode: () => void;
-  onIdFind: (data: FindInfoFormData) => void;
+  onSendCode: (phone?: string) => Promise<void>;
+  onResendCode: (phone?: string) => Promise<void>;
+  onVerifyCode: (phone?: string, code?: string) => Promise<void>;
+  onIdFind: (data: FindInfoFormData) => Promise<void>;
   onTabChange: () => void;
 }
 
@@ -29,6 +33,10 @@ interface FindIdProps {
  * @param {FindIdProps} props - 컴포넌트 props
  */
 export default function FindId({
+  control,
+  handleSubmit,
+  errors,
+  watchedValues,
   isCodeSent,
   isVerified,
   timeLeft,
@@ -39,15 +47,6 @@ export default function FindId({
   onVerifyCode,
   onIdFind,
 }: FindIdProps) {
-  const {
-    control,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm<FindInfoFormData>();
-
-  const watchedValues = watch();
-
   // --- 이름, 전화번호 입력 단계 ---
   if (idStep === 'input') {
     return (
@@ -76,7 +75,7 @@ export default function FindId({
               )}
             />
             {errors.name && (
-              <BodySmall className="text-red-100 mt-2">{errors.name.message}</BodySmall>
+              <BodySmall className="text-red-100 mt-1">{errors.name.message}</BodySmall>
             )}
           </div>
 
@@ -104,14 +103,36 @@ export default function FindId({
               <div className="w-[130px]">
                 <Button
                   type="button"
-                  active={!!watchedValues.name && !!watchedValues.phone && !isCodeSent}
-                  disabled={!watchedValues.name || !watchedValues.phone}
-                  onClick={isCodeSent ? onResendCode : onSendCode}
+                  active={
+                    !!watchedValues.name && !!watchedValues.phone && !isCodeSent && !isVerified
+                  }
+                  disabled={!watchedValues.name || !watchedValues.phone || isVerified}
+                  onClick={() => {
+                    if (watchedValues.phone) {
+                      if (isCodeSent) {
+                        onResendCode(watchedValues.phone);
+                      } else {
+                        onSendCode(watchedValues.phone);
+                      }
+                    }
+                  }}
                 >
                   <BodyDefault>{isCodeSent ? '인증번호 재전송' : '인증번호 받기'}</BodyDefault>
                 </Button>
               </div>
             </div>
+            {errors.phone && (
+              <div className="mt-1">
+                <BodySmall className="ml-[2px] text-red-100">{errors.phone.message}</BodySmall>
+              </div>
+            )}
+            {!errors.phone && isCodeSent && (
+              <div className="mt-1">
+                <BodySmall className="ml-[2px] text-green-500">
+                  인증번호가 전송되었습니다.
+                </BodySmall>
+              </div>
+            )}
           </div>
 
           {/* 인증번호 입력 */}
@@ -122,21 +143,20 @@ export default function FindId({
                   <Controller
                     name="verificationCode"
                     control={control}
-                    rules={{ required: '4자리 숫자입력' }}
+                    rules={{ required: '인증번호 입력' }}
                     render={({ field }) => (
                       <LineInput
-                        placeholder="4자리 숫자입력"
+                        placeholder="인증번호 입력"
                         value={field.value ?? ''}
                         onChange={e => {
                           const onlyNumbers = e.target.value.replace(/[^0-9]/g, '');
                           field.onChange(onlyNumbers);
                         }}
                         inputMode="numeric"
-                        maxLength={4}
                       />
                     )}
                   />
-                  {timeLeft > 0 && (
+                  {timeLeft > 0 && !isVerified && (
                     <BodySmall className="absolute top-1/2 right-2 -translate-y-1/2 text-red-100">
                       {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
                     </BodySmall>
@@ -146,14 +166,30 @@ export default function FindId({
                 <div className="w-[130px]">
                   <Button
                     type="button"
-                    active={!!watchedValues.verificationCode && !isVerified}
-                    disabled={!watchedValues.verificationCode}
-                    onClick={onVerifyCode}
+                    active={isVerified}
+                    disabled={isVerified || !watchedValues.verificationCode}
+                    onClick={() => {
+                      if (!isVerified && watchedValues.phone && watchedValues.verificationCode) {
+                        onVerifyCode(watchedValues.phone, watchedValues.verificationCode);
+                      }
+                    }}
                   >
-                    <BodyDefault>인증번호 확인</BodyDefault>
+                    <BodyDefault>{isVerified ? '인증완료' : '인증번호 확인'}</BodyDefault>
                   </Button>
                 </div>
               </div>
+              {errors.verificationCode && (
+                <div className="mt-1">
+                  <BodySmall className="ml-[2px] text-red-100">
+                    {errors.verificationCode.message}
+                  </BodySmall>
+                </div>
+              )}
+              {isVerified && !errors.verificationCode && (
+                <div className="mt-1">
+                  <BodySmall className="ml-[2px] text-green-500">인증이 완료되었습니다.</BodySmall>
+                </div>
+              )}
             </div>
           )}
         </form>
