@@ -4,15 +4,16 @@ import Image from 'next/image';
 import { LabeledInput } from '@/app/_components/molecules/LabeledInput';
 import Button from '@/app/_components/atoms/Button';
 import ColumnLogo from '@/assets/svg/ColumnLogo.svg';
-import { BodyDefault, DisplayDefault } from '../atoms/Typography';
+import { BodyDefault, BodySmall, DisplayDefault } from '../atoms/Typography';
 import Link from 'next/link';
 
 interface LoginFormProps {
   onLogin: (email: string, password: string) => void;
   isLoading?: boolean;
+  errorMessage?: string;
 }
 
-export default function LoginForm({ onLogin, isLoading = false }: LoginFormProps) {
+export default function LoginForm({ onLogin, isLoading = false, errorMessage }: LoginFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -31,14 +32,17 @@ export default function LoginForm({ onLogin, isLoading = false }: LoginFormProps
           value={email}
           onChange={e => setEmail(e.target.value)}
         />
-        <LabeledInput
-          label="비밀번호"
-          placeholder="비밀번호를 입력해주세요"
-          required
-          invisible
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-        />
+        <div className="flex flex-col gap-2">
+          <LabeledInput
+            label="비밀번호"
+            placeholder="비밀번호를 입력해주세요"
+            required
+            invisible
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+          />
+          {errorMessage && <BodySmall className="text-red-100">{errorMessage}</BodySmall>}
+        </div>
         <div onClick={() => isLoginEnabled && !isLoading && onLogin(email, password)}>
           <Button active={isLoginEnabled} disabled={isLoading}>
             <DisplayDefault>{isLoading ? '로그인 중...' : '로그인'}</DisplayDefault>
