@@ -105,3 +105,21 @@ export const formatDateTime = (isoString: string): string => {
   return `${year}/${month}/${day} ${hours}:${minutes}`;
 };
 
+/**
+ * ISO 날짜 문자열을 "10월 25일 오후 3시" 형식으로 변환
+ * @param isoString - ISO 8601 형식의 날짜 문자열 (예: 2025-11-03T18:00:00.000Z)
+ * @returns 표시 형식의 날짜 문자열 (예: 10월 25일 오후 3시)
+ */
+export const formatCheckInOutDateTime = (isoString: string): string => {
+  const date = new Date(isoString);
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+
+  const period = hours < 12 ? '오전' : '오후';
+  const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+  const timeText = minutes === 0 ? `${displayHours}시` : `${displayHours}시 ${minutes}분`;
+
+  return `${month}월 ${day}일 ${period} ${timeText}`;
+};

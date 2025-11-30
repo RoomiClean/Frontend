@@ -11,7 +11,7 @@ export {
 } from './auth.queries';
 
 // Accommodation 관련 쿼리
-export { useCreateAccommodation } from './accommodation.queries';
+export { useCreateAccommodation, useGetAccommodations } from './accommodation.queries';
 
 // Business 관련 쿼리
 export {

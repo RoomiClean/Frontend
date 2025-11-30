@@ -9,6 +9,7 @@ interface AccommodationCardProps {
   imageUrl: string;
   title: string;
   address: string;
+  detailedAddress?: string | null;
   checkInText: string;
   checkOutText: string;
   onRequestClean?: () => void;
@@ -24,10 +25,13 @@ export default function AccommodationCard({
   imageUrl,
   title,
   address,
+  detailedAddress,
   checkInText,
   checkOutText,
   onRequestClean,
 }: AccommodationCardProps) {
+  const fullAddress = detailedAddress ? `${address} ${detailedAddress}` : address;
+
   return (
     <div className="rounded-[16px] bg-neutral-100 md:py-6 py-4 px-4 hover:border hover:border-neutral-200 hover:shadow-[0_6px_15px_0_rgba(0_0_0/0.2)] transition-all">
       <div className="flex flex-col md:flex-row items-start gap-6">
@@ -52,7 +56,7 @@ export default function AccommodationCard({
                 <Image src={ArrowRightIcon} alt="arrow-right" />
               </Link>
             </div>
-            <BodySmall className="text-neutral-800">{address}</BodySmall>
+            <BodySmall className="text-neutral-800">{fullAddress}</BodySmall>
           </div>
 
           <div className="mt-4">

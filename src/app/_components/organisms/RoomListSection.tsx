@@ -10,6 +10,7 @@ interface AccommodationItem {
   imageUrl: string;
   title: string;
   address: string;
+  detailedAddress?: string | null;
   checkInText: string;
   checkOutText: string;
 }

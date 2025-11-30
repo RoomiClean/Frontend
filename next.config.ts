@@ -10,6 +10,17 @@ const nextConfig: NextConfig = {
     // 빌드 시 TypeScript 에러 무시 (배포 테스트용)
     ignoreBuildErrors: true,
   },
+  // S3 이미지 호스트 허용
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'hyunwoo9930-s3.s3.ap-northeast-2.amazonaws.com',
+        port: '',
+        pathname: '/**',
+      },
+    ],
+  },
   // 개발 환경에서 프록시 설정 (쿠키 도메인 문제 해결)
   async rewrites() {
     // 개발 환경에서만 프록시 사용

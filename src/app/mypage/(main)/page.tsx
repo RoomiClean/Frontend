@@ -1,36 +1,63 @@
+'use client';
+
 import RoomMainTemplate from '../../_components/templates/RoomMainTemplate';
 import RoomStatusSection from '../../_components/organisms/RoomStatSection';
 import AccommodationListSection from '../../_components/organisms/RoomListSection';
+import { useGetAccommodations } from '../../_lib/queries';
+import { formatCheckInOutDateTime } from '@/utils/dateTime.utils';
+import type { AccommodationListItem } from '../../_lib/types/accommodation.types';
 
 export default function RoomMainPage() {
-  const stats = { totalRooms: 3, needClean: 3, todayClean: 3 };
-  // const stats = { totalRooms: 0, needClean: 0, todayClean: 0 };
-  const items = [
-    {
-      id: '1',
-      imageUrl: '/img/sample-room.jpg',
-      title: '외대 앞 에어비앤비',
-      address: '경기도 용인시 처인구 모현읍 외대로 54번길 9 글로벌타운 B동 306호',
-      checkInText: '10월 25일 오후 3시',
-      checkOutText: '10월 26일 오전 11시',
-    },
-    {
-      id: '2',
-      imageUrl: '/img/sample-room.jpg',
-      title: '외대 앞 에어비앤비2',
-      address: '경기도 용인시 처인구 모현읍 외대로 54번길 9 글로벌타운 B동 308호',
-      checkInText: '10월 25일 오후 3시',
-      checkOutText: '10월 26일 오전 11시',
-    },
-  ];
-  // const items = [];
+  const { data, isLoading, error } = useGetAccommodations();
+
+  if (isLoading) {
+    return (
+      <RoomMainTemplate>
+        <div className="flex items-center justify-center py-20">
+          <p className="text-neutral-600">로딩 중...</p>
+        </div>
+      </RoomMainTemplate>
+    );
+  }
+
+  if (error || !data || !data.success) {
+    return (
+      <RoomMainTemplate>
+        <div className="flex items-center justify-center py-20">
+          <p className="text-red-500">데이터를 불러오는 중 오류가 발생했습니다.</p>
+        </div>
+      </RoomMainTemplate>
+    );
+  }
+
+  const statistics = data.data.statistics || {
+    totalCount: 0,
+    cleaningNeededCount: 0,
+    todayCleaningScheduledCount: 0,
+  };
+
+  const accommodations: AccommodationListItem[] = data.data.accommodations || [];
+
+  const items = accommodations.map((accommodation: AccommodationListItem) => ({
+    id: accommodation.id,
+    imageUrl: accommodation.photos?.[0]?.photoUrl || '/img/sample-room.jpg',
+    title: accommodation.name,
+    address: accommodation.address,
+    detailedAddress: accommodation.detailedAddress,
+    checkInText: accommodation.nextCheckin
+      ? formatCheckInOutDateTime(accommodation.nextCheckin)
+      : '일정 없음',
+    checkOutText: accommodation.nextCheckout
+      ? formatCheckInOutDateTime(accommodation.nextCheckout)
+      : '일정 없음',
+  }));
 
   return (
     <RoomMainTemplate>
       <RoomStatusSection
-        totalRooms={stats.totalRooms}
-        needClean={stats.needClean}
-        todayClean={stats.todayClean}
+        totalRooms={statistics.totalCount}
+        needClean={statistics.cleaningNeededCount}
+        todayClean={statistics.todayCleaningScheduledCount}
       />
       <AccommodationListSection items={items} />
     </RoomMainTemplate>
