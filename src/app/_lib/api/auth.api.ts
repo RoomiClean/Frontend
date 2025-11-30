@@ -77,3 +77,9 @@ export const login = async (email: string, password: string): Promise<ApiRespons
   });
   return response.data;
 };
+
+// 로그아웃
+export const logout = async (): Promise<ApiResponse> => {
+  const response = await apiInstance.post('/api/v1/auth/logout');
+  return response.data;
+};

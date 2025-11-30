@@ -9,6 +9,7 @@ import {
   forgotPassword,
   resetPassword,
   login,
+  logout,
 } from '../api/auth.api';
 import type { SignupHostRequest, SignupCleanerRequest } from '../types/auth.types';
 import type { ApiResponse } from '../api-response.types';
@@ -118,5 +119,17 @@ export const useLogin = () =>
     },
     onError: (err: Error) => {
       console.error('로그인 에러:', err);
+    },
+  });
+
+// 로그아웃
+export const useLogout = () =>
+  useMutation<ApiResponse, Error, void>({
+    mutationFn: () => logout(),
+    onSuccess: () => {
+      console.log('로그아웃 완료');
+    },
+    onError: (err: Error) => {
+      console.error('로그아웃 에러:', err);
     },
   });

@@ -17,6 +17,8 @@ export default function LoginPage() {
       { email, password },
       {
         onSuccess: () => {
+          localStorage.setItem('isLogin', 'true');
+          window.dispatchEvent(new Event('authChange'));
           router.push('/home');
         },
         onError: error => {
