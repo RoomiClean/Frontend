@@ -14,6 +14,10 @@ import FindPassword from '../molecules/FindPassword';
  */
 export default function FindInfoForm() {
   const {
+    control,
+    handleSubmit,
+    errors,
+    watchedValues,
     activeTab,
     idStep,
     passwordStep,
@@ -62,6 +66,10 @@ export default function FindInfoForm() {
       <div className="w-full">
         {activeTab === 'id' ? (
           <FindId
+            control={control}
+            handleSubmit={handleSubmit}
+            errors={errors}
+            watchedValues={watchedValues}
             isCodeSent={isCodeSent}
             isVerified={isVerified}
             timeLeft={timeLeft}
@@ -75,6 +83,10 @@ export default function FindInfoForm() {
           />
         ) : (
           <FindPassword
+            control={control}
+            handleSubmit={handleSubmit}
+            errors={errors}
+            watchedValues={watchedValues}
             isCodeSent={isCodeSent}
             isVerified={isVerified}
             timeLeft={timeLeft}

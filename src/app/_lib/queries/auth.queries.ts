@@ -1,9 +1,20 @@
 import { useMutation } from '@tanstack/react-query';
-import { checkEmail, sendSmsCode, verifySmsCode, signupHost, signupCleaner } from '../api/auth.api';
+import {
+  checkEmail,
+  sendSmsCode,
+  verifySmsCode,
+  signupHost,
+  signupCleaner,
+  findEmail,
+  forgotPassword,
+  resetPassword,
+  login,
+  logout,
+} from '../api/auth.api';
 import type { SignupHostRequest, SignupCleanerRequest } from '../types/auth.types';
 import type { ApiResponse } from '../api-response.types';
 
-// 이메일 중복 확인 쿼리
+// 이메일 중복 확인
 export const useCheckEmail = () =>
   useMutation<ApiResponse, Error, string>({
     mutationFn: (email: string) => checkEmail(email),
@@ -15,7 +26,7 @@ export const useCheckEmail = () =>
     },
   });
 
-// SMS 인증번호 전송 뮤테이션
+// SMS 인증번호 전송
 export const useSendSmsCode = () =>
   useMutation<ApiResponse, Error, string>({
     mutationFn: (phone: string) => sendSmsCode(phone),
@@ -27,7 +38,7 @@ export const useSendSmsCode = () =>
     },
   });
 
-// SMS 인증번호 확인 뮤테이션
+// SMS 인증번호 확인
 export const useVerifySmsCode = () =>
   useMutation<ApiResponse, Error, { phone: string; code: string }>({
     mutationFn: ({ phone, code }) => verifySmsCode(phone, code),
@@ -39,7 +50,7 @@ export const useVerifySmsCode = () =>
     },
   });
 
-// 호스트 회원가입 뮤테이션
+// 호스트 회원가입
 export const useSignupHost = () =>
   useMutation<ApiResponse, Error, SignupHostRequest>({
     mutationFn: (data: SignupHostRequest) => signupHost(data),
@@ -51,7 +62,7 @@ export const useSignupHost = () =>
     },
   });
 
-// 청소자 회원가입 뮤테이션
+// 청소자 회원가입
 export const useSignupCleaner = () =>
   useMutation<ApiResponse, Error, SignupCleanerRequest>({
     mutationFn: (data: SignupCleanerRequest) => signupCleaner(data),
@@ -60,5 +71,65 @@ export const useSignupCleaner = () =>
     },
     onError: (err: Error) => {
       console.error('청소자 회원가입 에러:', err);
+    },
+  });
+
+// 이메일 찾기
+export const useFindEmail = () =>
+  useMutation<ApiResponse<{ email: string }>, Error, { name: string; phone: string }>({
+    mutationFn: ({ name, phone }) => findEmail(name, phone),
+    onSuccess: () => {
+      console.log('이메일 찾기 완료');
+    },
+    onError: (err: Error) => {
+      console.error('이메일 찾기 에러:', err);
+    },
+  });
+
+// 비밀번호 재설정 요청
+export const useForgotPassword = () =>
+  useMutation<ApiResponse<{ token: string }>, Error, { email: string; phone: string }>({
+    mutationFn: ({ email, phone }) => forgotPassword(email, phone),
+    onSuccess: () => {
+      console.log('비밀번호 재설정 요청 완료');
+    },
+    onError: (err: Error) => {
+      console.error('비밀번호 재설정 요청 에러:', err);
+    },
+  });
+
+// 비밀번호 재설정 실행
+export const useResetPassword = () =>
+  useMutation<ApiResponse, Error, { token: string; newPassword: string }>({
+    mutationFn: ({ token, newPassword }) => resetPassword(token, newPassword),
+    onSuccess: () => {
+      console.log('비밀번호 재설정 완료');
+    },
+    onError: (err: Error) => {
+      console.error('비밀번호 재설정 에러:', err);
+    },
+  });
+
+// 로그인
+export const useLogin = () =>
+  useMutation<ApiResponse, Error, { email: string; password: string }>({
+    mutationFn: ({ email, password }) => login(email, password),
+    onSuccess: () => {
+      console.log('로그인 완료');
+    },
+    onError: (err: Error) => {
+      console.error('로그인 에러:', err);
+    },
+  });
+
+// 로그아웃
+export const useLogout = () =>
+  useMutation<ApiResponse, Error, void>({
+    mutationFn: () => logout(),
+    onSuccess: () => {
+      console.log('로그아웃 완료');
+    },
+    onError: (err: Error) => {
+      console.error('로그아웃 에러:', err);
     },
   });

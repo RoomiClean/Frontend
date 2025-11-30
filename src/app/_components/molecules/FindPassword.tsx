@@ -1,6 +1,6 @@
 'use client';
 import Image from 'next/image';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, Control, UseFormHandleSubmit, FieldErrors } from 'react-hook-form';
 import { LineInput } from '@/app/_components/atoms/LineInput';
 import Button from '@/app/_components/atoms/Button';
 import { BodyDefault, DisplayDefault, BodySmall, TitleH4, BodyLarge } from '../atoms/Typography';
@@ -10,15 +10,19 @@ import ColumnLogo from '@/assets/svg/ColumnLogo.svg';
 import Link from 'next/link';
 
 interface FindPasswordProps {
+  control: Control<FindInfoFormData>;
+  handleSubmit: UseFormHandleSubmit<FindInfoFormData>;
+  errors: FieldErrors<FindInfoFormData>;
+  watchedValues: Partial<FindInfoFormData>;
   isCodeSent: boolean;
   isVerified: boolean;
   timeLeft: number;
   passwordStep: 'input' | 'reset' | 'complete';
-  onSendCode: () => void;
-  onResendCode: () => void;
-  onVerifyCode: () => void;
-  onPasswordReset: (data: FindInfoFormData) => void;
-  onPasswordResetComplete: (data: FindInfoFormData) => void;
+  onSendCode: (phone?: string) => Promise<void>;
+  onResendCode: (phone?: string) => Promise<void>;
+  onVerifyCode: (phone?: string, code?: string) => Promise<void>;
+  onPasswordReset: (data: FindInfoFormData) => Promise<void>;
+  onPasswordResetComplete: (data: FindInfoFormData) => Promise<void>;
   onTabChange: () => void;
 }
 
@@ -32,6 +36,10 @@ interface FindPasswordProps {
  * @param {FindPasswordProps} props - 컴포넌트 props
  */
 export default function FindPassword({
+  control,
+  handleSubmit,
+  errors,
+  watchedValues,
   isCodeSent,
   isVerified,
   timeLeft,
@@ -42,36 +50,27 @@ export default function FindPassword({
   onPasswordReset,
   onPasswordResetComplete,
 }: FindPasswordProps) {
-  const {
-    control,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm<FindInfoFormData>();
-
-  const watchedValues = watch();
-
-  // --- 아이디, 전화번호 입력 단계 ---
+  // --- 이메일, 전화번호 입력 단계 ---
   if (passwordStep === 'input') {
     return (
       <div className="flex flex-col items-center gap-[48px]">
         <div className="text-center text-neutral-1000">
           <BodyDefault>
             비밀번호를 잃어버리셨나요? <br />
-            가입 시 등록한 아이디와 휴대폰 번호를 입력해주세요
+            가입 시 등록한 이메일과 휴대폰 번호를 입력해주세요
           </BodyDefault>
         </div>
 
         {/* 비밀번호 재설정하기 입력 폼 */}
         <form className="flex flex-col gap-4 w-full">
-          {/* 아이디 입력*/}
+          {/* 이메일 입력*/}
           <Controller
             name="id"
             control={control}
-            rules={{ required: '아이디를 입력해주세요' }}
+            rules={{ required: '이메일을 입력해주세요' }}
             render={({ field }) => (
               <LineInput
-                placeholder="아이디를 입력해주세요"
+                placeholder="이메일을 입력해주세요"
                 value={field.value ?? ''}
                 onChange={field.onChange}
               />
@@ -103,14 +102,34 @@ export default function FindPassword({
               <div className="w-[130px]">
                 <Button
                   type="button"
-                  active={!!watchedValues.id && !!watchedValues.phone && !isCodeSent}
-                  disabled={!watchedValues.id || !watchedValues.phone}
-                  onClick={isCodeSent ? onResendCode : onSendCode}
+                  active={!!watchedValues.id && !!watchedValues.phone && !isCodeSent && !isVerified}
+                  disabled={!watchedValues.id || !watchedValues.phone || isVerified}
+                  onClick={() => {
+                    if (watchedValues.phone) {
+                      if (isCodeSent) {
+                        onResendCode(watchedValues.phone);
+                      } else {
+                        onSendCode(watchedValues.phone);
+                      }
+                    }
+                  }}
                 >
                   <BodyDefault>{isCodeSent ? '인증번호 재전송' : '인증번호 받기'}</BodyDefault>
                 </Button>
               </div>
             </div>
+            {errors.phone && (
+              <div className="mt-1">
+                <BodySmall className="ml-[2px] text-red-100">{errors.phone.message}</BodySmall>
+              </div>
+            )}
+            {!errors.phone && isCodeSent && (
+              <div className="mt-1">
+                <BodySmall className="ml-[2px] text-green-500">
+                  인증번호가 전송되었습니다.
+                </BodySmall>
+              </div>
+            )}
           </div>
 
           {/* 인증번호 입력 */}
@@ -121,38 +140,52 @@ export default function FindPassword({
                   <Controller
                     name="verificationCode"
                     control={control}
-                    rules={{ required: '4자리 숫자입력' }}
+                    rules={{ required: '인증번호 입력' }}
                     render={({ field }) => (
                       <LineInput
-                        placeholder="4자리 숫자입력"
+                        placeholder="인증번호 입력"
                         value={field.value ?? ''}
                         onChange={e => {
                           const onlyNumbers = e.target.value.replace(/[^0-9]/g, '');
                           field.onChange(onlyNumbers);
                         }}
                         inputMode="numeric"
-                        maxLength={4}
                       />
                     )}
                   />
-                  {timeLeft > 0 && (
+                  {timeLeft > 0 && !isVerified && (
                     <BodySmall className="absolute top-1/2 right-2 -translate-y-1/2 text-red-100">
                       {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
                     </BodySmall>
                   )}
                 </div>
-                {/* TODO: 인증 성공시 disabled 처리 필요*/}
                 <div className="w-[130px]">
                   <Button
                     type="button"
-                    active={!!watchedValues.verificationCode && !isVerified}
-                    disabled={!watchedValues.verificationCode}
-                    onClick={onVerifyCode}
+                    active={isVerified}
+                    disabled={isVerified || !watchedValues.verificationCode}
+                    onClick={() => {
+                      if (!isVerified && watchedValues.phone && watchedValues.verificationCode) {
+                        onVerifyCode(watchedValues.phone, watchedValues.verificationCode);
+                      }
+                    }}
                   >
-                    <BodyDefault>인증번호 확인</BodyDefault>
+                    <BodyDefault>{isVerified ? '인증완료' : '인증번호 확인'}</BodyDefault>
                   </Button>
                 </div>
               </div>
+              {errors.verificationCode && (
+                <div className="mt-1">
+                  <BodySmall className="ml-[2px] text-red-100">
+                    {errors.verificationCode.message}
+                  </BodySmall>
+                </div>
+              )}
+              {isVerified && !errors.verificationCode && (
+                <div className="mt-1">
+                  <BodySmall className="ml-[2px] text-green-500">인증이 완료되었습니다.</BodySmall>
+                </div>
+              )}
             </div>
           )}
         </form>
@@ -196,7 +229,7 @@ export default function FindPassword({
                     </BodySmall>
                   )}
                   <BodySmall className="mt-2">
-                    영문/대소문자/특수문자 중 3가지 이상 조합, 8~16자
+                    영문 대문자, 소문자, 숫자, 특수문자(@$!%*?&) 포함, 8~16자
                   </BodySmall>
                 </div>
               )}
