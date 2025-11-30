@@ -8,6 +8,7 @@ import {
   findEmail,
   forgotPassword,
   resetPassword,
+  login,
 } from '../api/auth.api';
 import type { SignupHostRequest, SignupCleanerRequest } from '../types/auth.types';
 import type { ApiResponse } from '../api-response.types';
@@ -105,5 +106,17 @@ export const useResetPassword = () =>
     },
     onError: (err: Error) => {
       console.error('비밀번호 재설정 에러:', err);
+    },
+  });
+
+// 로그인
+export const useLogin = () =>
+  useMutation<ApiResponse, Error, { email: string; password: string }>({
+    mutationFn: ({ email, password }) => login(email, password),
+    onSuccess: () => {
+      console.log('로그인 완료');
+    },
+    onError: (err: Error) => {
+      console.error('로그인 에러:', err);
     },
   });

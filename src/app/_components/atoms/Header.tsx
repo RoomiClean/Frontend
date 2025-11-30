@@ -4,18 +4,23 @@ import Image from 'next/image';
 import Logo from '@/assets/svg/RowLogo.svg';
 import Menu from '@/assets/svg/HamburgerMenu.svg';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 // interface HeaderProps {
 //   nickname: string;
 // }
 
 export default function Header() {
-  const handleMenuClick = () => {
+  const router = useRouter();
+
+  function handleMenuClick() {
     console.log('햄버거 메뉴 아이콘 클릭');
-  };
+  }
   return (
     <div className="h-[68px] px-4 md:px-6 lg:px-8 py-[12px] flex justify-between items-center border-b">
-      <Image src={Logo} alt="Logo" />
+      <div onClick={() => router.push('/home')}>
+        <Image src={Logo} alt="Logo" className="cursor-pointer" />
+      </div>
       <div className="flex items-center gap-8">
         {/* 태블릿 크기 이상에서만 링크 표시 */}
         <Link href="/service-structure" className="hidden md:block">

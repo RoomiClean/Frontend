@@ -68,3 +68,12 @@ export const resetPassword = async (token: string, newPassword: string): Promise
   });
   return response.data;
 };
+
+// 로그인
+export const login = async (email: string, password: string): Promise<ApiResponse> => {
+  const response = await apiInstance.post('/api/v1/auth/login', {
+    email,
+    password,
+  });
+  return response.data;
+};
