@@ -24,8 +24,16 @@ import {
 import { ACCOMMODATION_TYPES } from '@/constants/business.constants';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { useAgreements } from '@/hooks/useAgreements';
-import { useAccountVerification } from '@/hooks/useAccountVerification';
 import { BiSolidCamera } from 'react-icons/bi';
+import {
+  useRegisterBusinessVerification,
+  useCreateAccommodation,
+  useGenerateUploadPresignedUrls,
+} from '@/app/_lib/queries';
+import { uploadFileToS3 } from '@/app/_lib/api/s3.api';
+import { AxiosError } from 'axios';
+import { ApiErrorResponse } from '@/app/_lib/api-response.types';
+import type { AccommodationType } from '@/app/_lib/types/accommodation.types';
 
 interface DaumPostcodeData {
   zonecode: string;
@@ -118,8 +126,19 @@ interface FormData {
   hostRequests: string;
 }
 
+const ACCOMMODATION_TYPE_MAP: Record<string, AccommodationType> = {
+  house: 'HOUSE',
+  duplex: 'VILLA',
+  apartment: 'APARTMENT',
+  row: 'ETC',
+  multi: 'ETC',
+};
+
 export default function RegisterAccommodationStep2Page() {
   const router = useRouter();
+  const { mutateAsync: registerBusinessVerificationMutate } = useRegisterBusinessVerification();
+  const { mutateAsync: createAccommodationMutate } = useCreateAccommodation();
+  const { mutateAsync: generateUploadPresignedUrlsMutate } = useGenerateUploadPresignedUrls();
 
   const {
     register,
@@ -266,7 +285,7 @@ export default function RegisterAccommodationStep2Page() {
     }).open();
   };
 
-  const onSubmit = (data: FormData) => {
+  const onSubmit = async (data: FormData) => {
     if (accommodationPhotos.length < 5) {
       setPhotoError('숙소 사진을 최소 5장 이상 업로드해주세요.');
       if (typeof window !== 'undefined') {
@@ -282,11 +301,104 @@ export default function RegisterAccommodationStep2Page() {
       return;
     }
 
-    // TODO: API 호출
-    console.log('Submitted data:', { ...data, accommodationPhotos, agreements });
+    try {
+      // 1. sessionStorage에서 사업자 정보 가져오기
+      const storedData = sessionStorage.getItem('accommodationRegisterData');
+      if (!storedData) {
+        alert('사업자 정보를 찾을 수 없습니다. 처음부터 다시 진행해주세요.');
+        router.push('/mypage/accommodation/register');
+        return;
+      }
 
-    // 완료 페이지로 이동 또는 목록으로 이동
-    router.push('/mypage/accommodation/register/done');
+      const { businessInfo } = JSON.parse(storedData);
+
+      // 2. 사업자 정보 등록
+      const businessVerificationResponse = await registerBusinessVerificationMutate({
+        businessNumber: businessInfo.businessNumber,
+        businessName: businessInfo.businessName,
+        businessType: businessInfo.businessType,
+        ceoName: businessInfo.ceoName,
+        startDate: businessInfo.startDate,
+      });
+
+      if (!businessVerificationResponse.success) {
+        throw new Error('사업자 정보 등록에 실패했습니다.');
+      }
+
+      const businessVerificationData = businessVerificationResponse.data as {
+        id?: string;
+      };
+
+      if (!businessVerificationData?.id) {
+        throw new Error('사업자 정보 등록에 실패했습니다.');
+      }
+
+      const businessVerificationId = businessVerificationData.id;
+
+      // 3. Presigned URL 생성
+      const presignedUrlResponse = await generateUploadPresignedUrlsMutate({
+        type: 'ACCOMMODATION',
+        file_count: accommodationPhotos.length,
+        file_types: accommodationPhotos.map(file => file.type),
+      });
+
+      if (!presignedUrlResponse.success) {
+        throw new Error('Presigned URL 생성에 실패했습니다.');
+      }
+
+      const presignedUrlData = presignedUrlResponse.data as {
+        urls?: Array<{ uploadUrl: string; fileUrl: string; contentType: string }>;
+      };
+
+      if (!presignedUrlData?.urls || presignedUrlData.urls.length !== accommodationPhotos.length) {
+        throw new Error('Presigned URL 생성에 실패했습니다.');
+      }
+
+      const { urls } = presignedUrlData;
+
+      if (!urls || urls.length !== accommodationPhotos.length) {
+        throw new Error('Presigned URL 생성에 실패했습니다.');
+      }
+      // 4. S3에 이미지 업로드
+      const uploadPromises = accommodationPhotos.map((photo, i) => {
+        const { uploadUrl, fileUrl, contentType } = urls[i];
+        return uploadFileToS3(uploadUrl, photo, contentType).then(() => fileUrl);
+      });
+
+      const photoUrls = await Promise.all(uploadPromises);
+      //Promise.all 병렬 처리가 속도가 훨씬 더 빠름 대박
+
+      // 5. 숙소 등록
+      const accommodationType = ACCOMMODATION_TYPE_MAP[data.accommodationType] || 'ETC';
+      await createAccommodationMutate({
+        businessVerificationId,
+        name: data.accommodationName,
+        address: data.address,
+        detailedAddress: data.detailAddress,
+        accessMethod: data.accessMethod,
+        accommodationType,
+        areaPyeong: data.area ? parseFloat(data.area) : undefined,
+        roomCount: data.roomCount ? parseInt(data.roomCount, 10) : undefined,
+        bedCount: data.bedCount ? parseInt(data.bedCount, 10) : undefined,
+        livingRoomCount: data.livingRoomCount ? parseInt(data.livingRoomCount, 10) : undefined,
+        bathroomCount: data.bathroomCount ? parseInt(data.bathroomCount, 10) : undefined,
+        maxOccupancy: data.maxOccupancy ? parseInt(data.maxOccupancy, 10) : undefined,
+        supplyStorageLocation: data.equipmentStorage,
+        trashLocation: data.trashDisposal,
+        recycleLocation: data.trashDisposal, // recycle_location도 trash_location과 동일하게 설정
+        cleaningNotes: data.hostRequests || undefined,
+        photoUrls,
+      });
+      sessionStorage.removeItem('accommodationRegisterData');
+
+      router.push('/mypage/accommodation/register/done');
+    } catch (error) {
+      const axiosError = error as AxiosError<ApiErrorResponse>;
+      const errorMessage =
+        axiosError?.response?.data?.message || axiosError?.message || '숙소 등록에 실패했습니다.';
+      alert(errorMessage);
+      console.error('숙소 등록 오류:', error);
+    }
   };
 
   return (

@@ -2,10 +2,14 @@ import axios from 'axios';
 import camelcaseKeys from 'camelcase-keys';
 import snakecaseKeys from 'snakecase-keys';
 import { API_BASE_URL, API_TIMEOUT, API_HEADERS } from '@/constants/develop.constants';
-import type { GeneratePresignedUrlsRequest } from '../types/s3.types';
+import apiInstance from '../instance';
+import type {
+  GeneratePresignedUrlsRequest,
+  GenerateUploadPresignedUrlsRequest,
+} from '../types/s3.types';
 import type { ApiResponse } from '../api-response.types';
 
-// Presigned URL 생성 (인증 불필요)
+// Presigned URL 생성 (회원가입용, 인증 불필요)
 export const generatePresignedUrls = async (
   data: GeneratePresignedUrlsRequest,
 ): Promise<ApiResponse> => {
@@ -28,6 +32,14 @@ export const generatePresignedUrls = async (
     response.data = camelcaseKeys(response.data, { deep: true });
   }
 
+  return response.data;
+};
+
+// 업로드용 Presigned URL 생성 (인증 필요)
+export const generateUploadPresignedUrls = async (
+  data: GenerateUploadPresignedUrlsRequest,
+): Promise<ApiResponse> => {
+  const response = await apiInstance.post('/api/s3/presigned-urls', data);
   return response.data;
 };
 

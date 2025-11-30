@@ -14,7 +14,14 @@ export {
 export { useCreateAccommodation } from './accommodation.queries';
 
 // Business 관련 쿼리
-export { useRegisterBusinessVerification } from './business.queries';
+export {
+  useValidateBusinessVerification,
+  useRegisterBusinessVerification,
+} from './business.queries';
 
 // S3 관련 쿼리
-export { useGeneratePresignedUrls, useUploadFileToS3 } from './s3.queries';
+export {
+  useGeneratePresignedUrls,
+  useGenerateUploadPresignedUrls,
+  useUploadFileToS3,
+} from './s3.queries';
